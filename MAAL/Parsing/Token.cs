@@ -130,7 +130,8 @@ namespace MAAL.Parsing
             LONG,
             FLOAT,
             CHAR,
-            CHAR_POINTER
+            CHAR_POINTER,
+            BOOL
         }
 
         public BasicValueTypeEnum ValueType;
@@ -140,6 +141,7 @@ namespace MAAL.Parsing
         public float Value_Float = 0;
         public char Value_Char = (char)0;
         public string Value_CharPointer = string.Empty;
+        public bool Value_Bool = false;
 
         public BasicValueToken(int val)
         {
@@ -166,6 +168,11 @@ namespace MAAL.Parsing
             Value_CharPointer = val;
             ValueType = BasicValueTypeEnum.CHAR_POINTER;
         }
+        public BasicValueToken(bool val)
+        {
+            Value_Bool = val;
+            ValueType = BasicValueTypeEnum.BOOL;
+        }
 
 
         public override string ToString()
@@ -182,6 +189,8 @@ namespace MAAL.Parsing
                     return $"<VC '{Value_Char}'>";
                 case BasicValueTypeEnum.CHAR_POINTER:
                     return $"<VS \"{Value_CharPointer}\">";
+                case BasicValueTypeEnum.BOOL:
+                    return $"<VB {Value_Bool}>";
 
                 default:
                     return "<V?>";
@@ -208,14 +217,111 @@ namespace MAAL.Parsing
         public override string ToString()
            => $"<Name: \"{Name}\">";
     }
+
+
+
     public class VarNameToken : Token
     {
-        public string Name;
+        public string VarName;
+        public TypeToken VarType;
 
-        public VarNameToken(string name)
-            => Name = name;
+        public VarNameToken(string name, TypeToken typeToken)
+        {
+            VarName = name;
+            VarType = typeToken;
+        }
 
         public override string ToString()
-           => $"<VAR: \"{Name}\">";
+           => $"<VAR: \"{VarName}\" ({VarType})>";
+    }
+    public class CastToken : Token
+    {
+        public TypeToken CastType;
+
+        public CastToken(TypeToken castType)
+            => CastType = castType;
+
+        public override string ToString()
+            => $"<({CastType})>";
+    }
+    public class DeclareVarToken : Token
+    {
+        public string VarName;
+        public TypeToken VarType;
+
+        public DeclareVarToken(string varName, TypeToken varType)
+        {
+            VarName = varName;
+            VarType = varType;
+        }
+
+        public override string ToString()
+            => $"<{VarType} \"{VarName}\">";
+    }
+
+    public class ExpressionToken : Token
+    {
+        public OperatorToken Operator = null;
+        public ExpressionToken Left = null, Right = null;
+        public BasicValueToken ConstValue = null;
+        public bool IsConstValue = false;
+        public bool OnlyUseLeft = false;
+
+        public ExpressionToken(ExpressionToken left, OperatorToken op, ExpressionToken right)
+        {
+            Left = left;
+            Right = right;
+            Operator = op;
+
+            OnlyUseLeft = false;
+            IsConstValue = false;
+            ConstValue = null;
+        }
+        public ExpressionToken(BasicValueToken val)
+        {
+            Left = null;
+            Right = null;
+            Operator = null;
+
+            OnlyUseLeft = false;
+            IsConstValue = true;
+            ConstValue = val;
+        }
+        public ExpressionToken(OperatorToken op, ExpressionToken left)
+        {
+            Left = left;
+            Right = null;
+            Operator = op;
+
+            OnlyUseLeft = true;
+            IsConstValue = false;
+            ConstValue = null;
+        }
+
+        public override string ToString()
+        {
+            if (IsConstValue)
+                return $"{ConstValue}";
+
+            if (OnlyUseLeft)
+                return $"<{Operator} {Left}>";
+            else
+                return $"<{Left} {Operator} {Right}>";
+        }
+    }
+
+    public class SetVarToken : Token
+    {
+        public string VarName;
+        public ExpressionToken SetExpression;
+
+        public SetVarToken(string varName, ExpressionToken set)
+        {
+            VarName = varName;
+            SetExpression = set;
+        }
+
+        public override string ToString()
+            => $"<\"{VarName}\" = {SetExpression}>";
     }
 }

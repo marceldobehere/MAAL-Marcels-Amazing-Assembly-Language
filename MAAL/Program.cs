@@ -30,9 +30,15 @@ namespace MAAL
             }
 
 
-            List<Token> tokens = Parser.ParseFile(args[0]);
-            Console.WriteLine($"Tokens: (Count: {tokens.Count})");
-            foreach(Token token in tokens)
+            Parser.ParsedStuff stuff = Parser.ParseFile(args[0]);
+            Console.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
+            foreach (DeclareVarToken token in stuff.Variables.Values)
+                Console.WriteLine($"{token} ");
+            Console.WriteLine();
+
+
+            Console.WriteLine($"Tokens: (Count: {stuff.other.Count})");
+            foreach (Token token in stuff.other)
             {
                 Console.Write($"{token} ");
                 if (token is EndCommandToken)
@@ -43,7 +49,7 @@ namespace MAAL
 
 
 
-            end:
+        end:
             Console.WriteLine("\n\nEnd.");
             Console.ReadLine();
         }

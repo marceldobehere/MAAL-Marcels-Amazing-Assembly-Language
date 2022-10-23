@@ -10,7 +10,14 @@ namespace MAAL.Parsing
 {
     public partial class Parser
     {
-        public static List<Token> ParseFile(string filename)
+        public class ParsedStuff
+        {
+            public List<List<Token>> Commands = new List<List<Token>>();
+            public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
+            public List<Token> other = new List<Token>();
+        }
+
+        public static ParsedStuff ParseFile(string filename)
         {
             using (StreamReader reader = new StreamReader(filename))
             {
@@ -18,25 +25,156 @@ namespace MAAL.Parsing
             }
         }
 
-        public enum BasicTokenType
+        public static ParsedStuff ParseStringAdvanced(List<Token> data)
         {
-            EndCommand,
-            Number,
-            String,
-            Bool,
-            Name,
-            Type,
-            Operator,
-            NONE
-        }
+            ParsedStuff stuff = new ParsedStuff();
 
-        public static List<Token> ParseStringAdvanced(List<Token> data)
-        {
-            List<Token> tokens = new List<Token>();
+            bool change = true;
+            while (change)
+            {
+                change = false;
+                for (int mIndex = 0; mIndex < data.Count; mIndex++)
+                {
+                    Token cTok = data[mIndex];
 
-            tokens.AddRange(data);
+                    if (cTok is TypeToken && mIndex + 1 < data.Count &&
+                        data[mIndex + 1] is OperatorToken && (data[mIndex + 1] as OperatorToken).Operator == OperatorToken.OperatorEnum.Star)
+                    {
+                        (data[mIndex] as TypeToken).PointerCount++;
+                        data.RemoveAt(mIndex + 1);
+                        change = true;
+                        continue;
+                    }
 
-            return tokens;
+                    if (cTok is BracketOpenToken && mIndex + 2 < data.Count &&
+                        data[mIndex + 2] is BracketCloseToken && data[mIndex + 1] is TypeToken)
+                    {
+                        CastToken castTok = new CastToken(data[mIndex + 1] as TypeToken);
+                        data[mIndex] = castTok;
+                        data.RemoveAt(mIndex + 1);
+                        data.RemoveAt(mIndex + 1);
+                        change = true;
+                        continue;
+                    }
+
+                    if (cTok is BracketOpenToken && mIndex + 2 < data.Count &&
+                        data[mIndex + 2] is BracketCloseToken &&
+                        (data[mIndex + 1] is BasicValueToken ||
+                        data[mIndex + 1] is GenericNameToken || data[mIndex + 1] is VarNameToken))
+                    {
+                        data.RemoveAt(mIndex);
+                        data.RemoveAt(mIndex + 1);
+                        change = true;
+                        continue;
+                    }
+
+                    if (cTok is GenericNameToken && (stuff.Variables.ContainsKey((cTok as GenericNameToken).Name)))
+                    {
+                        DeclareVarToken tTok = stuff.Variables[(cTok as GenericNameToken).Name];
+                        data[mIndex] = new VarNameToken(tTok.VarName, tTok.VarType);
+                        change = true;
+                        continue;
+                    }
+
+                    if (cTok is OperatorToken && mIndex + 1 < data.Count &&
+                        (mIndex < 1 || !(data[mIndex - 1] is BasicValueToken)) &&
+                        (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Minus
+                        && data[mIndex + 1] is BasicValueToken && (
+                        (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.INT ||
+                        (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.LONG ||
+                        (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT
+                        ))
+                    {
+                        BasicValueToken valTok = (data[mIndex + 1] as BasicValueToken);
+                        if (valTok.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                            valTok.Value_Int *= -1;
+                        if (valTok.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                            valTok.Value_Long *= -1;
+                        if (valTok.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                            valTok.Value_Float *= -1;
+
+                        data.RemoveAt(mIndex);
+                        change = true;
+                        continue;
+                    }
+
+                    if (cTok is TypeToken && mIndex + 2 < data.Count &&
+                        (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 2] is EndCommandToken))
+                    {
+                        string varName = (data[mIndex + 1] as GenericNameToken).Name;
+                        DeclareVarToken tok = new DeclareVarToken(
+                            varName,
+                            (data[mIndex] as TypeToken));
+
+                        stuff.Variables.Add(varName, tok);
+
+                        data.RemoveAt(mIndex);
+                        data.RemoveAt(mIndex);
+                        data.RemoveAt(mIndex);
+                        change = true;
+                        continue;
+                    }
+
+
+                    if (cTok is TypeToken && mIndex + 4 < data.Count &&
+                        (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 4] is EndCommandToken) &&
+                        (data[mIndex + 2] is OperatorToken) && (data[mIndex + 2] as OperatorToken).Operator == OperatorToken.OperatorEnum.Set &&
+                        ((data[mIndex + 3] is GenericNameToken) || (data[mIndex + 3] is VarNameToken) || (data[mIndex + 3] is BasicValueToken) || (data[mIndex + 3] is ExpressionToken)))
+                    {
+                        string varName = (data[mIndex + 1] as GenericNameToken).Name;
+                        DeclareVarToken tok = new DeclareVarToken(
+                            varName,
+                            (data[mIndex] as TypeToken));
+
+                        stuff.Variables.Add(varName, tok);
+
+                        data.RemoveAt(mIndex);
+                        change = true;
+                        continue;
+                    }
+
+                    if (cTok is VarNameToken && mIndex + 3 < data.Count &&
+                        (data[mIndex + 3] is EndCommandToken) &&
+                        (data[mIndex + 1] is OperatorToken) && (data[mIndex + 1] as OperatorToken).Operator == OperatorToken.OperatorEnum.Set &&
+                        ((data[mIndex + 2] is BasicValueToken) || (data[mIndex + 2] is ExpressionToken)))
+                    {
+                        string varName = (cTok as VarNameToken).VarName;
+
+                        SetVarToken tok = null;// = new SetVarToken(varName, null);
+
+
+                        Token tempTok = data[mIndex + 2];
+                        if (tempTok is BasicValueToken)
+                        {
+                            ExpressionToken exprTok = new ExpressionToken(tempTok as BasicValueToken);
+                            tok = new SetVarToken(varName, exprTok);
+                        }
+                        else if (tempTok is ExpressionToken)
+                        {
+                            tok = new SetVarToken(varName, tempTok as ExpressionToken);
+                        }
+                        else
+                            throw new Exception("BRO WAT IS GOING ON???");
+
+                        data[mIndex] = tok;
+                        data.RemoveAt(mIndex + 1);
+                        data.RemoveAt(mIndex + 1);
+                        data.RemoveAt(mIndex + 1);
+                        change = true;
+                        continue;
+                    }
+
+
+
+                }
+            }
+
+
+
+
+
+            stuff.other.AddRange(data);
+            return stuff;
         }
 
 
@@ -54,6 +192,10 @@ namespace MAAL.Parsing
                 return new BasicValueToken(vL);
             if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float vF))
                 return new BasicValueToken(vF);
+            if (str.ToLower().Equals("true"))
+                return new BasicValueToken(true);
+            if (str.ToLower().Equals("false"))
+                return new BasicValueToken(false);
 
             return new GenericNameToken(str);
         }
