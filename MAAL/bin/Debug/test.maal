@@ -1,4 +1,14 @@
-Hello!
-
-
-123
+int    a = 10;
+long   b = 1234567;
+float  c = 123.5;
+double d = -24354.22354;
+ulong  e = 134;
+byte   f = 130;
+char   g = 'a';
+char*  h = "This is a test!";
+bool   i = false;
+int*   j = &a;
+char*  k = h;
+byte*  test = (byte*)123;
+ulong  addr = &test;
+bool   i2 = true;

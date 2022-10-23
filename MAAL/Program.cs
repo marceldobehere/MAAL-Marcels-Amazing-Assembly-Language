@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MAAL
 {
+    using Parsing;
+    using System.IO;
+
     // MAAL
     // Marcels Amazing Assembly Language
 
@@ -19,7 +22,20 @@ namespace MAAL
             {
                 Console.WriteLine("No Files selected!");
                 goto end;
-            }    
+            }
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Selected File does not exist!");
+                goto end;
+            }
+
+
+            List<Token> tokens = Parser.ParseFile(args[0]);
+            Console.WriteLine($"Tokens: (Count: {tokens.Count})");
+            foreach(Token token in tokens)
+                Console.WriteLine($" - {token}");
+            Console.WriteLine();
+
 
 
 
