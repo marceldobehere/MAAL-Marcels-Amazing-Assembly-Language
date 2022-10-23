@@ -48,6 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="bin\Debug\MAAL.exe.config" />
+    <None Include="bin\Debug\test.maal" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\MAAL.exe" />
+    <Content Include="bin\Debug\MAAL.pdb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
