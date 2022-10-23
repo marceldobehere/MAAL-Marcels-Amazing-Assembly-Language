@@ -33,7 +33,11 @@ namespace MAAL
             List<Token> tokens = Parser.ParseFile(args[0]);
             Console.WriteLine($"Tokens: (Count: {tokens.Count})");
             foreach(Token token in tokens)
-                Console.WriteLine($" - {token}");
+            {
+                Console.Write($"{token} ");
+                if (token is EndCommandToken)
+                    Console.WriteLine("");
+            }
             Console.WriteLine();
 
 

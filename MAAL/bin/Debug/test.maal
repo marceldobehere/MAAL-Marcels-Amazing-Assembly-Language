@@ -1,3 +1,28 @@
+// THIS IS A ONE LINE COMMENT
+
+/*	THIS IS A
+	MULTI LINE COMMENT
+*/	
+
+int x1 = 10+10; 
+int x2 = 10 - 10;
+int x3 = 10 -10;
+int x4 = -10;
+int x5 = 10-10;
+int x6 = 10-(-10);
+int x7 = -10+10;
+int x8 = 10+-10;
+
+x1++;
+
+int***** bruh = (ulong)123456;
+
+if_jump (x1 == x2) 0;
+if_jump (x1 != x2) 10;
+
+if_jump ((x1 >> 1) && (x1* 2)) 20;
+
+
 int    a = 10;
 long   b = 1234567;
 float  c = 123.5;
@@ -10,5 +35,6 @@ bool   i = false;
 int*   j = &a;
 char*  k = h;
 byte*  test = (byte*)123;
+*test = 5;
 ulong  addr = &test;
 bool   i2 = true;
