@@ -6,10 +6,26 @@ using System.Threading.Tasks;
 
 namespace MAAL
 {
-    internal class Program
+    // MAAL
+    // Marcels Amazing Assembly Language
+
+    // MAAB
+    // Marcels Amazing Assembly Bytecode
+    class Program
     {
         static void Main(string[] args)
         {
+            if (args.Length != 1)
+            {
+                Console.WriteLine("No Files selected!");
+                goto end;
+            }    
+
+
+
+            end:
+            Console.WriteLine("\n\nEnd.");
+            Console.ReadLine();
         }
     }
 }
