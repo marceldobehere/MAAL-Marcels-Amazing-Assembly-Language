@@ -51,6 +51,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="bin\Debug\MAAL.exe.config" />
+    <None Include="bin\Debug\old test.maal" />
     <None Include="bin\Debug\test.maal" />
   </ItemGroup>
   <ItemGroup>

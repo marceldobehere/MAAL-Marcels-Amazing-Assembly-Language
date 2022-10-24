@@ -1,0 +1,67 @@
+// THIS IS A ONE LINE COMMENT
+
+/*	THIS IS A
+	MULTI LINE COMMENT
+*/
+
+
+
+bool oof = !!true;
+byte tt = ~0;
+
+int exprTest = 2*((5-7) + (13/2) -100 +-5);
+
+int x0;
+
+int x1 = 10+((10)*2); 
+int x2 = 10 - 10;
+int x3 = 10 -10;
+int x4 = -10;
+int x5 = 10-10;
+int x6 = 10-(-10);
+int x7 = -10+10;
+int x8 = 10+-10;
+
+int xT = 0;
+
+xT++;
+xT += 1;
+xT -= -5;
+xT /= 2;
+
+int***** bruh = (ulong)123456;
+
+if_jump (x1 == x2) 0;
+if_jump (x1 != x2) 10;
+
+if_jump ((x1 >> 1) == (x1* 2)) 20;
+
+
+int    a = 10;
+long   b = 1234567;
+float  c = 123.5;
+double d = -24354.22354;
+ulong  e = 134;
+byte   f = 130;
+char   g = 'a';
+char*  h = "This is a test!";
+bool   i = false;
+
+int*   j = &a;
+//     j = ();
+
+char*  k = ((h));
+byte*  test = (byte*)123;
+*test = 5;
+ulong  addr = &test;
+bool   i2 = true;
+
+bool testBool   ;
+
+;;;
+
+char* bruhus = "Test!";
+bruhus = 123;
+*bruhus = 'a';
+bruhus;
+*bruhus;
