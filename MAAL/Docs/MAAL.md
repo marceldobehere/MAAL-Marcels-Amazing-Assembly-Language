@@ -104,10 +104,38 @@ exit
 
 
 ### Jumping
+Jumps somewhere.
+
+Example:
+```
+jump 0;
+```
+```
+loc TEST:
+
+jump TEST;
+```
 
 
 ### Conditionals
+Jumps somewhere, if a condition is met.
 
+Example:
+```
+loc TEST:
+
+if_jump (x == 2) TEST;
+```
+```
+sub TESTSUB:
+    ...
+ret;
+
+
+...
+if_sub (x == 2) TESTSUB;
+...
+```
 
 
 ### Subroutines
@@ -118,10 +146,25 @@ sub NAME:
 ret;
 ```
 ```
-sub
+subroutine NAME;
     ...
     return;
 ```
+
+Example:
+```
+int x;
+sub TEST: // defines Subroutine
+    x = 10;
+ret;
+
+loc MAIN: // Main Entry
+x = 5;
+sub TEST; // executes Subroutine
+// x should be 10
+
+```
+
 
 ### Direct Memory Manipulation
 

@@ -12,8 +12,8 @@ namespace MAAL.Parsing
         {
             public List<List<Token>> Commands = new List<List<Token>>();
             public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
-            public Dictionary<string, LocationToken> Locations = new Dictionary<string, LocationToken>();
-            public Dictionary<string, SubroutineToken> SubRoutines = new Dictionary<string, SubroutineToken>();
+            public Dictionary<string, DefineLocationToken> Locations = new Dictionary<string, DefineLocationToken>();
+            public Dictionary<string, DefineSubroutineToken> Subroutines = new Dictionary<string, DefineSubroutineToken>();
 
             public List<Token> other = new List<Token>();
         }
@@ -50,6 +50,23 @@ namespace MAAL.Parsing
             OperatorToken.OperatorEnum.Not,     // NOT
         };
 
+        private static ExpressionToken ConvToExpressionToken(Token tok)
+        {
+            if (tok is BasicValueToken)
+                return new ExpressionToken(tok as BasicValueToken);
+            else if (tok is VarNameToken)
+                return new ExpressionToken(tok as VarNameToken);
+            else if (tok is ExpressionToken)
+                return (tok as ExpressionToken);
+            else
+                return null;
+        }
+
+        private static bool CouldBeExpessionToken(Token tok)
+        {
+            return tok is ExpressionToken || tok is BasicValueToken || tok is VarNameToken;
+        }
+
         public static ParsedStuff ParseStringAdvanced(List<Token> data, ParsedStuff stuff = null)
         {
             if (stuff == null)
@@ -61,13 +78,13 @@ namespace MAAL.Parsing
             {
                 change = false;
 
-
                 foreach (OperatorToken.OperatorEnum currentOp in OpOrderArr2)
                 {
                     for (int mIndex = 0; mIndex < data.Count; mIndex++)
                     {
                         Token cTok = data[mIndex];
 
+                        #region DEFINE LOCATION AND SUB
                         // loc MAIN:
                         if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             data[mIndex + 1] is GenericNameToken && data[mIndex + 2] is ColonToken)
@@ -77,8 +94,8 @@ namespace MAAL.Parsing
                             if (kWord.Equals("loc") || kWord.Equals("location"))
                             {
                                 string locName = (data[mIndex + 1] as GenericNameToken).Name;
-                                data[mIndex] = new LocationToken(locName);
-                                stuff.Locations.Add(locName, data[mIndex] as LocationToken);
+                                data[mIndex] = new DefineLocationToken(locName);
+                                stuff.Locations.Add(locName, data[mIndex] as DefineLocationToken);
                                 data.RemoveAt(mIndex + 1);
                                 data.RemoveAt(mIndex + 1);
                                 change = true;
@@ -87,8 +104,8 @@ namespace MAAL.Parsing
                             else if (kWord.Equals("sub") || kWord.Equals("subroutine"))
                             {
                                 string locName = (data[mIndex + 1] as GenericNameToken).Name;
-                                data[mIndex] = new SubroutineToken(locName);
-                                stuff.SubRoutines.Add(locName, data[mIndex] as SubroutineToken);
+                                data[mIndex] = new DefineSubroutineToken(locName);
+                                stuff.Subroutines.Add(locName, data[mIndex] as DefineSubroutineToken);
                                 data.RemoveAt(mIndex + 1);
                                 data.RemoveAt(mIndex + 1);
                                 change = true;
@@ -97,7 +114,8 @@ namespace MAAL.Parsing
 
 
                         }
-
+                        #endregion
+                        #region EXIT AND RETURN
                         // exit;
                         if (cTok is KeywordToken && mIndex + 1 < data.Count &&
                             data[mIndex + 1] is EndCommandToken)
@@ -119,9 +137,10 @@ namespace MAAL.Parsing
                                 break;
                             }
                         }
+                        #endregion
 
-
-
+                        
+                        #region POINTERS  INT**
                         // int*
                         if (cTok is TypeToken && mIndex + 1 < data.Count &&
                             data[mIndex + 1] is OperatorToken && (data[mIndex + 1] as OperatorToken).Operator == OperatorToken.OperatorEnum.Star)
@@ -131,7 +150,8 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
+                        #endregion
+                        #region CAST BRACKET
                         // (int)
                         if (cTok is BracketOpenToken && mIndex + 2 < data.Count &&
                             data[mIndex + 2] is BracketCloseToken && data[mIndex + 1] is TypeToken)
@@ -143,11 +163,12 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
+                        #endregion
+                        #region SINGLE VALUE BRACKETS
                         // (5), (x), (test)
                         if (cTok is BracketOpenToken && mIndex + 2 < data.Count &&
                             data[mIndex + 2] is BracketCloseToken &&
-                            (data[mIndex + 1] is BasicValueToken ||
+                            (data[mIndex + 1] is BasicValueToken || data[mIndex + 1] is ExpressionToken ||
                             data[mIndex + 1] is GenericNameToken || data[mIndex + 1] is VarNameToken))
                         {
                             data.RemoveAt(mIndex);
@@ -155,7 +176,10 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
 
+
+                        #region VARIABLE NAMES
                         // x
                         if (cTok is GenericNameToken && (stuff.Variables.ContainsKey((cTok as GenericNameToken).Name)))
                         {
@@ -164,10 +188,108 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
+                        #region LOCATION NAMES
+                        // location test:
+                        // ...
+                        //
+                        // test
+                        if (cTok is GenericNameToken && (stuff.Locations.ContainsKey((cTok as GenericNameToken).Name)))
+                        {
+                            data[mIndex] = new LocationNameToken(stuff.Locations[(cTok as GenericNameToken).Name]);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region SUBROUTINE NAMES
+                        // subroutine testrout:
+                        // ...
+                        // ret;
+                        //
+                        // testrout
+                        if (cTok is GenericNameToken && (stuff.Subroutines.ContainsKey((cTok as GenericNameToken).Name)))
+                        {
+                            data[mIndex] = new SubroutineNameToken(stuff.Subroutines[(cTok as GenericNameToken).Name]);
+                            change = true;
+                            break;
+                        }
+                        #endregion
 
+
+                        #region JUMP
+                        // jump TEST;
+                        if (cTok is KeywordToken && ((cTok as KeywordToken).Keyword.Equals("jump")) && mIndex + 2 < data.Count &&
+                            (data[mIndex + 1] is LocationNameToken || CouldBeExpessionToken(data[mIndex + 1])) && data[mIndex + 2] is EndCommandToken)
+                        {
+                            if (data[mIndex + 1] is LocationNameToken)
+                                data[mIndex] = new FixedJumpToken(data[mIndex + 1] as LocationNameToken);
+                            else
+                                data[mIndex] = new FixedJumpToken(new LocationNameToken(ConvToExpressionToken(data[mIndex + 1])));
+
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region SUB
+                        // sub TEST;
+                        if (cTok is KeywordToken && ((cTok as KeywordToken).Keyword.Equals("sub")) && mIndex + 2 < data.Count &&
+                            data[mIndex + 1] is SubroutineNameToken && data[mIndex + 2] is EndCommandToken)
+                        {
+                            data[mIndex] = new FixedJumpToken(data[mIndex + 1] as SubroutineNameToken);
+
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region IF_JUMP
+                        // if_jump (1==1) 10;
+                        if (cTok is KeywordToken && ((cTok as KeywordToken).Keyword.Equals("if_jump")) && mIndex + 3 < data.Count &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            (data[mIndex + 2] is LocationNameToken || CouldBeExpessionToken(data[mIndex + 2])) &&
+                            data[mIndex + 3] is EndCommandToken)
+                        {
+                            LocationNameToken loc = null;
+                            if (data[mIndex + 2] is LocationNameToken)
+                                loc = data[mIndex + 2] as LocationNameToken;
+                            else
+                                loc = new LocationNameToken(ConvToExpressionToken(data[mIndex + 2]));
+
+                            data[mIndex] = new ConditionalJumpToken(ConvToExpressionToken(data[mIndex + 1]), loc);
+
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region IF_SUB
+                        // if_sub (x==x) bruh;
+                        if (cTok is KeywordToken && ((cTok as KeywordToken).Keyword.Equals("if_sub")) && mIndex + 3 < data.Count &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            (data[mIndex + 2] is SubroutineNameToken) &&
+                            data[mIndex + 3] is EndCommandToken)
+                        {
+                            data[mIndex] = new ConditionalJumpToken(ConvToExpressionToken(data[mIndex + 1]), data[mIndex + 2] as SubroutineNameToken);
+
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
+                        #region DEREF
                         //*test
                         if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken
-                            && (mIndex == 0 || (!(data[mIndex - 1] is BasicValueToken) && !(data[mIndex - 1] is VarNameToken) && !(data[mIndex - 1] is ExpressionToken))))
+                            && (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
                         {
                             VarNameToken tok = data[mIndex + 1] as VarNameToken;
                             tok.DereferenceCount++;
@@ -175,7 +297,8 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
+                        #endregion
+                        #region GET ADDRES
                         //&test
                         if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.BitAnd) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken)
                         {
@@ -187,20 +310,17 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
 
+
+                        #region BOOL-NOT AND BIT-NOT
                         foreach (OperatorToken.OperatorEnum cOp in OpOrderArr1)
                         {
                             //!test
                             if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == cOp) && mIndex + 1 < data.Count &&
-                                (data[mIndex + 1] is VarNameToken || data[mIndex + 1] is BasicValueToken || data[mIndex + 1] is ExpressionToken))
+                                CouldBeExpessionToken(data[mIndex + 1]))
                             {
-                                ExpressionToken tTok = null;
-                                if (data[mIndex + 1] is BasicValueToken)
-                                    tTok = new ExpressionToken((data[mIndex + 1] as BasicValueToken));
-                                else if (data[mIndex + 1] is VarNameToken)
-                                    tTok = new ExpressionToken((data[mIndex + 1] as VarNameToken));
-                                else if (data[mIndex + 1] is ExpressionToken)
-                                    tTok = (data[mIndex + 1] as ExpressionToken);
+                                ExpressionToken tTok = ConvToExpressionToken(data[mIndex + 1]);
 
                                 data[mIndex] = new ExpressionToken(new OperatorToken(cOp), tTok);
                                 data.RemoveAt(mIndex + 1);
@@ -208,7 +328,10 @@ namespace MAAL.Parsing
                                 break;
                             }
                         }
+                        #endregion
 
+
+                        #region NEGATIVE NUMBERS
                         // -5
                         if (cTok is OperatorToken && mIndex + 1 < data.Count &&
                             (mIndex < 1 ||
@@ -234,7 +357,10 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
 
+
+                        #region MULTI VALUE BRACKETS
                         // (1 + 2)
                         if (cTok is BracketOpenToken && mIndex + 3 < data.Count && !(data[mIndex + 1] is BracketCloseToken) && !(data[mIndex + 2] is BracketCloseToken))
                         {
@@ -292,66 +418,48 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
+                        #endregion
+                        #region FREESTANDING EXPRESSION    1 + b
+                        // a (OP) b
+                        //foreach (OperatorToken.OperatorEnum currentOp in OpOrderArr2)
                         {
-                            // a (OP) b
-                            //foreach (OperatorToken.OperatorEnum currentOp in OpOrderArr2)
+                            if (cTok is OperatorToken && mIndex > 0 && mIndex + 1 < data.Count &&
+                                ((cTok as OperatorToken).Operator == currentOp) &&
+                                CouldBeExpessionToken(data[mIndex - 1]) &&
+                                CouldBeExpessionToken(data[mIndex + 1])
+                                )
                             {
-                                if (cTok is OperatorToken && mIndex > 0 && mIndex + 1 < data.Count &&
-                                    ((cTok as OperatorToken).Operator == currentOp) &&
-                                    ((data[mIndex - 1] is BasicValueToken) || (data[mIndex - 1] is VarNameToken) || (data[mIndex - 1] is ExpressionToken)) &&
-                                    ((data[mIndex + 1] is BasicValueToken) || (data[mIndex + 1] is VarNameToken) || (data[mIndex + 1] is ExpressionToken))
-                                    )
-                                {
-                                    ExpressionToken lTok = null;
-                                    if (data[mIndex - 1] is BasicValueToken)
-                                        lTok = new ExpressionToken((data[mIndex - 1] as BasicValueToken));
-                                    else if (data[mIndex - 1] is VarNameToken)
-                                        lTok = new ExpressionToken((data[mIndex - 1] as VarNameToken));
-                                    else if (data[mIndex - 1] is ExpressionToken)
-                                        lTok = (data[mIndex - 1] as ExpressionToken);
+                                ExpressionToken lTok = ConvToExpressionToken(data[mIndex - 1]);
+                                ExpressionToken rTok = ConvToExpressionToken(data[mIndex + 1]);
 
-                                    ExpressionToken rTok = null;
-                                    if (data[mIndex + 1] is BasicValueToken)
-                                        rTok = new ExpressionToken((data[mIndex + 1] as BasicValueToken));
-                                    else if (data[mIndex + 1] is VarNameToken)
-                                        rTok = new ExpressionToken((data[mIndex + 1] as VarNameToken));
-                                    else if (data[mIndex + 1] is ExpressionToken)
-                                        rTok = (data[mIndex + 1] as ExpressionToken);
-
-                                    data[mIndex - 1] = new ExpressionToken(
-                                        lTok,
-                                        new OperatorToken(currentOp),
-                                        rTok
-                                        );
-                                    data.RemoveAt(mIndex);
-                                    data.RemoveAt(mIndex);
-                                    change = true;
-                                    break;
-                                }
+                                data[mIndex - 1] = new ExpressionToken(
+                                    lTok,
+                                    new OperatorToken(currentOp),
+                                    rTok
+                                    );
+                                data.RemoveAt(mIndex);
+                                data.RemoveAt(mIndex);
+                                change = true;
+                                break;
                             }
                         }
-
+                        #endregion
+                        #region CASTING VALUE
                         // (int)10
                         if (cTok is CastTypeToken && mIndex + 1 < data.Count &&
-                            (data[mIndex + 1] is ExpressionToken || data[mIndex + 1] is BasicValueToken || data[mIndex + 1] is VarNameToken))
+                            CouldBeExpessionToken(data[mIndex + 1]))
                         {
-                            ExpressionToken exprTok = null;
-                            if (data[mIndex + 1] is ExpressionToken)
-                                exprTok = data[mIndex + 1] as ExpressionToken;
-                            if (data[mIndex + 1] is BasicValueToken)
-                                exprTok = new ExpressionToken(data[mIndex + 1] as BasicValueToken);
-                            if (data[mIndex + 1] is VarNameToken)
-                                exprTok = new ExpressionToken(data[mIndex + 1] as VarNameToken);
-
+                            ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 1]);
 
                             data[mIndex] = new ExpressionToken(new CastToken(exprTok, (cTok as CastTypeToken).CastType));
                             data.RemoveAt(mIndex + 1);
                             change = true;
                             break;
                         }
+                        #endregion
 
 
+                        #region SIMPLE VAR DEFINITON   INT X;
                         // int x;
                         if (cTok is TypeToken && mIndex + 2 < data.Count &&
                             (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 2] is EndCommandToken))
@@ -369,7 +477,8 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
+                        #endregion
+                        #region ADVANCED VAR DEFINITION      INT X = 0;
                         // int x = 0; int y = a; int z = (1+2);
                         if (cTok is TypeToken && mIndex + 4 < data.Count &&
                             (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 4] is EndCommandToken) &&
@@ -387,9 +496,31 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
+                        #region SET VAR       X = 10;
+                        // x = 10; y = (1+2);
+                        if (cTok is VarNameToken && mIndex + 3 < data.Count &&
+                            (data[mIndex + 3] is EndCommandToken) &&
+                            (data[mIndex + 1] is OperatorToken) && (data[mIndex + 1] as OperatorToken).Operator == OperatorToken.OperatorEnum.Set &&
+                            CouldBeExpessionToken(data[mIndex + 2]))
+                        {
+                            string varName = (cTok as VarNameToken).VarName;
 
+                            ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 2]);
+                            SetVarToken tok = new SetVarToken(cTok as VarNameToken, exprTok);
 
-
+                            data[mIndex] = tok;
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region OLD SET VAR
+                        /*
+                        
+                        #region SET VAR       X = 10;
                         // x = 10; y = (1+2);
                         if (cTok is VarNameToken && mIndex + 3 < data.Count &&
                             (data[mIndex + 3] is EndCommandToken) &&
@@ -419,6 +550,7 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
 
                         // x = a;
                         if (cTok is VarNameToken && mIndex + 3 < data.Count &&
@@ -438,7 +570,10 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        */
+                        #endregion
 
+                        #region INCREMENT AND DECREMENT
                         // x++;
                         if (cTok is OperatorToken && mIndex > 0 && mIndex + 1 < data.Count &&
                             data[mIndex - 1] is VarNameToken && data[mIndex + 1] is EndCommandToken &&
@@ -469,14 +604,13 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-
-
-
+                        #endregion
+                        #region OPEQUALS     Y += 5;
                         // x   +=   5 ;
                         // -1  0    1 2
                         if (cTok is OperatorToken && mIndex > 0 && mIndex + 3 < data.Count &&
                             data[mIndex - 1] is VarNameToken && data[mIndex + 2] is EndCommandToken &&
-                            ((data[mIndex + 1] is BasicValueToken) || (data[mIndex + 1] is ExpressionToken) || (data[mIndex + 1] is VarNameToken)) &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
                             ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.PlusEquals ||
                             (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.MinusEquals ||
                             (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.TimesEquals ||
@@ -499,13 +633,7 @@ namespace MAAL.Parsing
                             else if ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.ModEquals)
                                 cOp = OperatorToken.OperatorEnum.Mod;
 
-                            ExpressionToken exprTok = null;
-                            if (data[mIndex + 1] is ExpressionToken)
-                                exprTok = data[mIndex + 1] as ExpressionToken;
-                            if (data[mIndex + 1] is BasicValueToken)
-                                exprTok = new ExpressionToken(data[mIndex + 1] as BasicValueToken);
-                            if (data[mIndex + 1] is VarNameToken)
-                                exprTok = new ExpressionToken(data[mIndex + 1] as VarNameToken);
+                            ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 1]);
 
                             tok = new SetVarToken((data[mIndex - 1] as VarNameToken),
                             new ExpressionToken(
@@ -523,6 +651,9 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
+                        #endregion
+
+
 
                     }
                     if (change)
@@ -533,6 +664,7 @@ namespace MAAL.Parsing
 
             }
 
+            #region OPTIMIZATIONS
             // EXPRESSION OPTIMIZATIONS
             change = true;
             while (change)
@@ -559,10 +691,27 @@ namespace MAAL.Parsing
                         change = true;
                         break;
                     }
+                    if (cTok is LocationNameToken && (cTok as LocationNameToken).JumpToFixedAddress &&
+                        TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is FixedJumpToken && (cTok as FixedJumpToken).IsLocation && (cTok as FixedJumpToken).Location.JumpToFixedAddress
+                        && TryOptimizeExpressionToken((cTok as FixedJumpToken).Location.Address))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is ConditionalJumpToken && (cTok as ConditionalJumpToken).IsLocation && (cTok as ConditionalJumpToken).Location.JumpToFixedAddress
+                        && TryOptimizeExpressionToken((cTok as ConditionalJumpToken).Location.Address))
+                    {
+                        change = true;
+                        break;
+                    }
                 }
             }
-
-
+            #endregion
 
 
             stuff.other.AddRange(data);
@@ -620,7 +769,7 @@ namespace MAAL.Parsing
                         }
 
 
-                        else 
+                        else
                             throw new Exception("Trying to use BINARY NOT on non-int expression!");
 
                     }

@@ -88,11 +88,12 @@ namespace MAAL.Parsing
     {
         public static List<string> KeywordList = new List<string>()
         {
-            "if_jump", "__TEST__", 
+            "__TEST__", 
             "exit", 
             "loc", "location", 
-            "sub", "subroutine",
-            "ret", "return"
+            "sub", "subroutine", "jump",
+            "ret", "return",
+            "if_jump", "if_sub", 
         };
 
         public string Keyword = "";
@@ -421,29 +422,29 @@ namespace MAAL.Parsing
             => $"<{VarName} = {SetExpression}>";
     }
 
-    public class LocationToken : Token
+    public class DefineLocationToken : Token
     {
         public string LocationName;
 
-        public LocationToken(string name)
+        public DefineLocationToken(string name)
         {
             LocationName = name;
         }
 
         public override string ToString()
-            => $"<LOCATION {LocationName}>";
+            => $"<DEF LOCATION {LocationName}>";
     }
-    public class SubroutineToken : Token
+    public class DefineSubroutineToken : Token
     {
         public string SubroutineName;
 
-        public SubroutineToken(string name)
+        public DefineSubroutineToken(string name)
         {
             SubroutineName = name;
         }
 
         public override string ToString()
-            => $"<SUB {SubroutineName}>";
+            => $"<DEF SUB {SubroutineName}>";
     }
 
     public class ExitToken : Token
@@ -456,4 +457,125 @@ namespace MAAL.Parsing
         public override string ToString()
             => $"<RETURN>";
     }
+
+    public class LocationNameToken : Token
+    {
+        public DefineLocationToken Location;
+        public ExpressionToken Address;
+        public bool JumpToFixedAddress = false;
+
+        public LocationNameToken(DefineLocationToken location)
+        {
+            Location = location;
+            Address = null;
+            JumpToFixedAddress = false;
+        }
+
+        public LocationNameToken(ExpressionToken address)
+        {
+            Location = null;
+            Address = address;
+            JumpToFixedAddress = true;
+        }
+
+        public override string ToString()
+        {
+            if (JumpToFixedAddress)
+                return $"<LOCATION {Address}>";
+            else 
+                return $"<LOCATION {Location.LocationName}>";
+        }
+    }
+    public class SubroutineNameToken : Token
+    {
+        public DefineSubroutineToken Subroutine;
+
+        public SubroutineNameToken(DefineSubroutineToken subroutine)
+        {
+            Subroutine = subroutine;
+        }
+
+        public override string ToString()
+            => $"<SUB {Subroutine.SubroutineName}>";
+    }
+    public class FixedJumpToken : Token
+    {
+        public SubroutineNameToken Subroutine = null;
+        public LocationNameToken Location = null;
+        public bool IsSubRoutine = false;
+        public bool IsLocation = false;
+
+        public FixedJumpToken( SubroutineNameToken sub)
+        {
+            Subroutine = sub;
+            Location = null;
+
+            IsSubRoutine = true;
+            IsLocation = false;
+        }
+
+        public FixedJumpToken(LocationNameToken loc)
+        {
+            Subroutine = null;
+            Location = loc;
+
+            IsSubRoutine = false;
+            IsLocation = true;
+        }
+
+        public override string ToString()
+        {
+            if (IsSubRoutine)
+                return $"<SUB -> {Subroutine}>";
+            else if (IsLocation)
+                return $"<JUMP -> {Location}>";
+            else
+                throw new Exception("UNKNOWN JUMP TYPE!");
+        }
+    }
+    public class ConditionalJumpToken : Token
+    {
+        public ExpressionToken Condition = null;
+        public SubroutineNameToken Subroutine = null;
+        public LocationNameToken Location = null;
+        public bool IsSubRoutine = false;
+        public bool IsLocation = false;
+
+        public ConditionalJumpToken(ExpressionToken expr, SubroutineNameToken sub)
+        {
+            Condition = expr;
+            Subroutine = sub;
+            Location = null;
+
+            IsSubRoutine = true;
+            IsLocation = false;
+        }
+
+        public ConditionalJumpToken(ExpressionToken expr, LocationNameToken loc)
+        {
+            Condition = expr;
+            Subroutine = null;
+            Location = loc;
+
+            IsSubRoutine = false;
+            IsLocation = true;
+        }
+
+        public override string ToString()
+        {
+            if (IsSubRoutine)
+                return $"<IF {Condition} -> {Subroutine}>";
+            else if (IsLocation)
+                return $"<IF {Condition} -> {Location}>";
+            else
+                throw new Exception("UNKNOWN JUMP TYPE!");
+        }
+    }
 }
+
+// 12
+// ==
+//  4 * 4 = 16
+//  6 * 2 = 12
+//  2 * 1 =  2
+//       = 30

@@ -39,8 +39,8 @@ namespace MAAL
             foreach (var token in stuff.Locations.Values)
                 Console.WriteLine($" - {token}");
             Console.WriteLine();
-            Console.WriteLine($"Subroutines: (Count: {stuff.SubRoutines.Count})");
-            foreach (var token in stuff.SubRoutines.Values)
+            Console.WriteLine($"Subroutines: (Count: {stuff.Subroutines.Count})");
+            foreach (var token in stuff.Subroutines.Values)
                 Console.WriteLine($" - {token}");
             Console.WriteLine();
 
@@ -49,12 +49,14 @@ namespace MAAL
             Console.WriteLine($"Tokens: (Count: {stuff.other.Count})");
             foreach (Token token in stuff.other)
             {
-                if (token is LocationToken || token is SubroutineToken)
+                if (token is DefineLocationToken || token is DefineSubroutineToken)
                     Console.WriteLine();
 
                 Console.Write($"{token} ");
 
-                if (token is EndCommandToken || token is SetVarToken || token is LocationToken || token is SubroutineToken || token is ExitToken || token is ReturnToken)
+                if (token is EndCommandToken || token is SetVarToken || token is DefineLocationToken || 
+                    token is DefineSubroutineToken || token is ExitToken || token is ReturnToken ||
+                    token is ConditionalJumpToken || token is FixedJumpToken)
                     Console.WriteLine();
             }
             Console.WriteLine();
