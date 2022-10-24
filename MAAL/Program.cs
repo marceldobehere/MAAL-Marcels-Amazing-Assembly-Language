@@ -41,7 +41,7 @@ namespace MAAL
             foreach (Token token in stuff.other)
             {
                 Console.Write($"{token} ");
-                if (token is EndCommandToken)
+                if (token is EndCommandToken || token is SetVarToken)
                     Console.WriteLine("");
             }
             Console.WriteLine();

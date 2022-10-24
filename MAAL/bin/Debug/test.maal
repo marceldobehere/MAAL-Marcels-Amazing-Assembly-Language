@@ -2,7 +2,8 @@
 
 /*	THIS IS A
 	MULTI LINE COMMENT
-*/	
+*/
+
 
 int x0;
 
@@ -15,14 +16,19 @@ int x6 = 10-(-10);
 int x7 = -10+10;
 int x8 = 10+-10;
 
-x1++;
+int xT = 0;
+
+xT++;
+xT += 1;
+xT -= -5;
+xT /= 2;
 
 int***** bruh = (ulong)123456;
 
 if_jump (x1 == x2) 0;
 if_jump (x1 != x2) 10;
 
-if_jump ((x1 >> 1) && (x1* 2)) 20;
+if_jump ((x1 >> 1) == (x1* 2)) 20;
 
 
 int    a = 10;
@@ -34,7 +40,10 @@ byte   f = 130;
 char   g = 'a';
 char*  h = "This is a test!";
 bool   i = false;
+
 int*   j = &a;
+//     j = ();
+
 char*  k = ((h));
 byte*  test = (byte*)123;
 *test = 5;
@@ -42,3 +51,12 @@ ulong  addr = &test;
 bool   i2 = true;
 
 bool testBool   ;
+
+;;;
+
+char* bruhus = "Test!";
+bruhus = 123;
+*bruhus = 'a';
+bruhus;
+*bruhus;
+

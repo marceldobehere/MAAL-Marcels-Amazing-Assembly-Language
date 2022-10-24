@@ -40,7 +40,12 @@ namespace MAAL.Parsing
             Increment,
             Decrement,
             Unknown,
-            Set
+            Set,
+            PlusEquals,
+            MinusEquals,
+            TimesEquals,
+            DivideEquals,
+            ModEquals,
         }
         public static Dictionary<string, OperatorEnum> OpStringDict = new Dictionary<string, OperatorEnum>
             {
@@ -52,6 +57,8 @@ namespace MAAL.Parsing
             {"&&", OperatorEnum.And},            {"||", OperatorEnum.Or},           {"!",  OperatorEnum.Not},
             {"&",  OperatorEnum.BitAnd},         {"|",  OperatorEnum.BitOr},        {"~",  OperatorEnum.BitNot},
             {">>", OperatorEnum.BitShiftRight},  {"<<", OperatorEnum.BitShiftLeft},
+            {"+=", OperatorEnum.PlusEquals},     {"-=", OperatorEnum.MinusEquals},  {"%=", OperatorEnum.ModEquals},
+            {"*=", OperatorEnum.TimesEquals},    {"/=", OperatorEnum.DivideEquals},
             };
         public static int maxOpLen = 2;
         public static string uniqueOpCharList = "+-*/%<>=&|!~";
@@ -224,25 +231,57 @@ namespace MAAL.Parsing
     {
         public string VarName;
         public TypeToken VarType;
+        public int DereferenceCount = 0;
+        public bool UseAddr = false;
 
         public VarNameToken(string name, TypeToken typeToken)
         {
             VarName = name;
             VarType = typeToken;
+            DereferenceCount = 0;
+            UseAddr = false;
         }
 
         public override string ToString()
-           => $"<VAR: \"{VarName}\" ({VarType})>";
+        {
+            int dif = VarType.PointerCount - DereferenceCount;
+            if (dif < 0)
+                throw new Exception("Too many Dereferences!");
+
+            VarType.PointerCount -= DereferenceCount;
+            string res = String.Empty;
+            if (UseAddr)
+                res = $"<VAR: \"{VarName}\" (&{VarType})>";
+            else
+                res = $"<VAR: \"{VarName}\" ({VarType})>";
+            VarType.PointerCount += DereferenceCount;
+            return res;
+        }
+
     }
-    public class CastToken : Token
+    public class CastTypeToken : Token
     {
         public TypeToken CastType;
 
-        public CastToken(TypeToken castType)
+        public CastTypeToken(TypeToken castType)
             => CastType = castType;
 
         public override string ToString()
             => $"<({CastType})>";
+    }
+    public class CastToken : Token
+    {
+        public TypeToken CastType;
+        public ExpressionToken ToCast;
+
+        public CastToken(ExpressionToken toCast, TypeToken castType)
+        {
+            ToCast = toCast;
+            CastType = castType;
+        }
+
+        public override string ToString()
+            => $"<(({CastType}){ToCast})>";
     }
     public class DeclareVarToken : Token
     {
@@ -264,44 +303,92 @@ namespace MAAL.Parsing
         public OperatorToken Operator = null;
         public ExpressionToken Left = null, Right = null;
         public BasicValueToken ConstValue = null;
+        public VarNameToken Variable = null;
+        public CastToken Cast = null;
         public bool IsConstValue = false;
         public bool OnlyUseLeft = false;
+        public bool IsVariable = false;
+        public bool IsCast = false;
 
         public ExpressionToken(ExpressionToken left, OperatorToken op, ExpressionToken right)
         {
             Left = left;
             Right = right;
             Operator = op;
+            Variable = null;
+            ConstValue = null;
+            Cast = null;
 
             OnlyUseLeft = false;
             IsConstValue = false;
-            ConstValue = null;
+            IsVariable = false;
+            IsCast = false;
         }
         public ExpressionToken(BasicValueToken val)
         {
             Left = null;
             Right = null;
             Operator = null;
+            Variable = null;
+            ConstValue = val;
+            Cast = null;
 
             OnlyUseLeft = false;
             IsConstValue = true;
-            ConstValue = val;
+            IsVariable = false;
+            IsCast = false;
+        }
+        public ExpressionToken(VarNameToken val)
+        {
+            Left = null;
+            Right = null;
+            Operator = null;
+            Variable = val;
+            ConstValue = null;
+            Cast = null;
+
+            OnlyUseLeft = false;
+            IsConstValue = false;
+            IsVariable = true;
+            IsCast = false;
+        }
+        public ExpressionToken(CastToken val)
+        {
+            Left = null;
+            Right = null;
+            Operator = null;
+            Variable = null;
+            ConstValue = null;
+            Cast = val;
+
+            OnlyUseLeft = false;
+            IsConstValue = false;
+            IsVariable = false;
+            IsCast = true;
         }
         public ExpressionToken(OperatorToken op, ExpressionToken left)
         {
             Left = left;
             Right = null;
             Operator = op;
+            Variable = null;
+            ConstValue = null;
+            Cast = null;
 
             OnlyUseLeft = true;
             IsConstValue = false;
-            ConstValue = null;
+            IsVariable = false;
+            IsCast = false;
         }
 
         public override string ToString()
         {
             if (IsConstValue)
                 return $"{ConstValue}";
+            if (IsVariable)
+                return $"{Variable}";
+            if (IsCast)
+                return $"{Cast}";
 
             if (OnlyUseLeft)
                 return $"<{Operator} {Left}>";
@@ -312,16 +399,16 @@ namespace MAAL.Parsing
 
     public class SetVarToken : Token
     {
-        public string VarName;
+        public VarNameToken VarName;
         public ExpressionToken SetExpression;
 
-        public SetVarToken(string varName, ExpressionToken set)
+        public SetVarToken(VarNameToken varName, ExpressionToken set)
         {
             VarName = varName;
             SetExpression = set;
         }
 
         public override string ToString()
-            => $"<\"{VarName}\" = {SetExpression}>";
+            => $"<{VarName} = {SetExpression}>";
     }
 }
