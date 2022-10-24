@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MAAL.Parsing
 {
@@ -25,14 +23,14 @@ namespace MAAL.Parsing
             }
         }
 
-        static OperatorToken.OperatorEnum[] OpOrderArr = new OperatorToken.OperatorEnum[]
+        static OperatorToken.OperatorEnum[] OpOrderArr2 = new OperatorToken.OperatorEnum[]
         { 
             // MATH
-            OperatorToken.OperatorEnum.Star,   OperatorToken.OperatorEnum.Divide, OperatorToken.OperatorEnum.Mod, 
+            OperatorToken.OperatorEnum.Star,   OperatorToken.OperatorEnum.Divide, OperatorToken.OperatorEnum.Mod,
             OperatorToken.OperatorEnum.Plus,   OperatorToken.OperatorEnum.Minus,
             // BIT
             OperatorToken.OperatorEnum.BitShiftLeft, OperatorToken.OperatorEnum.BitShiftRight,
-            OperatorToken.OperatorEnum.BitAnd, OperatorToken.OperatorEnum.BitNot, // BIT NOT
+            OperatorToken.OperatorEnum.BitAnd, OperatorToken.OperatorEnum.BitOr, // BIT NOT
             // BOOL
             OperatorToken.OperatorEnum.And,    OperatorToken.OperatorEnum.Or,     // NOT
             // COMPARISON
@@ -41,11 +39,20 @@ namespace MAAL.Parsing
             OperatorToken.OperatorEnum.GreaterEqual, OperatorToken.OperatorEnum.LessEqual
         };
 
+        static OperatorToken.OperatorEnum[] OpOrderArr1 = new OperatorToken.OperatorEnum[]
+        { 
+            // BIT
+            OperatorToken.OperatorEnum.BitNot, // BIT NOT
+            // BOOL
+            OperatorToken.OperatorEnum.Not,     // NOT
+        };
+
         public static ParsedStuff ParseStringAdvanced(List<Token> data, ParsedStuff stuff = null)
         {
             if (stuff == null)
                 stuff = new ParsedStuff();
 
+            // MAIN PARSE
             bool change = true;
             while (change)
             {
@@ -119,9 +126,33 @@ namespace MAAL.Parsing
                         break;
                     }
 
+                    foreach (OperatorToken.OperatorEnum cOp in OpOrderArr1)
+                    {
+                        //!test
+                        if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == cOp) && mIndex + 1 < data.Count &&
+                            (data[mIndex + 1] is VarNameToken || data[mIndex + 1] is BasicValueToken || data[mIndex + 1] is ExpressionToken))
+                        {
+                            ExpressionToken tTok = null;
+                            if (data[mIndex + 1] is BasicValueToken)
+                                tTok = new ExpressionToken((data[mIndex + 1] as BasicValueToken));
+                            else if (data[mIndex + 1] is VarNameToken)
+                                tTok = new ExpressionToken((data[mIndex + 1] as VarNameToken));
+                            else if (data[mIndex + 1] is ExpressionToken)
+                                tTok = (data[mIndex + 1] as ExpressionToken);
+
+                            data[mIndex] = new ExpressionToken(new OperatorToken(cOp), tTok);
+                            data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                    }
+
                     // -5
                     if (cTok is OperatorToken && mIndex + 1 < data.Count &&
-                        (mIndex < 1 || !(data[mIndex - 1] is BasicValueToken)) &&
+                        (mIndex < 1 || 
+                        (!(data[mIndex - 1] is BasicValueToken) && 
+                        !(data[mIndex - 1] is VarNameToken) && 
+                        !(data[mIndex - 1] is ExpressionToken))) &&
                         (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Minus
                         && data[mIndex + 1] is BasicValueToken && (
                         (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.INT ||
@@ -159,7 +190,7 @@ namespace MAAL.Parsing
                             throw new Exception("Bracket was not closed!");
 
 
-                       // Console.WriteLine("\n\n<START>");
+                        //Console.WriteLine("\n\n<START>");
 
                         //Console.WriteLine("Input Tokens:");
                         List<Token> tempList = new List<Token>();
@@ -189,8 +220,10 @@ namespace MAAL.Parsing
                         //Console.WriteLine("<END>");
                         //Console.ReadLine();
 
+                        if (tempParsedStuff.other.Count != 1)
+                            throw new Exception($"COUNT IS NOT 1");
 
-                        
+
 
                         data[mIndex] = tempParsedStuff.other[0];
 
@@ -200,7 +233,7 @@ namespace MAAL.Parsing
 
                     {
                         // a (OP) b
-                        foreach (OperatorToken.OperatorEnum currentOp in OpOrderArr)
+                        foreach (OperatorToken.OperatorEnum currentOp in OpOrderArr2)
                         {
                             if (cTok is OperatorToken && mIndex > 0 && mIndex + 1 < data.Count &&
                                 ((cTok as OperatorToken).Operator == currentOp) &&
@@ -432,6 +465,34 @@ namespace MAAL.Parsing
                 }
             }
 
+            // EXPRESSION OPTIMIZATIONS
+            change = true;
+            while (change)
+            {
+                change = false;
+                // Set Var
+                // Expression
+                // Cast
+                for (int mIndex = 0; mIndex < data.Count; mIndex++)
+                {
+                    Token cTok = data[mIndex];
+                    if (cTok is SetVarToken && TryOptimizeExpressionToken((cTok as SetVarToken).SetExpression))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is CastToken && TryOptimizeExpressionToken((cTok as CastToken).ToCast))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is ExpressionToken && TryOptimizeExpressionToken(cTok as ExpressionToken))
+                    {
+                        change = true;
+                        break;
+                    }
+                }
+            }
 
 
 
@@ -439,6 +500,1672 @@ namespace MAAL.Parsing
             stuff.other.AddRange(data);
             return stuff;
         }
+
+        public static bool TryOptimizeExpressionToken(ExpressionToken tok)
+        {
+            if (tok.IsVariable)
+                return false;
+            if (tok.IsConstValue)
+                return false;
+            if (tok.IsCast)
+                return TryOptimizeExpressionToken(tok.Cast.ToCast);
+            if (tok.OnlyUseLeft)
+            {
+                if (tok.Operator.Operator == OperatorToken.OperatorEnum.Not)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    if (tok.Left.IsConstValue)
+                    {
+                        if (tok.Left.ConstValue.ValueType != BasicValueToken.BasicValueTypeEnum.BOOL)
+                            throw new Exception("Trying to use NOT on non-bool expression!");
+                        tok.IsConstValue = true;
+                        tok.ConstValue = new BasicValueToken(!tok.Left.ConstValue.Value_Bool);
+                        tok.Left = null;
+                        tok.Operator = null;
+                    }
+                }
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.BitNot)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    if (tok.Left.IsConstValue)
+                    {
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(~tok.Left.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(~tok.Left.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(~tok.Left.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+
+
+                        else 
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+
+                    }
+                }
+            }
+            else
+            {
+                #region PLUS
+                if (tok.Operator.Operator == OperatorToken.OperatorEnum.Plus)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int +
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int +
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int +
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long +
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long +
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long +
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char +
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char +
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char +
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region MINUS
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Minus)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int -
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int -
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int -
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long -
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long -
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long -
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char -
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char -
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char -
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region MULT
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Star)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int *
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int *
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int *
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long *
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long *
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long *
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char *
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char *
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char *
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region DIV
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Divide)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int /
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int /
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int /
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long /
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long /
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long /
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char /
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char /
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char /
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region MOD
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Mod)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int %
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int %
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int %
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long %
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long %
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long %
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char %
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char %
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char %
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+
+                #region EQUALS
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Equal)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int ==
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int ==
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int ==
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int ==
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long ==
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long ==
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long ==
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long ==
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char ==
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char ==
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char ==
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char ==
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region BOOL + BOOL
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.BOOL &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.BOOL)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Bool ==
+                                tok.Right.ConstValue.Value_Bool);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region NOT EQUALS
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.NotEqual)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int !=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int !=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int !=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int !=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long !=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long !=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long !=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long !=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char !=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char !=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char !=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char !=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region BOOL + BOOL
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.BOOL &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.BOOL)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Bool !=
+                                tok.Right.ConstValue.Value_Bool);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+
+                #region GREATER
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Greater)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region LESS
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Greater)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region GREATER EQUAL
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Greater)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int >=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long >=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char >=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+                #region LESS EQUAL
+                else if (tok.Operator.Operator == OperatorToken.OperatorEnum.Greater)
+                {
+                    TryOptimizeExpressionToken(tok.Left);
+                    TryOptimizeExpressionToken(tok.Right);
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    {
+                        #region INT + INT
+                        if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                            tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region INT + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Int <=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region LONG + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region LONG + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Long <=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        #region CHAR + INT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <=
+                                tok.Right.ConstValue.Value_Int);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + LONG
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.LONG)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <=
+                                tok.Right.ConstValue.Value_Long);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + CHAR
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <=
+                                tok.Right.ConstValue.Value_Char);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+                        #region CHAR + FLOAT
+                        else if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR &&
+                                tok.Right.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.FLOAT)
+                        {
+                            tok.IsConstValue = true;
+                            tok.ConstValue = new BasicValueToken(
+                                tok.Left.ConstValue.Value_Char <=
+                                tok.Right.ConstValue.Value_Float);
+                            tok.Left = null;
+                            tok.Operator = null;
+                        }
+                        #endregion
+
+                        else
+                            throw new Exception("Trying to use BINARY NOT on non-int expression!");
+                    }
+                }
+                #endregion
+
+            }
+
+
+
+
+            return false;
+        }
+
 
         //public static ExpressionToken CalcExpressionTokenFromList(List<Token> data)
         //{

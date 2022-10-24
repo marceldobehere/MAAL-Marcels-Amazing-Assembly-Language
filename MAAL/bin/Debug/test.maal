@@ -5,6 +5,11 @@
 */
 
 
+
+bool oof = !!true;
+byte tt = ~0;
+
+
 int x0;
 
 int x1 = 10+((10)*2); 
@@ -59,4 +64,3 @@ bruhus = 123;
 *bruhus = 'a';
 bruhus;
 *bruhus;
-
