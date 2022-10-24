@@ -30,18 +30,32 @@ namespace MAAL
 
 
             Parser.ParsedStuff stuff = Parser.ParseFile(args[0]);
+
             Console.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
-            foreach (DeclareVarToken token in stuff.Variables.Values)
-                Console.WriteLine($"{token} ");
+            foreach (var token in stuff.Variables.Values)
+                Console.WriteLine($" - {token}");
+            Console.WriteLine();
+            Console.WriteLine($"Locations: (Count: {stuff.Locations.Count})");
+            foreach (var token in stuff.Locations.Values)
+                Console.WriteLine($" - {token}");
+            Console.WriteLine();
+            Console.WriteLine($"Subroutines: (Count: {stuff.SubRoutines.Count})");
+            foreach (var token in stuff.SubRoutines.Values)
+                Console.WriteLine($" - {token}");
             Console.WriteLine();
 
+            Console.WriteLine(new String('-', 40)+"\n");
 
             Console.WriteLine($"Tokens: (Count: {stuff.other.Count})");
             foreach (Token token in stuff.other)
             {
+                if (token is LocationToken || token is SubroutineToken)
+                    Console.WriteLine();
+
                 Console.Write($"{token} ");
-                if (token is EndCommandToken || token is SetVarToken)
-                    Console.WriteLine("");
+
+                if (token is EndCommandToken || token is SetVarToken || token is LocationToken || token is SubroutineToken || token is ExitToken || token is ReturnToken)
+                    Console.WriteLine();
             }
             Console.WriteLine();
 

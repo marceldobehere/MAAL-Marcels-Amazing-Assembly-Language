@@ -12,6 +12,9 @@ namespace MAAL.Parsing
         {
             public List<List<Token>> Commands = new List<List<Token>>();
             public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
+            public Dictionary<string, LocationToken> Locations = new Dictionary<string, LocationToken>();
+            public Dictionary<string, SubroutineToken> SubRoutines = new Dictionary<string, SubroutineToken>();
+
             public List<Token> other = new List<Token>();
         }
 
@@ -64,6 +67,60 @@ namespace MAAL.Parsing
                     for (int mIndex = 0; mIndex < data.Count; mIndex++)
                     {
                         Token cTok = data[mIndex];
+
+                        // loc MAIN:
+                        if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            data[mIndex + 1] is GenericNameToken && data[mIndex + 2] is ColonToken)
+                        {
+                            string kWord = (cTok as KeywordToken).Keyword;
+
+                            if (kWord.Equals("loc") || kWord.Equals("location"))
+                            {
+                                string locName = (data[mIndex + 1] as GenericNameToken).Name;
+                                data[mIndex] = new LocationToken(locName);
+                                stuff.Locations.Add(locName, data[mIndex] as LocationToken);
+                                data.RemoveAt(mIndex + 1);
+                                data.RemoveAt(mIndex + 1);
+                                change = true;
+                                break;
+                            }
+                            else if (kWord.Equals("sub") || kWord.Equals("subroutine"))
+                            {
+                                string locName = (data[mIndex + 1] as GenericNameToken).Name;
+                                data[mIndex] = new SubroutineToken(locName);
+                                stuff.SubRoutines.Add(locName, data[mIndex] as SubroutineToken);
+                                data.RemoveAt(mIndex + 1);
+                                data.RemoveAt(mIndex + 1);
+                                change = true;
+                                break;
+                            }
+
+
+                        }
+
+                        // exit;
+                        if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                            data[mIndex + 1] is EndCommandToken)
+                        {
+                            string kWord = (cTok as KeywordToken).Keyword;
+
+                            if (kWord.Equals("exit"))
+                            {
+                                data[mIndex] = new ExitToken();
+                                data.RemoveAt(mIndex + 1);
+                                change = true;
+                                break;
+                            }
+                            else if (kWord.Equals("ret") || kWord.Equals("return"))
+                            {
+                                data[mIndex] = new ReturnToken();
+                                data.RemoveAt(mIndex + 1);
+                                change = true;
+                                break;
+                            }
+                        }
+
+
 
                         // int*
                         if (cTok is TypeToken && mIndex + 1 < data.Count &&
@@ -2251,6 +2308,13 @@ namespace MAAL.Parsing
                     if (tempString != "")
                         tokens.Add(ConvertStringToToken(tempString));
                     tokens.Add(new EndCommandToken());
+                    tempString = "";
+                }
+                else if (tChar == ':')
+                {
+                    if (tempString != "")
+                        tokens.Add(ConvertStringToToken(tempString));
+                    tokens.Add(new ColonToken());
                     tempString = "";
                 }
                 else if (tChar == '"')

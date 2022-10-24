@@ -14,6 +14,11 @@ namespace MAAL.Parsing
         public override string ToString()
             => $"<;>";
     }
+    public class ColonToken : Token
+    {
+        public override string ToString()
+            => $"<:>";
+    }
     public class OperatorToken : Token
     {
         public enum OperatorEnum
@@ -83,7 +88,11 @@ namespace MAAL.Parsing
     {
         public static List<string> KeywordList = new List<string>()
         {
-            "if_jump", "__TEST__"
+            "if_jump", "__TEST__", 
+            "exit", 
+            "loc", "location", 
+            "sub", "subroutine",
+            "ret", "return"
         };
 
         public string Keyword = "";
@@ -410,5 +419,41 @@ namespace MAAL.Parsing
 
         public override string ToString()
             => $"<{VarName} = {SetExpression}>";
+    }
+
+    public class LocationToken : Token
+    {
+        public string LocationName;
+
+        public LocationToken(string name)
+        {
+            LocationName = name;
+        }
+
+        public override string ToString()
+            => $"<LOCATION {LocationName}>";
+    }
+    public class SubroutineToken : Token
+    {
+        public string SubroutineName;
+
+        public SubroutineToken(string name)
+        {
+            SubroutineName = name;
+        }
+
+        public override string ToString()
+            => $"<SUB {SubroutineName}>";
+    }
+
+    public class ExitToken : Token
+    {
+        public override string ToString()
+            => $"<EXIT>";
+    }
+    public class ReturnToken : Token
+    {
+        public override string ToString()
+            => $"<RETURN>";
     }
 }
