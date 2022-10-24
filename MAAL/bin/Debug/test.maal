@@ -9,6 +9,7 @@
 bool oof = !!true;
 byte tt = ~0;
 
+int exprTest = 2*((5-7) + (13/2) -100 +-5);
 
 int x0;
 
