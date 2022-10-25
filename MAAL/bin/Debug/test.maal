@@ -1,5 +1,5 @@
 
-((ulong*)1000) = (long)100;
+((ulong)1000) = (long)100;
 
 
 loc MAIN:

@@ -26,6 +26,7 @@ namespace MAAL.Parsing
             }
         }
 
+        #region Operators and Orders
         static OperatorToken.OperatorEnum[] OpOrderArr2 = new OperatorToken.OperatorEnum[]
         { 
             // MATH
@@ -49,7 +50,9 @@ namespace MAAL.Parsing
             // BOOL
             OperatorToken.OperatorEnum.Not,     // NOT
         };
+        #endregion
 
+        #region Expression Stuff
         private static ExpressionToken ConvToExpressionToken(Token tok)
         {
             if (tok is BasicValueToken)
@@ -66,6 +69,7 @@ namespace MAAL.Parsing
         {
             return tok is ExpressionToken || tok is BasicValueToken || tok is VarNameToken;
         }
+        #endregion
 
         public static ParsedStuff ParseStringAdvanced(List<Token> data, ParsedStuff stuff = null)
         {
@@ -700,6 +704,11 @@ namespace MAAL.Parsing
                         change = true;
                         break;
                     }
+                    if (cTok is SetVarToken && (cTok as SetVarToken).SetLocation && ParserHelpers.TryOptimizeExpressionToken((cTok as SetVarToken).VarLocation))
+                    {
+                        change = true;
+                        break;
+                    }
                     if (cTok is CastToken && ParserHelpers.TryOptimizeExpressionToken((cTok as CastToken).ToCast))
                     {
                         change = true;
@@ -737,36 +746,7 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
             return stuff;
         }
 
-
-
-        //public static ExpressionToken CalcExpressionTokenFromList(List<Token> data)
-        //{
-        //    List<Token> cTokList = new List<Token>();
-        //    cTokList.AddRange(data);
-
-        //    Console.WriteLine("\n\n\n<DEBUG START>");
-        //    Console.WriteLine("Items: ");
-        //    foreach (Token tok in cTokList)
-        //        Console.WriteLine($" - {tok}");
-
-
-        //    Console.WriteLine("<END>");
-        //    Console.ReadLine();
-
-        //    while (cTokList.Count > 1)
-        //    {
-
-        //    }
-
-        //    if (cTokList.Count != 1)
-        //        throw new Exception("Parsing Brackets into Expression Toket failed!");
-        //    if (!(cTokList[0] is ExpressionToken))
-        //        throw new Exception("Could not Parse brackets into ExpressionToken!");
-        //    return (cTokList[0] as ExpressionToken);
-        //}
-
-
-
+        #region Convert String To Token
         public static Token ConvertStringToToken(string str)
         {
             if (TypeToken.IsType(str))
@@ -788,8 +768,9 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
 
             return new GenericNameToken(str);
         }
+        #endregion
 
-
+        #region BASIC PARSER / LEXER
         public static List<Token> ParseStringBasic(string data)
         {
             List<Token> tokens = new List<Token>();
@@ -925,5 +906,6 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
 
             return tokens;
         }
+        #endregion
     }
 }
