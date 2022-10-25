@@ -10,12 +10,11 @@ namespace MAAL.Parsing
     {
         public class ParsedStuff
         {
-            public List<List<Token>> Commands = new List<List<Token>>();
             public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
             public Dictionary<string, DefineLocationToken> Locations = new Dictionary<string, DefineLocationToken>();
             public Dictionary<string, DefineSubroutineToken> Subroutines = new Dictionary<string, DefineSubroutineToken>();
 
-            public List<Token> other = new List<Token>();
+            public List<Token> parsedTokens = new List<Token>();
         }
 
         public static ParsedStuff ParseFile(string filename)
@@ -401,8 +400,8 @@ namespace MAAL.Parsing
                             ParseStringAdvanced(tempList, tempParsedStuff);
 
 
-                            if (tempParsedStuff.other[0] is TypeToken)
-                                tempParsedStuff.other[0] = new CastTypeToken(tempParsedStuff.other[0] as TypeToken);
+                            if (tempParsedStuff.parsedTokens[0] is TypeToken)
+                                tempParsedStuff.parsedTokens[0] = new CastTypeToken(tempParsedStuff.parsedTokens[0] as TypeToken);
 
                             //Console.WriteLine("Token Result:");
                             //foreach (Token token in tempParsedStuff.other)
@@ -412,12 +411,12 @@ namespace MAAL.Parsing
                             //Console.WriteLine("<END>");
                             //Console.ReadLine();
 
-                            if (tempParsedStuff.other.Count != 1)
+                            if (tempParsedStuff.parsedTokens.Count != 1)
                                 throw new Exception($"COUNT IS NOT 1");
 
 
 
-                            data[mIndex] = tempParsedStuff.other[0];
+                            data[mIndex] = tempParsedStuff.parsedTokens[0];
 
                             change = true;
                             break;
@@ -742,7 +741,7 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
             #endregion
 
 
-            stuff.other.AddRange(data);
+            stuff.parsedTokens.AddRange(data);
             return stuff;
         }
 

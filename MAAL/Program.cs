@@ -6,6 +6,7 @@ using System.Text;
 namespace MAAL
 {
     using Parsing;
+    using Compiling;
     using System.IO;
 
     // MAAL
@@ -29,8 +30,13 @@ namespace MAAL
             }
 
 
+            Console.WriteLine("> Parsing file...");
             Parser.ParsedStuff stuff = Parser.ParseFile(args[0]);
+            Console.WriteLine("> Parsing done!");
 
+
+            Console.WriteLine();
+            Console.WriteLine();
             Console.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
             foreach (var token in stuff.Variables.Values)
                 Console.WriteLine($" - {token}");
@@ -46,8 +52,8 @@ namespace MAAL
 
             Console.WriteLine(new String('-', 40)+"\n");
 
-            Console.WriteLine($"Tokens: (Count: {stuff.other.Count})");
-            foreach (Token token in stuff.other)
+            Console.WriteLine($"Tokens: (Count: {stuff.parsedTokens.Count})");
+            foreach (Token token in stuff.parsedTokens)
             {
                 if (token is DefineLocationToken || token is DefineSubroutineToken)
                     Console.WriteLine();
@@ -60,6 +66,23 @@ namespace MAAL
                     Console.WriteLine();
             }
             Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("> Compiling file...");
+            List<byte> compiledData = Compiler.Compile(stuff);
+            Console.WriteLine("> Compiling done!");
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("Compiled Data:");
+            foreach (var data in compiledData)
+                Console.WriteLine($"{data} ({(char)data})");
+
+            Console.WriteLine();
+            Console.WriteLine();
+
 
 
 

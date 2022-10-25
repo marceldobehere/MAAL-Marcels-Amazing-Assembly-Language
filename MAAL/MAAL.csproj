@@ -43,16 +43,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compiling\Compiler.cs" />
     <Compile Include="Parsing\Parser.cs" />
     <Compile Include="Parsing\ParserHelpers.cs" />
     <Compile Include="Parsing\Token.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tools\BEC.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="bin\Debug\MAAL.exe.config" />
     <None Include="bin\Debug\old test.maal" />
+    <None Include="bin\Debug\old test 2.maal" />
     <None Include="bin\Debug\test.maal" />
     <None Include="Docs\MAAB.md" />
     <None Include="Docs\MAAL.md" />

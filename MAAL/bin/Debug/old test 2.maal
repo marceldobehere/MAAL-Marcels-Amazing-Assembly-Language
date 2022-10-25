@@ -1,0 +1,41 @@
+
+((ulong)1000) = (long)100;
+
+
+loc MAIN:
+	int x = 5;
+	int test = (5 * 2 + (x*7));
+	long bruh = (long)(10.5 + 5);
+
+	sub TestRoutine;
+
+	jump (256+1)-2;
+exit;
+
+
+sub TestRoutine:
+	int x0 = 0;
+
+	if_jump (x0 == 0) Below1;
+	jump Below2;
+	loc Below1:
+		x0 = 10;
+	return;
+	loc Below2:
+		x0 = 999;
+	return;
+
+
+subroutine TestRoutine2:
+	int x1 = 0;
+ret;
+
+
+location TEST:
+	int x2 = 0;
+	if_sub (1 == 1) TestRoutine2;
+exit;
+
+
+
+

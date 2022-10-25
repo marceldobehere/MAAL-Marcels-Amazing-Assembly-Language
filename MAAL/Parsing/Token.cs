@@ -116,7 +116,11 @@ namespace MAAL.Parsing
     {
         public static List<string> TypeList = new List<string>()
         {
-            "int", "long", "float", "double", "ulong", "byte", "char", "bool"
+            "int", "long", "short", "float", "double", "ulong", "byte", "char", "bool"
+        };
+        public static List<int> TypeSizeList = new List<int>()
+        {
+            4, 8, 2, 4, 8, 8, 1, 1, 1
         };
 
         public string BaseType = String.Empty;
