@@ -1,10 +1,11 @@
 
+((ulong*)1000) = (long)100;
 
 
 loc MAIN:
 	int x = 5;
 	int test = (5 * 2 + (x*7));
-	long bruh = (long)10.5;
+	long bruh = (long)(10.5 + 5);
 
 	sub TestRoutine;
 

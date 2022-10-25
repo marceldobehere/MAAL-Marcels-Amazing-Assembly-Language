@@ -167,12 +167,14 @@ sub TEST; // executes Subroutine
 
 
 ### Direct Memory Manipulation
-
+You can directly manipulate the memory by doing.
+```
+((ulong*)1000) = 100;
+```
 
 
 
 ### Dynamic Memory Stuff
-
 
 
 

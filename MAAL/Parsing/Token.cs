@@ -136,7 +136,10 @@ namespace MAAL.Parsing
         }
 
         public override string ToString()
-            => $"<T {BaseType}{new String('*', PointerCount)}>";
+            => $"<T {ToPureString()}>";
+
+        public string ToPureString()
+            => $"{BaseType}{new String('*', PointerCount)}";
     }
 
     public class BasicValueToken : Token
@@ -150,6 +153,17 @@ namespace MAAL.Parsing
             CHAR_POINTER,
             BOOL
         }
+
+        public static Dictionary<BasicValueTypeEnum, string> TypeEnumToString = new Dictionary<BasicValueTypeEnum, string>()
+        {
+            {BasicValueTypeEnum.INT, "int"},
+            {BasicValueTypeEnum.LONG, "long"},
+            {BasicValueTypeEnum.FLOAT, "float"},
+            {BasicValueTypeEnum.CHAR, "char"},
+            {BasicValueTypeEnum.CHAR_POINTER, "char*"},
+            {BasicValueTypeEnum.BOOL, "bool"}
+        };
+
 
         public BasicValueTypeEnum ValueType;
 
@@ -410,16 +424,35 @@ namespace MAAL.Parsing
     public class SetVarToken : Token
     {
         public VarNameToken VarName;
+        public ExpressionToken VarLocation;
+        public bool SetLocation;
         public ExpressionToken SetExpression;
 
         public SetVarToken(VarNameToken varName, ExpressionToken set)
         {
             VarName = varName;
             SetExpression = set;
+
+            VarLocation = null;
+            SetLocation = false;
+        }
+
+        public SetVarToken(ExpressionToken loc, ExpressionToken set)
+        {
+            VarName = null;
+            SetExpression = set;
+
+            VarLocation = loc;
+            SetLocation = true;
         }
 
         public override string ToString()
-            => $"<{VarName} = {SetExpression}>";
+        {
+            if (SetLocation)
+                return $"<[{VarLocation}] = {SetExpression}>";
+            else
+                return $"<{VarName} = {SetExpression}>";
+        }
     }
 
     public class DefineLocationToken : Token
