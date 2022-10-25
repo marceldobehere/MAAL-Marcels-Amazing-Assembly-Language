@@ -88,12 +88,12 @@ namespace MAAL.Parsing
     {
         public static List<string> KeywordList = new List<string>()
         {
-            "__TEST__", 
-            "exit", 
-            "loc", "location", 
+            "__TEST__",
+            "exit",
+            "loc", "location",
             "sub", "subroutine", "jump",
             "ret", "return",
-            "if_jump", "if_sub", 
+            "if_jump", "if_sub",
         };
 
         public string Keyword = "";
@@ -116,11 +116,13 @@ namespace MAAL.Parsing
     {
         public static List<string> TypeList = new List<string>()
         {
-            "int", "long", "short", "float", "double", "ulong", "byte", "char", "bool"
+            "int", "short", "long", "float", "char", "bool",
+            "uint", "ushort", "ulong", "double"
         };
         public static List<int> TypeSizeList = new List<int>()
         {
-            4, 8, 2, 4, 8, 8, 1, 1, 1
+            4, 2, 8, 4, 1, 1,
+            4, 2, 8, 8
         };
 
         public string BaseType = String.Empty;
@@ -151,8 +153,13 @@ namespace MAAL.Parsing
         public enum BasicValueTypeEnum
         {
             INT,
+            UINT,
+            SHORT,
+            USHORT,
             LONG,
+            ULONG,
             FLOAT,
+            DOUBLE,
             CHAR,
             CHAR_POINTER,
             BOOL
@@ -161,8 +168,13 @@ namespace MAAL.Parsing
         public static Dictionary<BasicValueTypeEnum, string> TypeEnumToString = new Dictionary<BasicValueTypeEnum, string>()
         {
             {BasicValueTypeEnum.INT, "int"},
+            {BasicValueTypeEnum.UINT, "uint"},
+            {BasicValueTypeEnum.SHORT, "short"},
+            {BasicValueTypeEnum.USHORT, "ushort"},
             {BasicValueTypeEnum.LONG, "long"},
+            {BasicValueTypeEnum.ULONG, "ulong"},
             {BasicValueTypeEnum.FLOAT, "float"},
+            {BasicValueTypeEnum.DOUBLE, "double"},
             {BasicValueTypeEnum.CHAR, "char"},
             {BasicValueTypeEnum.CHAR_POINTER, "char*"},
             {BasicValueTypeEnum.BOOL, "bool"}
@@ -172,8 +184,13 @@ namespace MAAL.Parsing
         public BasicValueTypeEnum ValueType;
 
         public int Value_Int = 0;
+        public uint Value_UInt = 0;
+        public short Value_Short = 0;
+        public ushort Value_UShort = 0;
         public long Value_Long = 0;
+        public ulong Value_ULong = 0;
         public float Value_Float = 0;
+        public double Value_Double = 0;
         public char Value_Char = (char)0;
         public string Value_CharPointer = string.Empty;
         public bool Value_Bool = false;
@@ -183,15 +200,40 @@ namespace MAAL.Parsing
             Value_Int = val;
             ValueType = BasicValueTypeEnum.INT;
         }
+        public BasicValueToken(uint val)
+        {
+            Value_UInt = val;
+            ValueType = BasicValueTypeEnum.UINT;
+        }
+        public BasicValueToken(short val)
+        {
+            Value_Short = val;
+            ValueType = BasicValueTypeEnum.SHORT;
+        }
+        public BasicValueToken(ushort val)
+        {
+            Value_UShort = val;
+            ValueType = BasicValueTypeEnum.USHORT;
+        }
         public BasicValueToken(long val)
         {
             Value_Long = val;
             ValueType = BasicValueTypeEnum.LONG;
         }
+        public BasicValueToken(ulong val)
+        {
+            Value_ULong = val;
+            ValueType = BasicValueTypeEnum.ULONG;
+        }
         public BasicValueToken(float val)
         {
             Value_Float = val;
             ValueType = BasicValueTypeEnum.FLOAT;
+        }
+        public BasicValueToken(double val)
+        {
+            Value_Double = val;
+            ValueType = BasicValueTypeEnum.DOUBLE;
         }
         public BasicValueToken(char val)
         {
@@ -215,17 +257,27 @@ namespace MAAL.Parsing
             switch (ValueType)
             {
                 case BasicValueTypeEnum.INT:
-                    return $"<VI {Value_Int}>";
+                    return $"<VI  {Value_Int}>";
+                case BasicValueTypeEnum.UINT:
+                    return $"<VUI {Value_UInt}>";
+                case BasicValueTypeEnum.SHORT:
+                    return $"<VS  {Value_Short}>";
+                case BasicValueTypeEnum.USHORT:
+                    return $"<VUS {Value_UShort}>";
                 case BasicValueTypeEnum.LONG:
-                    return $"<VL {Value_Long}>";
+                    return $"<VL  {Value_Long}>";
+                case BasicValueTypeEnum.ULONG:
+                    return $"<VUL {Value_ULong}>";
                 case BasicValueTypeEnum.FLOAT:
-                    return $"<VF {Value_Float.ToString(CultureInfo.InvariantCulture)}>";
+                    return $"<VF  {Value_Float.ToString(CultureInfo.InvariantCulture)}>";
+                case BasicValueTypeEnum.DOUBLE:
+                    return $"<VD  {Value_Double.ToString(CultureInfo.InvariantCulture)}>";
                 case BasicValueTypeEnum.CHAR:
-                    return $"<VC '{Value_Char}'>";
+                    return $"<VC  '{Value_Char}'>";
                 case BasicValueTypeEnum.CHAR_POINTER:
-                    return $"<VS \"{Value_CharPointer}\">";
+                    return $"<VC* \"{Value_CharPointer}\">";
                 case BasicValueTypeEnum.BOOL:
-                    return $"<VB {Value_Bool}>";
+                    return $"<VB  {Value_Bool}>";
 
                 default:
                     return "<V?>";
@@ -519,7 +571,7 @@ namespace MAAL.Parsing
         {
             if (JumpToFixedAddress)
                 return $"<LOCATION {Address}>";
-            else 
+            else
                 return $"<LOCATION {Location.LocationName}>";
         }
     }
@@ -542,7 +594,7 @@ namespace MAAL.Parsing
         public bool IsSubRoutine = false;
         public bool IsLocation = false;
 
-        public FixedJumpToken( SubroutineNameToken sub)
+        public FixedJumpToken(SubroutineNameToken sub)
         {
             Subroutine = sub;
             Location = null;

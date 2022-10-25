@@ -575,7 +575,7 @@ namespace MAAL.Parsing
                         }
                         */
                         #endregion
-                        #region SET MEM DIRECTLY    ((ulong*)10) = 5;
+                        #region SET MEM DIRECTLY    ((ulong)10) = 5;
                         // 10 = 5;
                         if ((cTok is OperatorToken) && (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Set &&
                             mIndex + 2 < data.Count && mIndex > 0 &&

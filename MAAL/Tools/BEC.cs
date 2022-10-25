@@ -8,7 +8,7 @@ namespace MAAL.Tools
 {
     public class BEC //ByteEndianConverter
     {
-        public static bool needToSwitch = !BitConverter.IsLittleEndian;
+        public static bool needToSwitch = BitConverter.IsLittleEndian;
 
         static byte[] SwitchByteArr(byte[] data)
         {
@@ -50,21 +50,57 @@ namespace MAAL.Tools
             return BitConverter.ToUInt16(arr, 0);
         }
 
-        public static byte[] Uint64ToByteArr(ulong val)
+        public static byte[] UInt64ToByteArr(ulong val)
         {
             byte[] arr = BitConverter.GetBytes(val);
             if (needToSwitch)
                 arr = SwitchByteArr(arr);
             return arr;
         }
-        public static byte[] Uint32ToByteArr(uint val)
+        public static byte[] UInt32ToByteArr(uint val)
         {
             byte[] arr = BitConverter.GetBytes(val);
             if (needToSwitch)
                 arr = SwitchByteArr(arr);
             return arr;
         }
-        public static byte[] Uint16ToByteArr(ushort val)
+        public static byte[] UInt16ToByteArr(ushort val)
+        {
+            byte[] arr = BitConverter.GetBytes(val);
+            if (needToSwitch)
+                arr = SwitchByteArr(arr);
+            return arr;
+        }
+
+        public static byte[] Int64ToByteArr(long val)
+        {
+            byte[] arr = BitConverter.GetBytes(val);
+            if (needToSwitch)
+                arr = SwitchByteArr(arr);
+            return arr;
+        }
+        public static byte[] Int32ToByteArr(int val)
+        {
+            byte[] arr = BitConverter.GetBytes(val);
+            if (needToSwitch)
+                arr = SwitchByteArr(arr);
+            return arr;
+        }
+        public static byte[] Int16ToByteArr(short val)
+        {
+            byte[] arr = BitConverter.GetBytes(val);
+            if (needToSwitch)
+                arr = SwitchByteArr(arr);
+            return arr;
+        }
+        public static byte[] FloatToByteArr(float val)
+        {
+            byte[] arr = BitConverter.GetBytes(val);
+            if (needToSwitch)
+                arr = SwitchByteArr(arr);
+            return arr;
+        }
+        public static byte[] DoubleToByteArr(double val)
         {
             byte[] arr = BitConverter.GetBytes(val);
             if (needToSwitch)

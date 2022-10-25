@@ -169,18 +169,18 @@ sub TEST; // executes Subroutine
 ### Direct Memory Manipulation
 You can directly manipulate the memory by doing.
 ```
-((ulong*)1000) = 100;
+((ulong)1000) = 100;
 ```
 
 
 
 ### Dynamic Memory Stuff
+none yet
 
 
 
-
-### Systemcalls
-
+### Syscalls
+none yet
 
 
 

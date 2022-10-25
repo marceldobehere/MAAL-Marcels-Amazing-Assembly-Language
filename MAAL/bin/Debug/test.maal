@@ -1,10 +1,20 @@
 
 //((ulong)1000) = (long)100;
 
-
 loc MAIN:
 	int x = 10;
-	double t = 20.5;
+	double br = (double)10.5;
+	long l = (long)20;
+
+
+	(ulong)5 = 10;
+	// This basically sets 
+	// the data at address 5 
+	// to 10 which is 4 bytes
+	// (00 00 00 10)
+
+
+	//double t = (double)20.5;
 	exit;
 
 
