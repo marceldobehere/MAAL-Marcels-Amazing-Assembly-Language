@@ -34,18 +34,6 @@ namespace MAAL.Compiling
 
         public static List<byte> Compile(Parser.ParsedStuff stuff)
         {
-            //List<ReservedMemoryChunk> reservedMemory = new List<ReservedMemoryChunk>();
-
-            //foreach (var usedVar in stuff.Variables)
-            //    reservedMemory.Add(new ReservedMemoryChunk(usedVar.Value));
-
-            //// Add reserverd Memory for const char*
-
-            //Console.WriteLine("Used Memory:");
-            //foreach (var usedVar in reservedMemory)
-            //    Console.WriteLine($" - {usedVar.Amount} Bytes");
-            //Console.WriteLine();
-
 
 
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
@@ -54,7 +42,23 @@ namespace MAAL.Compiling
             foreach (var usedVar in stuff.Variables)
                 almostCompiledCode.Add(new AlmostByte(usedVar.Value));//reservedMemory.Add(new ReservedMemoryChunk(usedVar.Value));
 
+            /*
+            HOW TO DO EXPRESSIONS
 
+            Prepare two vars for both sides (addr constant)
+            Prepare one var for result      (addr constant)
+
+            IF left one is expression:
+                Do that Expression first
+                Copy result into left side argument
+
+            IF right one is expression:
+                Do that Expression first
+                Copy result into right side argument
+
+            Actually do expression
+            Save into result
+            */
 
 
             foreach (var cTok in stuff.parsedTokens)
@@ -108,6 +112,31 @@ namespace MAAL.Compiling
 
                     if (valData.Length != 8)
                         throw new Exception($"CANNOT USE NON 8 BYTE VALUE AS ADDRESS! (AMOUNT OF BYTES: {valData.Length}) {(cTok as SetVarToken).VarLocation.ConstValue}");
+                }
+                #endregion
+                #region SET VAR TO VAR
+                else if (cTok is SetVarToken && !(cTok as SetVarToken).SetLocation &&
+                    (cTok as SetVarToken).SetExpression.IsVariable)
+                {
+                    //COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM
+
+                    int varSize1 = GetSizeFromVarToken((cTok as SetVarToken).VarName);
+                    int varSize2 = GetSizeFromVarToken((cTok as SetVarToken).SetExpression.Variable);
+
+
+
+                    //BasicValueToken val = (cTok as SetVarToken).SetExpression.ConstValue;
+                    //[2][Size of Value in bytes (1 Byte)][Address (8 Bytes)][Fixed Value (x Bytes)]
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
+                    // SIZE OF TYPE
+                    almostCompiledCode.Add(new AlmostByte((byte)varSize2));
+                    // FROM
+                    almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).SetExpression.Variable));
+                    // TO
+                    almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).VarName));
+
+                    if (varSize1 != varSize2)
+                        throw new Exception($"CANNOT WRITE {varSize2} BYTES INTO INTO {varSize1} BYTES! ({cTok})");
                 }
                 #endregion
 

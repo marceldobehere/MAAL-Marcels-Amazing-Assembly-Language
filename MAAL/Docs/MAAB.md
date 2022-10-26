@@ -11,6 +11,21 @@ instructions look like this
 [OPCODE (== 1 BYTE)][ARG1 (>= 1 BYTE)][ARG2 (>= 1 BYTE)]...
 ```
 
+### Datatypes and their numbers
+| Type     | Number | Size |
+|----------|--------|------|
+|int       |       0|     4|
+|uint      |       1|     4|
+|short     |       2|     2|
+|ushort    |       3|     2|
+|long      |       4|     8|
+|ulong     |       5|     8|
+|char      |       6|     1|
+|bool      |       7|     1|
+|float     |       8|     4|
+|double    |       9|     8|
+
+
 
 ## Instructions
 
@@ -71,7 +86,7 @@ Example
 
 #### Copy variable data from variable memory address to another variable memory address
 ```
-[5][Adress of Size (8 Byts)][Address of Address From (8 Bytes)][Address of Address To (8 Bytes)]
+[5][Adress of Size (8 Bytes)][Address of Address From (8 Bytes)][Address of Address To (8 Bytes)]
 ```
 Example
 ```
@@ -100,6 +115,43 @@ Example
 
 ### Math and Operations
 
+```
+[10][Operation number (1 Byte)][Datatype number of Operand 1 (1 Byte)][Operand 1 (x Bytes)][Datatype number of Operand 2 (1 Byte)][Operand 2 (y Bytes)]
+```
+
+#### List of Operators with their numbers:
+| Operator | Number | Argument Count | Constraints |
+|----------|--------|----------------|-------------|
+|`+`      |       0|               2|             |
+|`-`      |       1|               2|             |
+|`*`      |       2|               2|             |
+|`/`      |       3|               2|             |
+|`%`      |       4|               2|             |
+|`==`     |       5|               2|             |
+|`!=`     |       6|               2|             |
+|`>`      |       7|               2|             |
+|`>=`     |       8|               2|             |
+|`<`      |       9|               2|             |
+|`<=`     |      10|               2|             |
+|`&&`     |      11|               2|Only works with bools|
+|`||`     |      12|               2|Only works with bools|
+|`!`      |      13|               1|Only works with bools|
+|`&`      |      14|               2|             |
+|`|`      |      15|               2|             |
+|`~`      |      16|               1|             |
+|`<<`     |      17|               2|             |
+|`>>`     |      18|               2|             |
+
+
+Implementing all those like 1,6k unique choices will be a pain but yes
+
+
+
+#### `+`
+a
+
+### Casting Datatypes
+Death 2 - Electric Boogaloo
 
 ### Jumping
 

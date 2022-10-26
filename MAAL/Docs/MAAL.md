@@ -4,6 +4,9 @@ Here are the Docs to MAAL (Marcels Amazing Assembly Language)
 
 ### Datatypes:
 *	INT
+*   UINT
+*   SHORT
+*   USHORT
 *	LONG
 *	ULONG
 *	BYTE
