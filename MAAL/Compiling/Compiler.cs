@@ -731,7 +731,9 @@ namespace MAAL.Compiling
         {
             Console.WriteLine();
 
+#pragma warning disable IDE0028 // Initialisierung der Sammlung vereinfachen
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
+#pragma warning restore IDE0028 // Initialisierung der Sammlung vereinfachen
 
 
             almostCompiledCode.Add(new AlmostByte("1 BYTE RESERVED BC NO NULL POINTERS HERE"));

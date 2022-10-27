@@ -186,7 +186,12 @@ none yet
 none yet
 
 
-
+### Including other files
+You can include files by using
+```
+#include "FILE_PATH_GOES_HERE"
+```
+(It will basically copy paste the given file into that area)
 
 
 

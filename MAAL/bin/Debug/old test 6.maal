@@ -1,0 +1,42 @@
+int a = 5;
+int b = 4;
+
+int t = a;
+loc LoopStart:
+	if_jump (b <= 1) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	exit;
+
+
+
+// TODO:
+// ADD SYSCALLS
+// GET STRINGS WORKING IN COMPILER
+// ADD POINTER MATH
+// ADD DEREF STUFF
+
+
+
+
+/*
+
+if (x)
+{
+	...
+	...
+}
+...
+
+->
+
+if_jump (!x) END_OF_IF_13423471289374891;
+...
+...
+loc END_OF_IF_13423471289374891:
+...
+
+*/

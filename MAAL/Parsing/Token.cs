@@ -94,6 +94,7 @@ namespace MAAL.Parsing
             "sub", "subroutine", "jump",
             "ret", "return",
             "if_jump", "if_sub",
+            "#include",
         };
 
         public string Keyword = "";
@@ -338,7 +339,7 @@ namespace MAAL.Parsing
                 throw new Exception("Too many Dereferences!");
 
             VarType.PointerCount -= DereferenceCount;
-            string res = String.Empty;
+            string res;
             if (UseAddr)
                 res = $"<VAR: \"{VarName}\" (&{VarType})>";
             else

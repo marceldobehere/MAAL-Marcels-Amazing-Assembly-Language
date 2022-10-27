@@ -26,7 +26,7 @@ namespace MAAL.Parsing
         }
 
         #region Operators and Orders
-        static OperatorToken.OperatorEnum[] OpOrderArr2 = new OperatorToken.OperatorEnum[]
+        static readonly OperatorToken.OperatorEnum[] OpOrderArr2 = new OperatorToken.OperatorEnum[]
         { 
             // MATH
             OperatorToken.OperatorEnum.Star,   OperatorToken.OperatorEnum.Divide, OperatorToken.OperatorEnum.Mod,
@@ -42,7 +42,7 @@ namespace MAAL.Parsing
             OperatorToken.OperatorEnum.GreaterEqual, OperatorToken.OperatorEnum.LessEqual
         };
 
-        static OperatorToken.OperatorEnum[] OpOrderArr1 = new OperatorToken.OperatorEnum[]
+        static readonly OperatorToken.OperatorEnum[] OpOrderArr1 = new OperatorToken.OperatorEnum[]
         { 
             // BIT
             OperatorToken.OperatorEnum.BitNot, // BIT NOT
@@ -142,6 +142,22 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("#include") &&
+                            data[mIndex + 1] is BasicValueToken && 
+                            (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                        {
+                            string tempFilePath = (data[mIndex + 1] as BasicValueToken).Value_CharPointer;
+                            data.RemoveAt(mIndex);
+                            data.RemoveAt(mIndex);
+
+                            List<Token> tempList = ParseStringBasic(new StreamReader(tempFilePath).ReadToEnd());
+
+                            data.InsertRange(mIndex, tempList);
+
+                            change = true;
+                            break;
+                        }
                         
                         #region POINTERS  INT**
                         // int*

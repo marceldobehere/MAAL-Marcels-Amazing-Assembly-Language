@@ -16,7 +16,7 @@ namespace MAAL
     // Marcels Amazing Assembly Bytecode
     class Program
     {
-        private static string[] stages = new string[] { "starting", "parsing", "compiling", "writing to file" };
+        private static readonly string[] stages = new string[] { "starting", "parsing", "compiling", "writing to file" };
         private static int stage = 0;
 
         static void Main(string[] args)
