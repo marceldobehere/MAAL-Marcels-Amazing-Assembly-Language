@@ -11,3 +11,22 @@ loc LoopStart:
 
 loc LoopEnd:
 	exit;
+
+/*
+
+if (x)
+{
+	...
+	...
+}
+...
+
+->
+
+if_jump (!x) END_OF_IF_13423471289374891;
+...
+...
+loc END_OF_IF_13423471289374891:
+...
+
+*/
