@@ -1,4 +1,3 @@
-
 int a = 5;
 int b = 4;
 
@@ -11,6 +10,17 @@ loc LoopStart:
 
 loc LoopEnd:
 	exit;
+
+
+
+// TODO:
+// ADD SYSCALLS
+// GET STRINGS WORKING IN COMPILER
+// ADD POINTER MATH
+// ADD DEREF STUFF
+
+
+
 
 /*
 

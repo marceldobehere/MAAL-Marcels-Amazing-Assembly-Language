@@ -636,7 +636,7 @@ namespace MAAL.Parsing
         public ExpressionToken Condition = null;
         public SubroutineNameToken Subroutine = null;
         public LocationNameToken Location = null;
-        public bool IsSubRoutine = false;
+        public bool IsSubroutine = false;
         public bool IsLocation = false;
 
         public ConditionalJumpToken(ExpressionToken expr, SubroutineNameToken sub)
@@ -645,7 +645,7 @@ namespace MAAL.Parsing
             Subroutine = sub;
             Location = null;
 
-            IsSubRoutine = true;
+            IsSubroutine = true;
             IsLocation = false;
         }
 
@@ -655,13 +655,13 @@ namespace MAAL.Parsing
             Subroutine = null;
             Location = loc;
 
-            IsSubRoutine = false;
+            IsSubroutine = false;
             IsLocation = true;
         }
 
         public override string ToString()
         {
-            if (IsSubRoutine)
+            if (IsSubroutine)
                 return $"<IF {Condition} -> {Subroutine}>";
             else if (IsLocation)
                 return $"<IF {Condition} -> {Location}>";

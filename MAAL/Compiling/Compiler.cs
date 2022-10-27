@@ -26,6 +26,10 @@ namespace MAAL.Compiling
             ENTER_SUBROUTINE_FIX,
             JUMP_VAR,
             ENTER_SUBROUTINE_VAR,
+            IF_JUMP_FIX,
+            IF_JUMP_VAR,
+            IF_SUB_FIX,
+            IF_SUB_VAR
 
         }
 
@@ -44,6 +48,11 @@ namespace MAAL.Compiling
             {InstructionEnum.ENTER_SUBROUTINE_FIX, 25},
             {InstructionEnum.JUMP_VAR, 21},
             {InstructionEnum.ENTER_SUBROUTINE_VAR, 26},
+
+            {InstructionEnum.IF_JUMP_FIX, 40},
+            {InstructionEnum.IF_JUMP_VAR, 41},
+            {InstructionEnum.IF_SUB_FIX, 45},
+            {InstructionEnum.IF_SUB_VAR, 46},
         };
 
         #region OP AND VARTYPE STUFF
@@ -956,6 +965,49 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(sTok));
                 }
                 #endregion
+                #region IF_JUMP
+                else if (cTok is ConditionalJumpToken && (cTok as ConditionalJumpToken).IsLocation)
+                {
+                    ConditionalJumpToken jTok = (cTok as ConditionalJumpToken);
+                    LocationNameToken lTok = jTok.Location;
+                    if (lTok.JumpToFixedAddress)
+                    {
+                        CompileExpression(lTok.Address, almostCompiledCode, StartingGeneralUseAddr);
+
+                        CompileExpression(jTok.Condition, almostCompiledCode, StartingGeneralUseAddr + 8);
+
+                        almostCompiledCode.Add(new AlmostByte($"JUMPING TO LOCATION {lTok.Address} IF {jTok.Condition}"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.IF_JUMP_VAR]));
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr + 8)));
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr)));
+                    }
+                    else
+                    {
+                        CompileExpression(jTok.Condition, almostCompiledCode, StartingGeneralUseAddr + 8);
+
+                        almostCompiledCode.Add(new AlmostByte($"JUMPING TO LOCATION {lTok} IF {jTok.Condition}"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.IF_JUMP_FIX]));
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr + 8)));
+                        almostCompiledCode.Add(new AlmostByte(lTok));
+                    }
+                }
+                #endregion
+                #region IF_SUB
+                else if (cTok is ConditionalJumpToken && (cTok as ConditionalJumpToken).IsSubroutine)
+                {
+                    ConditionalJumpToken jTok = (cTok as ConditionalJumpToken);
+                    SubroutineNameToken sTok = jTok.Subroutine;
+
+                    CompileExpression(jTok.Condition, almostCompiledCode, StartingGeneralUseAddr + 8);
+
+                    almostCompiledCode.Add(new AlmostByte($"ENTERING SUB AT LOCATION: {sTok}"));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.IF_SUB_FIX]));
+                    almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr + 8)));
+                    almostCompiledCode.Add(new AlmostByte(sTok));
+                }
+                #endregion
+
+
 
                 else
                 {
