@@ -1,12 +1,13 @@
-loc MAIN:
 
-	int x = 5;
-	sub TEST;
+int a = 5;
+int b = 4;
 
+int t = a;
+loc LoopStart:
+	if_jump (b <= 1) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
 	exit;
-
-
-sub TEST:
-	x = 10;
-
-	ret;

@@ -219,9 +219,31 @@ You can return from a subroutine using the return command.
 
 
 ### Conditional Jumps
+```
+[40]
+[Address of bool condition result (8 Bytes)]
+[Address to jump to (8 Bytes)]
+```
 
+```
+[41]
+[Address of bool condition result (8 Bytes)]
+[Address of Address to jump to (8 Bytes)]
+```
 
 ### Conditional Subroutines
+```
+[45]
+[Address of bool condition result (8 Bytes)]
+[Address of Subroutine (8 Bytes)]
+```
+
+```
+[46]
+[Address of bool condition result (8 Bytes)]
+[Address of Address of Subroutine (8 Bytes)]
+```
+
 
 
 ### Syscalls

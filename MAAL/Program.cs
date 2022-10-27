@@ -22,7 +22,7 @@ namespace MAAL
         static void Main(string[] args)
         {
             bool catchErr = true;
-            catchErr = false;
+            //catchErr = false;
 
             if (catchErr)
             {
@@ -120,8 +120,9 @@ namespace MAAL
             Console.WriteLine();
 
             Console.WriteLine("Compiled Data:");
-            foreach (var data in compiledData)
-                Console.WriteLine($"{data} ({(char)data})");
+            //foreach (var data in compiledData)
+            //Console.WriteLine($"{data} ({(char)data})");
+            Console.WriteLine(String.Join(", ", compiledData));
 
             Console.WriteLine();
             Console.WriteLine($"Compiled Data Size: {compiledData.Count} Bytes.");

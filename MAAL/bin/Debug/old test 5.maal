@@ -1,0 +1,12 @@
+loc MAIN:
+
+	int x = 5;
+	sub TEST;
+
+	exit;
+
+
+sub TEST:
+	x = 10;
+
+	ret;
