@@ -1,0 +1,56 @@
+/*
+int a = 5;
+int b = 4;
+	
+int t = a;
+loc LoopStart:
+	if_jump (b <= 1) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	exit;
+*/
+
+
+
+//((ulong)1000) = (long)100;
+
+
+
+/*
+loc MAIN:
+	//int x = 10;
+	//double br = (double)10.5;
+	//long l = (long)20;
+
+
+	int a = 100;
+
+	int b = a;
+
+	int c = (a + b) * 10;
+
+
+
+	//bool test = true;
+	//bool test2 = !test;
+
+
+
+
+	//(ulong)5 = 10;
+	// This basically sets 
+	// the data at address 5 
+	// to 10 which is 4 bytes
+	// (00 00 00 10)
+
+
+	//double t = (double)20.5;
+	exit;
+
+
+
+
+*/

@@ -124,6 +124,15 @@ namespace MAAL.Parsing
             4, 2, 8, 4, 1, 1,
             4, 2, 8, 8
         };
+        public static List<BasicValueToken.BasicValueTypeEnum> TypeEnumList = new List<BasicValueToken.BasicValueTypeEnum>()
+        {
+            BasicValueToken.BasicValueTypeEnum.INT, BasicValueToken.BasicValueTypeEnum.SHORT, 
+            BasicValueToken.BasicValueTypeEnum.LONG, BasicValueToken.BasicValueTypeEnum.FLOAT,
+            BasicValueToken.BasicValueTypeEnum.CHAR, BasicValueToken.BasicValueTypeEnum.BOOL,
+            BasicValueToken.BasicValueTypeEnum.UINT, BasicValueToken.BasicValueTypeEnum.USHORT, 
+            BasicValueToken.BasicValueTypeEnum.ULONG, BasicValueToken.BasicValueTypeEnum.DOUBLE,
+            
+        };
 
         public string BaseType = String.Empty;
         public int PointerCount = 0;

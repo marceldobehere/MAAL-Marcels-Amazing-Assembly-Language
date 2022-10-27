@@ -754,9 +754,9 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
             if (KeywordToken.KeywordList.Contains(str))
                 return new KeywordToken(str);
 
-            if (int.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out int vI))
+            if (!str.Contains(".") && int.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out int vI))
                 return new BasicValueToken(vI);
-            if (long.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out long vL))
+            if (!str.Contains(".") && long.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out long vL))
                 return new BasicValueToken(vL);
             if (float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out float vF))
                 return new BasicValueToken(vF);

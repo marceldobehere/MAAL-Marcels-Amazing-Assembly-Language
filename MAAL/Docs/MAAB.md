@@ -116,7 +116,11 @@ Example
 ### Math and Operations
 
 ```
-[10][Operation number (1 Byte)][Datatype number of Operand 1 (1 Byte)][Operand 1 (x Bytes)][Datatype number of Operand 2 (1 Byte)][Operand 2 (y Bytes)]
+[10][Operation number (1 Byte)][Datatype number of Operands (1 Byte)]
+[Addr of Operand 1 (8 Bytes)]
+[Addr of Operand 2 (8 Bytes)]
+[Addr of Operand n (8 Bytes)]
+[Addr of return value (8 Bytes)]
 ```
 
 #### List of Operators with their numbers:
@@ -145,13 +149,45 @@ Example
 
 Implementing all those like 1,6k unique choices will be a pain but yes
 
+Example
+```
+[2][0x01][0x00.00.00.00.00.00.00.0A][0x05]
+// This will set the byte at address 10 to 5
+// Operand 1 = 5
+
+[2][0x01][0x00.00.00.00.00.00.00.0B][0x05]
+// will set the byte at address 11 to 10
+// Operand 2 = 10
+
+[2][0x01][0x00.00.00.00.00.00.00.0C][0x00]
+// This will set the byte at address 12 to 0 
+// This will be where out result will be
+
+[10] // OPCODE for Operation
+[0x00] // Number of PLUS Operation
+[0x06] // Number of CHAR Datatype (We are using bytes/chars)
+[0x00.00.00.00.00.00.00.0A] // Operand 1
+[0x00.00.00.00.00.00.00.0B] // Operand 2
+[0x00.00.00.00.00.00.00.0C] // Result
+
+```
 
 
-#### `+`
-a
 
 ### Casting Datatypes
-Death 2 - Electric Boogaloo
+```
+[15]
+[Datatype number of input (1 Byte)]
+[Datatype number of output (1 Byte)]
+[Addr of input (8 Bytes)]
+[Addr of output (8 Bytes)]
+```
+It will read the input as the given datatype 
+then cast it into the second datatype and 
+save the casted version into the given address.
+
+
+
 
 ### Jumping
 
