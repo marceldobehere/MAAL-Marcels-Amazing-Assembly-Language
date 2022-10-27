@@ -142,9 +142,10 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        #region #INCLUDE
                         else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("#include") &&
-                            data[mIndex + 1] is BasicValueToken && 
+                            data[mIndex + 1] is BasicValueToken &&
                             (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                         {
                             string tempFilePath = (data[mIndex + 1] as BasicValueToken).Value_CharPointer;
@@ -158,7 +159,45 @@ namespace MAAL.Parsing
                             change = true;
                             break;
                         }
-                        
+                        #endregion
+
+                        #region SYSCALL
+                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("syscall"))
+                        {
+                            bool syscallReady = true;
+                            int argumentCount = 0;
+                            while (mIndex + argumentCount + 1 < data.Count &&
+                                !(data[mIndex + argumentCount + 1] is EndCommandToken))
+                            {
+                                if (!CouldBeExpessionToken(data[mIndex + argumentCount + 1]))
+                                {
+                                    syscallReady = false;
+                                    break;
+                                }
+
+                                argumentCount++;
+                            }
+
+                            //Console.WriteLine($"SYSCALL: ARGS: {argumentCount}, READY: {syscallReady}, {cTok}");
+
+                            if (syscallReady && argumentCount > 0 &&
+                                mIndex + argumentCount + 1 < data.Count)
+                            {
+                                List<ExpressionToken> args = new List<ExpressionToken>();
+                                for (int i = 0; i < argumentCount; i++)
+                                    args.Add(ConvToExpressionToken(data[mIndex + 1 + i]));
+
+                                data[mIndex] = new SyscallToken(args);
+                                for (int i = 0; i < argumentCount + 1; i++)
+                                    data.RemoveAt(mIndex + 1);
+
+                                change = true;
+                                break;
+                            }
+                        }
+                        #endregion
+
                         #region POINTERS  INT**
                         // int*
                         if (cTok is TypeToken && mIndex + 1 < data.Count &&
@@ -751,6 +790,14 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                     {
                         change = true;
                         break;
+                    }
+                    if (cTok is SyscallToken)
+                    {
+                        SyscallToken sTok = cTok as SyscallToken;
+                        for (int i = 0; i < sTok.Arguments.Count; i++)
+                            change |= ParserHelpers.TryOptimizeExpressionToken(sTok.Arguments[i]);
+                        if (change)
+                            break;
                     }
                 }
             }

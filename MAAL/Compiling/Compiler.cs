@@ -29,7 +29,8 @@ namespace MAAL.Compiling
             IF_JUMP_FIX,
             IF_JUMP_VAR,
             IF_SUB_FIX,
-            IF_SUB_VAR
+            IF_SUB_VAR,
+            SYSCALL
 
         }
 
@@ -53,6 +54,33 @@ namespace MAAL.Compiling
             {InstructionEnum.IF_JUMP_VAR, 41},
             {InstructionEnum.IF_SUB_FIX, 45},
             {InstructionEnum.IF_SUB_VAR, 46},
+            {InstructionEnum.SYSCALL, 50},
+        };
+
+        public enum SyscallEnum
+        {
+            NONE,
+            CONSOLE,
+        }
+
+        public Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
+        {
+            {SyscallEnum.NONE, 0 },
+            {SyscallEnum.CONSOLE, 1 },
+        };
+
+        public enum SyscallConsoleEnum
+        {
+            NONE,
+            PRINT_CHAR,
+            PRINT_VAL,
+        }
+
+        public Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
+        {
+            {SyscallConsoleEnum.NONE, 0 },
+            {SyscallConsoleEnum.PRINT_CHAR, 1 },
+            {SyscallConsoleEnum.PRINT_VAL, 1 },
         };
 
         #region OP AND VARTYPE STUFF
@@ -118,6 +146,7 @@ namespace MAAL.Compiling
         public static int StartingOperationIndex = -1;
         public static int MaxOperationDeepness = 1;
         public static long StartingGeneralUseAddr = -1;
+        public static int StartingGeneralUseSize = 10 * 8;
 
         public static BasicValueToken.BasicValueTypeEnum GetResultTypeBasedOnTokensAndOperation(BasicValueToken.BasicValueTypeEnum left, OperatorToken.OperatorEnum op, BasicValueToken.BasicValueTypeEnum right)
         {
@@ -563,9 +592,6 @@ namespace MAAL.Compiling
         {
             if (resAddr == -1)
                 resAddr = StartingOperationAddr;
-            if (layer + 1 > MaxOperationDeepness)
-                MaxOperationDeepness = layer + 1;
-
 
             if (tok.IsConstValue)
             {
@@ -618,8 +644,12 @@ namespace MAAL.Compiling
                 return;
             }
 
+            if (layer + 1 > MaxOperationDeepness)
+                MaxOperationDeepness = layer + 1;
+
             if (tok.IsCast)
             {
+
                 long lAddr = GetLeftOpRegisterFromLayer(layer);
 
                 var exprTypeLeft = GetTypeFromExpression(tok.Cast.ToCast);
@@ -731,13 +761,20 @@ namespace MAAL.Compiling
         {
             Console.WriteLine();
 
-#pragma warning disable IDE0028 // Initialisierung der Sammlung vereinfachen
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
-#pragma warning restore IDE0028 // Initialisierung der Sammlung vereinfachen
+
+            if (!stuff.Locations.ContainsKey("MAIN"))
+                throw new Exception("NO MAIN LOCATION/ENTRY POINT DECLARED!!!");
 
 
-            almostCompiledCode.Add(new AlmostByte("1 BYTE RESERVED BC NO NULL POINTERS HERE"));
+            almostCompiledCode.Add(new AlmostByte("Jumping to MAIN"));
+            almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_FIX]));
+            almostCompiledCode.Add(new AlmostByte(new LocationNameToken(stuff.Locations["MAIN"])));
             almostCompiledCode.Add(new AlmostByte(0));
+
+
+            //almostCompiledCode.Add(new AlmostByte("1 BYTE RESERVED BC NO NULL POINTERS HERE"));
+            //almostCompiledCode.Add(new AlmostByte(0));
 
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA"));
             foreach (var usedVar in stuff.Variables)
@@ -745,17 +782,17 @@ namespace MAAL.Compiling
 
             almostCompiledCode.Add(new AlmostByte("DATA FOR GENERAL STUFF"));
             StartingGeneralUseAddr = GetLenghtOfByteList(almostCompiledCode);
-            almostCompiledCode.Add(new AlmostByte(new byte[2 * 8]));
+            almostCompiledCode.Add(new AlmostByte(new byte[StartingGeneralUseSize]));
 
 
             almostCompiledCode.Add(new AlmostByte("DATA FOR MATH STUFF"));
             StartingOperationAddr = GetLenghtOfByteList(almostCompiledCode);
             StartingOperationIndex = almostCompiledCode.Count;
             //Console.WriteLine($"STARTING OP INDEX (RESULT) = {StartingOperationAddr}");
-            MaxOperationDeepness = 1;
+            MaxOperationDeepness = 0;
             almostCompiledCode.Add(new AlmostByte(new byte[(1 + 2 * MaxOperationDeepness) * 8])); // 1x 8 Bytes for result 20x 8 Bytes for 10 Left and Right Operands
-            
-            
+
+
             //almostCompiledCode.Add(new AlmostByte($""));
 
             foreach (var cTok in stuff.parsedTokens)
@@ -830,7 +867,7 @@ namespace MAAL.Compiling
                     if (sTok.SetExpression.Variable.UseAddr)
                     {
                         almostCompiledCode.Add(new AlmostByte($"Setting {sTok.VarName} to Address of {sTok.SetExpression.Variable}"));
-                        
+
                         almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL]));
                         // SIZE OF TYPE
                         almostCompiledCode.Add(new AlmostByte((byte)8));
@@ -864,7 +901,7 @@ namespace MAAL.Compiling
                 #endregion
                 #region SET VAR TO EXPR
                 else if (cTok is SetVarToken && !(cTok as SetVarToken).SetLocation &&
-                    !(cTok as SetVarToken).SetExpression.IsCast && 
+                    //!(cTok as SetVarToken).SetExpression.IsCast &&
                     !(cTok as SetVarToken).SetExpression.IsConstValue &&
                     !(cTok as SetVarToken).SetExpression.IsVariable)
                 {
@@ -890,6 +927,7 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).VarName));
                 }
                 #endregion
+
                 #region SET EXPR TO EXPR
                 else if (cTok is SetVarToken && (cTok as SetVarToken).SetLocation &&
                     !(cTok as SetVarToken).VarLocation.IsConstValue)
@@ -1006,6 +1044,44 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.IF_SUB_FIX]));
                     almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr + 8)));
                     almostCompiledCode.Add(new AlmostByte(sTok));
+                }
+                #endregion
+
+                #region SYSCALL
+                else if (cTok is SyscallToken)
+                {
+                    SyscallToken sTok = cTok as SyscallToken;
+
+                    if (sTok.Arguments.Count < 2)
+                        throw new Exception($"SYSCALL HAS TOO LITTLE ARGS! {sTok}");
+                    if (!(sTok.Arguments[0].IsConstValue))
+                        throw new Exception($"SYSCALL ID 1 IS NOT FIXED! {sTok}");
+                    if (!(sTok.Arguments[1].IsConstValue))
+                        throw new Exception($"SYSCALL ID 2 IS NOT FIXED! {sTok}");
+                    BasicValueToken sysArg1 = sTok.Arguments[0].ConstValue;
+                    BasicValueToken sysArg2 = sTok.Arguments[1].ConstValue;
+
+                    if (sysArg1.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
+                        throw new Exception($"{sysArg1} IS NOT CHAR! {cTok}");
+                    if (sysArg2.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
+                        throw new Exception($"{sysArg2} IS NOT CHAR! {cTok}");
+
+
+
+                    int argCount = sTok.Arguments.Count - 2;
+                    if (argCount * 8 > StartingGeneralUseSize)
+                        throw new Exception($"TOO MANY ARGUMENTS FOR SYSCALL! (MAXIMUM AMOUNT IS {StartingGeneralUseSize / 8}) {sTok}");
+
+                    for (int i = 2; i < sTok.Arguments.Count; i++)
+                        CompileExpression(sTok.Arguments[i], almostCompiledCode, StartingGeneralUseAddr + ((i - 2) * 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SOMETHING IG"));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
+                    almostCompiledCode.Add(new AlmostByte((byte)sysArg1.Value_Char));
+                    almostCompiledCode.Add(new AlmostByte((byte)sysArg2.Value_Char));
+
+                    for (int i = 2; i < sTok.Arguments.Count; i++)
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)(StartingGeneralUseAddr + ((i - 2) * 8)))));
                 }
                 #endregion
 

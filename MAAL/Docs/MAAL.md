@@ -183,7 +183,10 @@ none yet
 
 
 ### Syscalls
-none yet
+you can call syscalls directly by doing
+```
+syscall (byte)SYSCALL_NUMBER_1 (byte)SYSCALL_NUMBER_2 ARG_1 ARG_2 ARG_N;
+```
 
 
 ### Including other files

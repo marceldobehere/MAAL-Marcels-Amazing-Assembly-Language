@@ -94,7 +94,8 @@ namespace MAAL.Parsing
             "sub", "subroutine", "jump",
             "ret", "return",
             "if_jump", "if_sub",
-            "#include",
+            "#include", "syscall",
+            "print"
         };
 
         public string Keyword = "";
@@ -670,6 +671,23 @@ namespace MAAL.Parsing
                 throw new Exception("UNKNOWN JUMP TYPE!");
         }
     }
+
+    public class SyscallToken : Token
+    {
+        public List<ExpressionToken> Arguments;
+
+        public SyscallToken(List<ExpressionToken> arguments)
+        {
+            Arguments = arguments;
+        }
+
+
+        public override string ToString()
+        {
+            return $"<SYSCALL {String.Join(", ", Arguments)}>";
+        }
+    }
+
 }
 
 // 12

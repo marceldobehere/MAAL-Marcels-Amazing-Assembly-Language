@@ -264,14 +264,14 @@ The first byte of the syscall is 0x01.
 ##### Printing a char
 ```
 [50]
-[0x01.00] // Sycall for Console and Print Char
+[0x01.01] // Sycall for Console and Print Char
 [Address of Byte to print (1 Byte)]
 ```
 
 ##### Printing values
 ```
 [50]
-[0x01.01] // Sycall for Console and Print Char
+[0x01.02] // Sycall for Console and Print Char
 [Datatype number (1 Byte)]
 [Address of Data to print (1 Byte)]
 ```
@@ -291,6 +291,10 @@ This is the table
 |First Byte|Last Byte|Decimal Form|Description|
 |----------|---------|------------|-----------|
 |0x01      |0x00     |256         |Print a char to the console|
+
+
+
+
 
 
 

@@ -1,5 +1,39 @@
-int x = 5;
+loc MAIN:
 
-#include "test include.maal"
+char x = 'H';
 
-x = 15;
+
+//print x;
+syscall (char)1 (char)1 &x 12;
+exit;
+
+
+// TODO:
+// ADD SYSCALLS
+// GET STRINGS WORKING IN COMPILER
+// ADD POINTER MATH
+// ADD DEREF STUFF
+// ADD FANCY IFs
+// ADD FANCY WHILEs
+// ADD NAMESPACES
+
+
+
+/*
+
+if (x)
+{
+	...
+	...
+}
+...
+
+->
+
+if_jump (!x) END_OF_IF_13423471289374891;
+...
+...
+loc END_OF_IF_13423471289374891:
+...
+
+*/
