@@ -22,7 +22,7 @@ namespace MAAL
         static void Main(string[] args)
         {
             bool catchErr = true;
-
+            catchErr = false;
 
             if (catchErr)
             {

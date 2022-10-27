@@ -17,10 +17,11 @@ namespace MAAL.Compiling
             EXIT,
             SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL,
             COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM,
-            COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
+            __DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
             COPY_VAR_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
             OPERATION,
-            CAST
+            CAST,
+            RETURN
 
         }
 
@@ -30,10 +31,11 @@ namespace MAAL.Compiling
             {InstructionEnum.EXIT, 1},
             {InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL, 2},
             {InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM, 3},
-            {InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM, 4},
+            {InstructionEnum.__DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM, 4},
             {InstructionEnum.COPY_VAR_SIZE_FROM_VAR_MEM_TO_VAR_MEM, 5},
             {InstructionEnum.OPERATION, 10},
             {InstructionEnum.CAST, 15},
+            {InstructionEnum.RETURN, 30},
         };
 
         #region OP AND VARTYPE STUFF
@@ -98,6 +100,7 @@ namespace MAAL.Compiling
             => StartingOperationAddr + (1 + layer * 2) * 8;
         public static int StartingOperationIndex = -1;
         public static int MaxOperationDeepness = 1;
+        public static long StartingGeneralUseAddr = -1;
 
         public static BasicValueToken.BasicValueTypeEnum GetResultTypeBasedOnTokensAndOperation(BasicValueToken.BasicValueTypeEnum left, OperatorToken.OperatorEnum op, BasicValueToken.BasicValueTypeEnum right)
         {
@@ -480,7 +483,7 @@ namespace MAAL.Compiling
         public static void CopyXBytesFromTo(List<AlmostByte> almostCompiledCode, long from, long to, byte amount)
         {
             almostCompiledCode.Add(new AlmostByte($"COPYING {amount} BYTES FROM {from} TO {to}"));
-            almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
+            almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM]));
             // SIZE OF TYPE
             almostCompiledCode.Add(new AlmostByte(amount));
             // FROM
@@ -500,6 +503,17 @@ namespace MAAL.Compiling
             // VALUE
             almostCompiledCode.Add(new AlmostByte(data));
         }
+        public static void WriteByteToAddr(List<AlmostByte> almostCompiledCode, long addr, byte data)
+        {
+            almostCompiledCode.Add(new AlmostByte($"WRITING <{String.Join(", ", data)}> TO {addr}"));
+            almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL]));
+            // SIZE OF TYPE
+            almostCompiledCode.Add(new AlmostByte((byte)1));
+            // ADDRESS OF VAR
+            almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)addr)));
+            // VALUE
+            almostCompiledCode.Add(new AlmostByte(data));
+        }
 
         public static void CastXToY(List<AlmostByte> almostCompiledCode, long addrX, BasicValueToken.BasicValueTypeEnum typeX, long addrY, BasicValueToken.BasicValueTypeEnum typeY)
         {
@@ -514,7 +528,6 @@ namespace MAAL.Compiling
             // ADDR Y
             almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)addrY)));
         }
-
         public static void CastVarXToY(List<AlmostByte> almostCompiledCode, VarNameToken var, BasicValueToken.BasicValueTypeEnum typeX, long addrY, BasicValueToken.BasicValueTypeEnum typeY)
         {
             almostCompiledCode.Add(new AlmostByte($"CASTING {var} to {typeY} (at {addrY})"));
@@ -529,15 +542,12 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)addrY)));
         }
 
-
         public static void CompileExpression(ExpressionToken tok, List<AlmostByte> almostCompiledCode, long resAddr = -1, int layer = 0)
         {
             if (resAddr == -1)
                 resAddr = StartingOperationAddr;
             if (layer + 1 > MaxOperationDeepness)
                 MaxOperationDeepness = layer + 1;
-
-            //Console.WriteLine($" + <DOING EXPRESSION {tok}   RESULT: {resAddr}   LAYER: {layer}>");
 
 
             if (tok.IsConstValue)
@@ -561,18 +571,33 @@ namespace MAAL.Compiling
 
             if (tok.IsVariable)
             {
-                int varSize1 = GetSizeFromVarToken(tok.Variable);
-                //int varSize2 = GetSizeFromVarToken((cTok as SetVarToken).SetExpression.Variable);
+                if (tok.Variable.UseAddr)
+                {
+                    almostCompiledCode.Add(new AlmostByte($"Calculation of Address of {tok.Variable} to {resAddr}"));
 
-                almostCompiledCode.Add(new AlmostByte($"Calculation of {tok} into {resAddr}"));
-                almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
-                // SIZE OF TYPE
-                almostCompiledCode.Add(new AlmostByte((byte)varSize1));
-                // FROM
-                almostCompiledCode.Add(new AlmostByte(tok.Variable));
-                // TO
-                almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)resAddr)));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL]));
+                    // SIZE OF TYPE
+                    almostCompiledCode.Add(new AlmostByte((byte)8));
+                    // ADDRESS OF VAR
+                    almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)resAddr)));
+                    // VALUE
+                    almostCompiledCode.Add(new AlmostByte(tok.Variable));
 
+                }
+                else
+                {
+                    int varSize1 = GetSizeFromVarToken(tok.Variable);
+                    //int varSize2 = GetSizeFromVarToken((cTok as SetVarToken).SetExpression.Variable);
+
+                    almostCompiledCode.Add(new AlmostByte($"Calculation of {tok} into {resAddr}"));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM]));
+                    // SIZE OF TYPE
+                    almostCompiledCode.Add(new AlmostByte((byte)varSize1));
+                    // FROM
+                    almostCompiledCode.Add(new AlmostByte(tok.Variable));
+                    // TO
+                    almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)resAddr)));
+                }
                 return;
             }
 
@@ -581,28 +606,14 @@ namespace MAAL.Compiling
                 long lAddr = GetLeftOpRegisterFromLayer(layer);
 
                 var exprTypeLeft = GetTypeFromExpression(tok.Cast.ToCast);
-                BasicValueToken.BasicValueTypeEnum castType = GetTypeFromExpression(tok);
+                var castType = GetTypeFromExpression(tok);
 
-                // Clear left address
                 WriteBytesToAddr(almostCompiledCode, lAddr, new byte[8]);
 
-                //int sizeExprLeft = GetTypeFromExpression(tok);
                 CompileExpression(tok.Cast.ToCast, almostCompiledCode, lAddr, layer + 1);
-                //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
 
-                //almostCompiledCode.Add(new AlmostByte($"Calculation of casting {tok.Cast.ToCast} into {tok.Cast.CastType} (at {resAddr})"));
                 CastXToY(almostCompiledCode, lAddr, exprTypeLeft, resAddr, castType);
-                //almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.OPERATION]));
-                //almostCompiledCode.Add(new AlmostByte(OpToByte[tok.Operator.Operator]));
-                //almostCompiledCode.Add(new AlmostByte(DaTyToByte[exprTypeLeft]));
-
-                //almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)lAddr)));
-                //almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)resAddr)));
-
                 return;
-
-                // use a cast operation
-                throw new Exception("CASTING IS NOT SUPPORTED IN COMPILETIME YET");
             }
 
 
@@ -640,14 +651,7 @@ namespace MAAL.Compiling
 
                 var strongerType = GetStrongerType(exprTypeLeft, exprTypeRight);
 
-                if (exprTypeLeft != strongerType)
-                {
-                    throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeLeft} => {strongerType})  ({tok.Left})");
-                }
-                if (exprTypeRight != strongerType)
-                {
-                    throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
-                }
+
 
                 // Clear both laddresses
                 WriteBytesToAddr(almostCompiledCode, lAddr, new byte[16]);
@@ -657,6 +661,18 @@ namespace MAAL.Compiling
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
                 CompileExpression(tok.Right, almostCompiledCode, lAddr + 8, layer + 1);
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr + 8, DaTyToSize[exprTypeLeft]);
+
+                if (exprTypeLeft != strongerType)
+                {
+                    CastXToY(almostCompiledCode, lAddr, exprTypeLeft, lAddr, strongerType);
+                    //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeLeft} => {strongerType})  ({tok.Left})");
+                }
+                if (exprTypeRight != strongerType)
+                {
+                    CastXToY(almostCompiledCode, lAddr + 8, exprTypeRight, lAddr + 8, strongerType);
+                    //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
+                }
+
 
                 almostCompiledCode.Add(new AlmostByte($"Calculation of {tok.Left} {tok.Operator} {tok.Right} into {resAddr}"));
                 almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.OPERATION]));
@@ -681,6 +697,9 @@ namespace MAAL.Compiling
             return size;
         }
 
+
+
+
         public static List<byte> Compile(Parser.ParsedStuff stuff)
         {
             Console.WriteLine();
@@ -692,7 +711,9 @@ namespace MAAL.Compiling
             foreach (var usedVar in stuff.Variables)
                 almostCompiledCode.Add(new AlmostByte(usedVar.Value));//reservedMemory.Add(new ReservedMemoryChunk(usedVar.Value));
 
-
+            almostCompiledCode.Add(new AlmostByte("DATA FOR GENERAL STUFF"));
+            StartingGeneralUseAddr = GetLenghtOfByteList(almostCompiledCode);
+            almostCompiledCode.Add(new AlmostByte(new byte[5 * 8]));
 
 
             almostCompiledCode.Add(new AlmostByte("DATA FOR MATH STUFF"));
@@ -707,17 +728,25 @@ namespace MAAL.Compiling
 
             foreach (var cTok in stuff.parsedTokens)
             {
+                #region EXIT
                 if (cTok is ExitToken)
                 {
                     almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.EXIT]));
                 }
+                #endregion
+                #region RETURN
+                if (cTok is ReturnToken)
+                {
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.RETURN]));
+                }
+                #endregion
                 #region SET VAR TO CONST
                 else if (cTok is SetVarToken && !(cTok as SetVarToken).SetLocation &&
                     (cTok as SetVarToken).SetExpression.IsConstValue &&
                     (cTok as SetVarToken).SetExpression.ConstValue.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                 {
                     BasicValueToken val = (cTok as SetVarToken).SetExpression.ConstValue;
-                    almostCompiledCode.Add(new AlmostByte($"SETTING {(cTok as SetVarToken).VarName} TO {val}"));
+                    almostCompiledCode.Add(new AlmostByte($"Setting {(cTok as SetVarToken).VarName} to {val}"));
 
                     //[2][Size of Value in bytes (1 Byte)][Address (8 Bytes)][Fixed Value (x Bytes)]
                     almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL]));
@@ -765,25 +794,40 @@ namespace MAAL.Compiling
                 else if (cTok is SetVarToken && !(cTok as SetVarToken).SetLocation &&
                     (cTok as SetVarToken).SetExpression.IsVariable)
                 {
-                    //COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM
+                    SetVarToken sTok = (cTok as SetVarToken);
+                    if (sTok.SetExpression.Variable.UseAddr)
+                    {
+                        almostCompiledCode.Add(new AlmostByte($"Setting {sTok.VarName} to Address of {sTok.SetExpression.Variable}"));
+                        
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL]));
+                        // SIZE OF TYPE
+                        almostCompiledCode.Add(new AlmostByte((byte)8));
+                        // ADDRESS OF VAR
+                        almostCompiledCode.Add(new AlmostByte(sTok.VarName));
+                        // VALUE
+                        almostCompiledCode.Add(new AlmostByte(sTok.SetExpression.Variable));
 
-                    int varSize1 = GetSizeFromVarToken((cTok as SetVarToken).VarName);
-                    int varSize2 = GetSizeFromVarToken((cTok as SetVarToken).SetExpression.Variable);
-                    almostCompiledCode.Add(new AlmostByte($"COPY DATA FROM {(cTok as SetVarToken).VarName} TO {(cTok as SetVarToken).SetExpression.Variable}"));
+                        int varSize = GetSizeFromVarToken(sTok.VarName);
+                        if (varSize != 8)
+                            throw new Exception($"CANNOT WRITE {8} BYTES INTO {varSize} BYTES! ({cTok})");
+                    }
+                    else
+                    {
+                        int varSize1 = GetSizeFromVarToken(sTok.VarName);
+                        int varSize2 = GetSizeFromVarToken(sTok.SetExpression.Variable);
+                        almostCompiledCode.Add(new AlmostByte($"Copy Data from {sTok.SetExpression.Variable} to {sTok.VarName}"));
 
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM]));
+                        // SIZE OF TYPE
+                        almostCompiledCode.Add(new AlmostByte((byte)varSize2));
+                        // FROM
+                        almostCompiledCode.Add(new AlmostByte(sTok.SetExpression.Variable));
+                        // TO
+                        almostCompiledCode.Add(new AlmostByte(sTok.VarName));
 
-                    //BasicValueToken val = (cTok as SetVarToken).SetExpression.ConstValue;
-                    //[2][Size of Value in bytes (1 Byte)][Address (8 Bytes)][Fixed Value (x Bytes)]
-                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
-                    // SIZE OF TYPE
-                    almostCompiledCode.Add(new AlmostByte((byte)varSize2));
-                    // FROM
-                    almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).SetExpression.Variable));
-                    // TO
-                    almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).VarName));
-
-                    if (varSize1 != varSize2)
-                        throw new Exception($"CANNOT WRITE {varSize2} BYTES INTO INTO {varSize1} BYTES! ({cTok})");
+                        if (varSize1 != varSize2)
+                            throw new Exception($"CANNOT WRITE {varSize2} BYTES INTO INTO {varSize1} BYTES! ({cTok})");
+                    }
                 }
                 #endregion
                 #region SET VAR TO EXPR
@@ -805,7 +849,7 @@ namespace MAAL.Compiling
 
 
                     almostCompiledCode.Add(new AlmostByte($"Writing Result of Expression into Var"));
-                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM]));
                     // SIZE OF TYPE
                     almostCompiledCode.Add(new AlmostByte((byte)varSize));
                     // FROM
@@ -814,8 +858,51 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).VarName));
                 }
                 #endregion
+                #region SET EXPR TO CONST
+                else if (cTok is SetVarToken && (cTok as SetVarToken).SetLocation &&
+                    !(cTok as SetVarToken).VarLocation.IsConstValue)
+                {
+                    SetVarToken sTok = cTok as SetVarToken;
+
+                    byte setExprSize = DaTyToSize[GetTypeFromExpression(sTok.SetExpression)];
+
+                    // Compile Left-hand side into GeneralUseAddr (ADDR TO SET)
+                    CompileExpression(sTok.VarLocation, almostCompiledCode, StartingGeneralUseAddr);
+                    // Compile Right side into GeneralUseAddr + 8
+                    CompileExpression(sTok.SetExpression, almostCompiledCode, StartingGeneralUseAddr + 8);
+
+                    // Set GeneralUseAddr + 16 to GeneralUseAddr + 8 (ADDR TO GET FROM)
+                    WriteBytesToAddr(almostCompiledCode, StartingGeneralUseAddr + 16, BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr + 8));
 
 
+                    // USE InstructionEnum.__DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM
+
+                    almostCompiledCode.Add(new AlmostByte($"Setting The Address {sTok.VarLocation} to {sTok.SetExpression}"));
+
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.__DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM]));
+
+                    almostCompiledCode.Add(new AlmostByte(setExprSize));
+
+                    almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)(StartingGeneralUseAddr + 16))));
+
+                    almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)(StartingGeneralUseAddr))));
+
+                }
+                #endregion
+                #region DEFINE LOCATION
+                else if (cTok is DefineLocationToken)
+                {
+                    almostCompiledCode.Add(new AlmostByte($"LOCATION: {cTok}"));
+                    almostCompiledCode.Add(new AlmostByte(cTok as DefineLocationToken));
+                }
+                #endregion
+                #region DEFINE SUBROUTINE
+                else if (cTok is DefineSubroutineToken)
+                {
+                    almostCompiledCode.Add(new AlmostByte($"SUBROUTINE: {cTok}"));
+                    almostCompiledCode.Add(new AlmostByte(cTok as DefineSubroutineToken));
+                }
+                #endregion
 
                 else
                 {
@@ -870,11 +957,33 @@ namespace MAAL.Compiling
             public string Comment = null;
             public bool IsComment = false;
 
+            public DefineLocationToken DefineLocation = null;
+            public bool IsDefineLocation = false;
+            public DefineSubroutineToken DefineSubroutine = null;
+            public bool IsDefineSubroutine = false;
+
+
             public AlmostByte(string comment)
             {
                 Comment = comment;
                 IsComment = true;
                 Size = 0;
+            }
+
+            public AlmostByte(DefineSubroutineToken sub)
+            {
+                DefineSubroutine = sub;
+                IsDefineSubroutine = true;
+                Size = 1;
+                FixedData = new byte[1] { 0 };
+            }
+
+            public AlmostByte(DefineLocationToken loc)
+            {
+                DefineLocation = loc;
+                IsDefineLocation = true;
+                Size = 1;
+                FixedData = new byte[1] { 0 };
             }
 
             public AlmostByte(byte[] fixedData)
@@ -922,6 +1031,10 @@ namespace MAAL.Compiling
                     return $"<{Size} Bytes reserved for - {DeclaredVarName}>";
                 if (IsComment)
                     return $"<COMMENT: {Comment}>";
+                if (IsDefineLocation)
+                    return $"<1 Byte (0) serving as Location Point>";
+                if (IsDefineSubroutine)
+                    return $"<1 Byte (0) serving as Subroutine Location Point>";
 
                 return "<Unknown>";
             }
@@ -954,13 +1067,14 @@ namespace MAAL.Compiling
                 return BEC.DoubleToByteArr(val.Value_Double);
 
             throw new Exception($"Can't convert {val} to byte[]!");
-            return null;
         }
 
         public static int GetSizeFromVarToken(VarNameToken var)
         {
             if (var.VarType.PointerCount - var.DereferenceCount > 0)
                 return 8; // Pointers are 8 bytes
+            if (var.UseAddr)
+                return 8;
             return TypeToken.TypeSizeList[TypeToken.TypeList.IndexOf(var.VarType.BaseType)];
         }
 

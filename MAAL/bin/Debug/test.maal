@@ -1,7 +1,14 @@
 loc MAIN:
-	int x = 10;
 
-	float z = ((float)x + 1.0);
-	//double y = (int)(x+0);
+	int x = 5;
 
-	return;
+	sub TEST;
+
+	exit;
+
+
+
+sub TEST:
+	x = 10;
+
+	ret;

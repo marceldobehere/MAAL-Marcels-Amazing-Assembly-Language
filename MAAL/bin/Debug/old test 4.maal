@@ -1,0 +1,17 @@
+loc MAIN:
+
+	int x = 5;
+	((ulong)x + (ulong)1) = 25;
+
+
+
+	//int x = 10;
+	//int* bruh2 = (&x + 1);
+
+	//float z = (x + 1);
+	//int* bruh = &x;
+	
+
+	//double y = (int)(x+0);
+
+	return;

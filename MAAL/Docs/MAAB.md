@@ -187,19 +187,24 @@ then cast it into the second datatype and
 save the casted version into the given address.
 
 
-
-
 ### Jumping
 
 
+
+
+
 ### Subroutines
+
 
 #### Entering a subroutine
 
 
 
 #### Returning from a subroutine
-
+You can return from a subroutine using the return command.
+```
+[30]
+```
 
 
 ### Conditional Jumps
