@@ -197,6 +197,20 @@ namespace MAAL.Parsing
                             }
                         }
                         #endregion
+                        #region PRINT
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("print") && 
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new PrintToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
 
                         #region POINTERS  INT**
                         // int*
@@ -798,6 +812,11 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                             change |= ParserHelpers.TryOptimizeExpressionToken(sTok.Arguments[i]);
                         if (change)
                             break;
+                    }
+                    if (cTok is PrintToken && ParserHelpers.TryOptimizeExpressionToken((cTok as PrintToken).Argument))
+                    {
+                        change = true;
+                        break;
                     }
                 }
             }

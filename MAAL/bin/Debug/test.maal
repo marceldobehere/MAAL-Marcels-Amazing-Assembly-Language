@@ -3,8 +3,9 @@ loc MAIN:
 char x = 'H';
 
 
-//print x;
-syscall (char)1 (char)1 &x 12;
+print x;
+print 10 + 10;
+//syscall (char)1 (char)1 &x 12;
 exit;
 
 

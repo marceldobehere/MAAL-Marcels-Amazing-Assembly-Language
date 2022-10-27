@@ -104,7 +104,7 @@ namespace MAAL
 
                 if (token is EndCommandToken || token is SetVarToken || token is DefineLocationToken ||
                     token is DefineSubroutineToken || token is ExitToken || token is ReturnToken ||
-                    token is ConditionalJumpToken || token is FixedJumpToken || token is SyscallToken)
+                    token is ConditionalJumpToken || token is FixedJumpToken || token is SyscallToken || token is PrintToken)
                     Console.WriteLine();
             }
             Console.WriteLine();

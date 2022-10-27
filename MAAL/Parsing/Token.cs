@@ -688,6 +688,21 @@ namespace MAAL.Parsing
         }
     }
 
+    public class PrintToken : Token
+    {
+        public ExpressionToken Argument;
+
+        public PrintToken (ExpressionToken argument)
+        {
+            Argument = argument;
+        }
+
+        public override string ToString()
+        {
+            return $"<PRINT {Argument}>";
+        }
+    }
+
 }
 
 // 12
