@@ -188,16 +188,27 @@ save the casted version into the given address.
 
 
 ### Jumping
-
-
-
+Jumps to an address in the RAM (also where the code resides yes).
+```
+[20][Address to jump to (8 Bytes)]
+```
+```
+[21][Address of Address to jump to (8 Bytes)]
+```
 
 
 ### Subroutines
+Subroutines are like jumps, but when the subroutine finishes, 
+it goes back to the piece of code where it jumped.
 
 
 #### Entering a subroutine
-
+```
+[25][Address of subroutine(8 Bytes)]
+```
+```
+[26][Address of Address of subroutine(8 Bytes)]
+```
 
 
 #### Returning from a subroutine
@@ -214,13 +225,27 @@ You can return from a subroutine using the return command.
 
 
 ### Syscalls
-
+Syscalls are yes.
+```
+[50]
+[Syscall Number (2 Bytes)]
+[Argument 1 (x Bytes)]
+[Argument 2 (y Bytes)]
+[Argument n (z Bytes)]
+```
 
 #### Console
+There are many syscalls connected to the console.
+The first byte of the syscall is 0x01.
 
 
 ##### Printing a char
+```
+[50]
+[0x01.00] // Sycall for Console and Print Char
+[Byte to print (1 Byte)]
 
+```
 
 
 
@@ -228,6 +253,19 @@ You can return from a subroutine using the return command.
 
 
 #### free
+
+
+
+#### Syscall Table
+This is the table
+
+|First Byte|Last Byte|Decimal Form|Description|
+|----------|---------|------------|-----------|
+|0x01      |0x00     |256         |Print a char to the console|
+
+
+
+
 
 
 

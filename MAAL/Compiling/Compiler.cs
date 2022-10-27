@@ -21,7 +21,11 @@ namespace MAAL.Compiling
             COPY_VAR_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
             OPERATION,
             CAST,
-            RETURN
+            RETURN,
+            JUMP_FIX,
+            ENTER_SUBROUTINE_FIX,
+            JUMP_VAR,
+            ENTER_SUBROUTINE_VAR,
 
         }
 
@@ -36,6 +40,10 @@ namespace MAAL.Compiling
             {InstructionEnum.OPERATION, 10},
             {InstructionEnum.CAST, 15},
             {InstructionEnum.RETURN, 30},
+            {InstructionEnum.JUMP_FIX, 20},
+            {InstructionEnum.ENTER_SUBROUTINE_FIX, 25},
+            {InstructionEnum.JUMP_VAR, 21},
+            {InstructionEnum.ENTER_SUBROUTINE_VAR, 26},
         };
 
         #region OP AND VARTYPE STUFF
@@ -697,7 +705,17 @@ namespace MAAL.Compiling
             return size;
         }
 
-
+        public static ulong GetAddrOfAlmostByte(List<AlmostByte> almostCompiledCode, AlmostByte toSearchFor)
+        {
+            ulong addr = 0;// (ulong)-1;
+            for (int i = 0; i < almostCompiledCode.Count; i++)
+            {
+                if (almostCompiledCode[i] == toSearchFor)
+                    return addr;
+                addr += (ulong)almostCompiledCode[i].Size;
+            }
+            throw new Exception($"ADDR OF {toSearchFor} NOT FOUND!");
+        }
 
 
         public static List<byte> Compile(Parser.ParsedStuff stuff)
@@ -707,13 +725,16 @@ namespace MAAL.Compiling
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
 
 
+            almostCompiledCode.Add(new AlmostByte("1 BYTE RESERVED BC NO NULL POINTERS HERE"));
+            almostCompiledCode.Add(new AlmostByte(0));
+
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA"));
             foreach (var usedVar in stuff.Variables)
                 almostCompiledCode.Add(new AlmostByte(usedVar.Value));//reservedMemory.Add(new ReservedMemoryChunk(usedVar.Value));
 
             almostCompiledCode.Add(new AlmostByte("DATA FOR GENERAL STUFF"));
             StartingGeneralUseAddr = GetLenghtOfByteList(almostCompiledCode);
-            almostCompiledCode.Add(new AlmostByte(new byte[5 * 8]));
+            almostCompiledCode.Add(new AlmostByte(new byte[2 * 8]));
 
 
             almostCompiledCode.Add(new AlmostByte("DATA FOR MATH STUFF"));
@@ -735,7 +756,7 @@ namespace MAAL.Compiling
                 }
                 #endregion
                 #region RETURN
-                if (cTok is ReturnToken)
+                else if (cTok is ReturnToken)
                 {
                     almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.RETURN]));
                 }
@@ -858,7 +879,7 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte((cTok as SetVarToken).VarName));
                 }
                 #endregion
-                #region SET EXPR TO CONST
+                #region SET EXPR TO EXPR
                 else if (cTok is SetVarToken && (cTok as SetVarToken).SetLocation &&
                     !(cTok as SetVarToken).VarLocation.IsConstValue)
                 {
@@ -903,20 +924,50 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(cTok as DefineSubroutineToken));
                 }
                 #endregion
+                #region JUMP
+                else if (cTok is FixedJumpToken && (cTok as FixedJumpToken).IsLocation)
+                {
+                    FixedJumpToken jTok = (cTok as FixedJumpToken);
+                    LocationNameToken lTok = jTok.Location;
+                    if (lTok.JumpToFixedAddress)
+                    {
+                        CompileExpression(lTok.Address, almostCompiledCode, StartingGeneralUseAddr);
+
+                        almostCompiledCode.Add(new AlmostByte($"JUMPING TO LOCATION: {lTok.Address}"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_VAR]));
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr((ulong)StartingGeneralUseAddr)));
+                    }
+                    else
+                    {
+                        almostCompiledCode.Add(new AlmostByte($"JUMPING TO LOCATION: {lTok}"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_FIX]));
+                        almostCompiledCode.Add(new AlmostByte(lTok));
+                    }
+                }
+                #endregion
+                #region SUB
+                else if (cTok is FixedJumpToken && (cTok as FixedJumpToken).IsSubroutine)
+                {
+                    FixedJumpToken jTok = (cTok as FixedJumpToken);
+                    SubroutineNameToken sTok = jTok.Subroutine;
+
+                    almostCompiledCode.Add(new AlmostByte($"ENTERING SUB AT LOCATION: {sTok}"));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.ENTER_SUBROUTINE_FIX]));
+                    almostCompiledCode.Add(new AlmostByte(sTok));
+                }
+                #endregion
 
                 else
                 {
-                    Console.WriteLine($"<ERR: Compiler can't compile Token: {cTok}!>");
-                    //throw new Exception($"Compiler can't compile Token: {cTok}!");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"<ERROR: COMPILER CANT COMPILE {cTok}!>");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    throw new Exception($"<ERROR: COMPILER CANT COMPILE {cTok}!>");
                 }
             }
 
             Console.WriteLine($"\nMAX OP DEEPNESS: {MaxOperationDeepness}");
             almostCompiledCode[StartingOperationIndex] = new AlmostByte(new byte[(1 + 2 * MaxOperationDeepness) * 8]);
-
-
-
-
 
             Console.WriteLine("\n\nAlmost Bytes:");
             foreach (var almostByte in almostCompiledCode)
@@ -931,8 +982,76 @@ namespace MAAL.Compiling
             }
             Console.WriteLine();
 
+            Dictionary<string, ulong> varAddresses = new Dictionary<string, ulong>();
+            Dictionary<string, ulong> locAddresses = new Dictionary<string, ulong>();
+            Dictionary<string, ulong> subAddresses = new Dictionary<string, ulong>();
 
+            foreach (AlmostByte aByte in almostCompiledCode)
+            {
+                if (aByte.IsDefineLocation)
+                {
+                    locAddresses.Add(aByte.DefineLocation.LocationName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    //compiledCode.AddRange(aByte.FixedData);
+                }
+                else if (aByte.IsDefineSubroutine)
+                {
+                    subAddresses.Add(aByte.DefineSubroutine.SubroutineName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    //compiledCode.AddRange(aByte.FixedData);
+                }
+                else if (aByte.IsDeclaredVarName)
+                {
+                    varAddresses.Add(aByte.DeclaredVarName.VarName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    //compiledCode.AddRange(aByte.FixedData);
+                }
+
+            }
+
+
+
+
+
+            Console.WriteLine();
             List<byte> compiledCode = new List<byte>();
+            foreach (AlmostByte aByte in almostCompiledCode)
+            {
+                if (aByte.IsComment)
+                    continue;
+                else if (aByte.IsFixedData)
+                    compiledCode.AddRange(aByte.FixedData);
+                else if (aByte.IsDefineLocation)
+                {
+                    compiledCode.AddRange(aByte.FixedData);
+                }
+                else if (aByte.IsDefineSubroutine)
+                {
+                    compiledCode.AddRange(aByte.FixedData);
+                }
+                else if (aByte.IsDeclaredVarName)
+                {
+                    compiledCode.AddRange(aByte.FixedData);
+                }
+                else if (aByte.IsVarName)
+                {
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(varAddresses[aByte.VarName.VarName]));
+                }
+                else if (aByte.IsLocationName)
+                {
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(locAddresses[aByte.LocationName.Location.LocationName]));
+                }
+                else if (aByte.IsSubroutineName)
+                {
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(subAddresses[aByte.SubroutineName.Subroutine.SubroutineName]));
+                }
+
+
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"<ERROR: CANT COMPILE {aByte}!>");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    throw new Exception($"<ERROR: CANT COMPILE {aByte}!>");
+                }
+            }
 
 
 
@@ -961,6 +1080,31 @@ namespace MAAL.Compiling
             public bool IsDefineLocation = false;
             public DefineSubroutineToken DefineSubroutine = null;
             public bool IsDefineSubroutine = false;
+
+            public LocationNameToken LocationName = null;
+            public bool IsLocationName = false;
+
+            public SubroutineNameToken SubroutineName = null;
+            public bool IsSubroutineName = false;
+
+
+
+            public AlmostByte(LocationNameToken loc)
+            {
+                LocationName = loc;
+                IsLocationName = true;
+                FixedData = new byte[8];
+                Size = FixedData.Length;
+            }
+
+            public AlmostByte(SubroutineNameToken sub)
+            {
+                SubroutineName = sub;
+                IsSubroutineName = true;
+                FixedData = new byte[8];
+                Size = FixedData.Length;
+            }
+
 
 
             public AlmostByte(string comment)
@@ -1004,6 +1148,7 @@ namespace MAAL.Compiling
             {
                 //FixedData = new byte[8];
                 Size = 8;
+                FixedData = new byte[Size];
                 IsVarName = true;
                 VarName = varName;
             }
@@ -1012,6 +1157,7 @@ namespace MAAL.Compiling
             {
                 //FixedData = new byte[8];
                 Size = GetSizeFromTypeToken(decVarName.VarType);
+                FixedData = new byte[Size];
                 IsDeclaredVarName = true;
                 DeclaredVarName = decVarName;
             }
@@ -1035,6 +1181,10 @@ namespace MAAL.Compiling
                     return $"<1 Byte (0) serving as Location Point>";
                 if (IsDefineSubroutine)
                     return $"<1 Byte (0) serving as Subroutine Location Point>";
+                if (IsLocationName)
+                    return $"<{Size} Bytes for Addr of {LocationName}>";
+                if (IsSubroutineName)
+                    return $"<{Size} Bytes for Addr of {SubroutineName}>";
 
                 return "<Unknown>";
             }

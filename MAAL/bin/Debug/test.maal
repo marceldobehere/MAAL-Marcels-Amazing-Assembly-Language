@@ -1,11 +1,9 @@
 loc MAIN:
 
 	int x = 5;
-
 	sub TEST;
 
 	exit;
-
 
 
 sub TEST:

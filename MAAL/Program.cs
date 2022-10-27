@@ -16,7 +16,7 @@ namespace MAAL
     // Marcels Amazing Assembly Bytecode
     class Program
     {
-        private static string[] stages = new string[] {"starting", "parsing", "compiling", "writing to file"};
+        private static string[] stages = new string[] { "starting", "parsing", "compiling", "writing to file" };
         private static int stage = 0;
 
         static void Main(string[] args)
@@ -124,13 +124,17 @@ namespace MAAL
                 Console.WriteLine($"{data} ({(char)data})");
 
             Console.WriteLine();
+            Console.WriteLine($"Compiled Data Size: {compiledData.Count} Bytes.");
             Console.WriteLine();
 
 
 
             stage = 3;
             Console.WriteLine("> Writing to file...");
-            //List<byte> compiledData = Compiler.Compile(stuff);
+            using (BinaryWriter writer = new BinaryWriter(new FileStream($"{args[0]}.maab", FileMode.Create)))
+            {
+                writer.Write(compiledData.ToArray());
+            }
             Console.WriteLine("> Writing to file done!");
         }
     }
