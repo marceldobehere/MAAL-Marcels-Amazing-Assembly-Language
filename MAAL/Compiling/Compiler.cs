@@ -63,7 +63,7 @@ namespace MAAL.Compiling
             CONSOLE,
         }
 
-        public Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
+        public static Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
         {
             {SyscallEnum.NONE, 0 },
             {SyscallEnum.CONSOLE, 1 },
@@ -76,7 +76,7 @@ namespace MAAL.Compiling
             PRINT_VAL,
         }
 
-        public Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
+        public static Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
         {
             {SyscallConsoleEnum.NONE, 0 },
             {SyscallConsoleEnum.PRINT_CHAR, 1 },
@@ -1174,11 +1174,6 @@ namespace MAAL.Compiling
                         throw new Exception($"{sysArg2} IS NOT CHAR! {cTok}");
 
 
-
-                    //int argCount = sTok.Arguments.Count - 2;
-                    //if (argCount * 8 > StartingGeneralUseSize)
-                    //    throw new Exception($"TOO MANY ARGUMENTS FOR SYSCALL! (MAXIMUM AMOUNT IS {StartingGeneralUseSize / 8}) {sTok}");
-
                     AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
 
                     {
@@ -1209,31 +1204,12 @@ namespace MAAL.Compiling
                 }
                 #endregion
                 #region PRINT
-                else if (cTok is SyscallToken)
+                else if (cTok is PrintToken)
                 {
-                    //SyscallToken sTok = cTok as SyscallToken;
-
-                    //if (sTok.Arguments.Count < 2)
-                    //    throw new Exception($"SYSCALL HAS TOO LITTLE ARGS! {sTok}");
-                    //if (!(sTok.Arguments[0].IsConstValue))
-                    //    throw new Exception($"SYSCALL ID 1 IS NOT FIXED! {sTok}");
-                    //if (!(sTok.Arguments[1].IsConstValue))
-                    //    throw new Exception($"SYSCALL ID 2 IS NOT FIXED! {sTok}");
-                    //BasicValueToken sysArg1 = sTok.Arguments[0].ConstValue;
-                    //BasicValueToken sysArg2 = sTok.Arguments[1].ConstValue;
-
-                    //if (sysArg1.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
-                    //    throw new Exception($"{sysArg1} IS NOT CHAR! {cTok}");
-                    //if (sysArg2.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
-                    //    throw new Exception($"{sysArg2} IS NOT CHAR! {cTok}");
+                    PrintToken pTok = cTok as PrintToken;
 
 
 
-                    ////int argCount = sTok.Arguments.Count - 2;
-                    ////if (argCount * 8 > StartingGeneralUseSize)
-                    ////    throw new Exception($"TOO MANY ARGUMENTS FOR SYSCALL! (MAXIMUM AMOUNT IS {StartingGeneralUseSize / 8}) {sTok}");
-
-                    //AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
 
                     //{
                     //    int tOffset = 3;
@@ -1245,21 +1221,30 @@ namespace MAAL.Compiling
                     //    }
                     //}
 
-                    //almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SOMETHING IG"));
-                    //almostCompiledCode.Add(cmdByte);
-                    //almostCompiledCode.Add(new AlmostByte((byte)sysArg1.Value_Char));
-                    //almostCompiledCode.Add(new AlmostByte((byte)sysArg2.Value_Char));
+                    if (pTok.Argument.IsConstValue && pTok.Argument.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
+                    {
+                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR PRINT CHAR"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
+                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_CHAR]));
+                        almostCompiledCode.Add(new AlmostByte((byte)pTok.Argument.ConstValue.Value_Char));
+                    }
+                    else
+                    {
+                        var argType = GetTypeFromExpression(pTok.Argument);
+                        int argSize = DaTyToSize[argType];
 
-                    //{
-                    //    int tOffset = 3;
-                    //    for (int i = 2; i < sTok.Arguments.Count; i++)
-                    //    {
-                    //        int tSize = DaTyToSize[GetTypeFromExpression(sTok.Arguments[i])];
-                    //        almostCompiledCode.Add(new AlmostByte(new byte[tSize]));
-                    //        //CompileExpression(sTok.Arguments[i], almostCompiledCode, new AlmostByte(cmdByte, tOffset, tSize));
-                    //        tOffset += tSize;
-                    //    }
-                    //}
+                        AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                        CompileExpression(pTok.Argument, almostCompiledCode, new AlmostByte(cmdByte, 4, argSize));
+
+                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR PRINT VAL"));
+                        almostCompiledCode.Add(cmdByte);
+                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_VAL]));
+                        almostCompiledCode.Add(new AlmostByte(DaTyToByte[argType]));
+                        almostCompiledCode.Add(new AlmostByte(new byte[argSize]));
+                    }
                 }
                 #endregion
 

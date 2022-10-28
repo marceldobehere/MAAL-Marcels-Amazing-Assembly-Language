@@ -206,7 +206,7 @@ The first byte of the syscall is 0x01.
 ##### Printing values
 ```
 [50]
-[0x01.02] // Sycall for Console and Print Char
+[0x01.02] // Sycall for Console and Print Value
 [Datatype of data (1 Byte)]
 [Data to print (x Bytes)]
 ```

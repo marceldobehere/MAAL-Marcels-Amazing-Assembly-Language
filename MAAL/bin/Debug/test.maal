@@ -2,12 +2,29 @@ loc MAIN:
 //char* test;// = "Hello, world!";
 //syscall (char)1 (char)1 'H';
 
-//char x = 'H';
-//print x;
+print 'A';
+
+char x = 'H';
+print x;
+
+
+int y = 10;
+print y + 1;
 
 
 
-//exit;
+exit;
+
+
+// TODO:
+// GET STRINGS WORKING IN COMPILER
+// ADD POINTER MATH
+// ADD DEREF STUFF
+// ADD FANCY IFs
+// ADD FANCY WHILEs
+// ADD NAMESPACES
+
+
 
 
 /*
@@ -54,16 +71,7 @@ loc LoopEnd:
 //exit;
 
 
-// TODO:
-// ADD SYSCALLS
-// IDEA:
-//      REDO MOST COMPILE THINGS TO COPY THE VALUE INTO THE ARGUMENT DIRECTLY
-// GET STRINGS WORKING IN COMPILER
-// ADD POINTER MATH
-// ADD DEREF STUFF
-// ADD FANCY IFs
-// ADD FANCY WHILEs
-// ADD NAMESPACES
+
 
 
 
