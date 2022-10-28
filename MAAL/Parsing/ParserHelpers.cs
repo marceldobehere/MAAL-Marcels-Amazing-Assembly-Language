@@ -642,7 +642,9 @@ namespace MAAL.Parsing
                 {
                     TryOptimizeExpressionToken(tok.Left);
                     TryOptimizeExpressionToken(tok.Right);
-                    if (tok.Left.IsConstValue && tok.Right.IsConstValue)
+                    if (tok.Left.IsConstValue && tok.Right.IsConstValue &&
+                        tok.Left.ConstValue.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR_POINTER &&
+                        tok.Right.ConstValue.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                     {
                         #region INT + INT
                         if (tok.Left.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.INT &&

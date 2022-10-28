@@ -1,9 +1,16 @@
 loc MAIN:
 
-char* test = "Hello, world!";
-print test;
+print "Hello, world!" + (ulong)1;
 
 exit;
+
+/*
+syscall (char)1 (char)3 "Hello, world!";
+print "Hoi!";
+
+//char* test = "Hello, world!";
+//print test;
+*/
 
 
 // TODO:

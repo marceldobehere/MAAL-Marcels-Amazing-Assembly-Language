@@ -188,6 +188,24 @@ you can call syscalls directly by doing
 syscall (byte)SYSCALL_NUMBER_1 (byte)SYSCALL_NUMBER_2 ARG_1 ARG_2 ARG_N;
 ```
 
+#### Printing a value to the console
+```
+print 10;
+print x;
+```
+It will print the variable to the console.
+If the datatype is char then it will print the ASCII representation.
+
+print also works with pointers.
+```
+print "Hello, world!";
+```
+
+```
+char* test = "Hoi!";
+print test;
+```
+
 
 ### Including other files
 You can include files by using

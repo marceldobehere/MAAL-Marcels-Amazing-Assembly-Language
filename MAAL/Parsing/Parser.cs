@@ -71,6 +71,21 @@ namespace MAAL.Parsing
         }
         #endregion
 
+        public static void AddStringIfPossible(BasicValueToken tok, ParsedStuff stuff)
+        {
+            if (tok.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                return;
+
+            if (!stuff.Strings.Contains(tok.Value_CharPointer))
+                stuff.Strings.Add(tok.Value_CharPointer);
+        }
+
+        public static void AddStringIfPossible(ExpressionToken tok, ParsedStuff stuff)
+        {
+            if (tok.IsConstValue)
+                AddStringIfPossible(tok.ConstValue, stuff);
+        }
+
         public static ParsedStuff ParseStringAdvanced(List<Token> data, ParsedStuff stuff = null)
         {
             if (stuff == null)
@@ -91,6 +106,7 @@ namespace MAAL.Parsing
                         #region STRINGS
                         if (cTok is BasicValueToken && (cTok as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                         {
+                            //Console.WriteLine("BRUH");
                             BasicValueToken sTok = (cTok as BasicValueToken);
                             if (!stuff.Strings.Contains(sTok.Value_CharPointer))
                                 stuff.Strings.Add(sTok.Value_CharPointer);
@@ -185,6 +201,7 @@ namespace MAAL.Parsing
                                     syscallReady = false;
                                     break;
                                 }
+                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + argumentCount + 1]), stuff);
 
                                 argumentCount++;
                             }
@@ -209,11 +226,12 @@ namespace MAAL.Parsing
                         #endregion
                         #region PRINT
                         else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
-                            (cTok as KeywordToken).Keyword.Equals("print") && 
+                            (cTok as KeywordToken).Keyword.Equals("print") &&
                             data[mIndex + 2] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
                             data[mIndex] = new PrintToken(ConvToExpressionToken(data[mIndex + 1]));
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 1]), stuff);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
 
@@ -253,6 +271,8 @@ namespace MAAL.Parsing
                             (data[mIndex + 1] is BasicValueToken || data[mIndex + 1] is ExpressionToken ||
                             data[mIndex + 1] is GenericNameToken || data[mIndex + 1] is VarNameToken))
                         {
+                            if (CouldBeExpessionToken(data[mIndex + 1]))
+                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + 1]), stuff);
                             data.RemoveAt(mIndex);
                             data.RemoveAt(mIndex + 1);
                             change = true;
@@ -306,7 +326,11 @@ namespace MAAL.Parsing
                             if (data[mIndex + 1] is LocationNameToken)
                                 data[mIndex] = new FixedJumpToken(data[mIndex + 1] as LocationNameToken);
                             else
+                            {
+                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + 1]), stuff);
                                 data[mIndex] = new FixedJumpToken(new LocationNameToken(ConvToExpressionToken(data[mIndex + 1])));
+                            }
+
 
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -339,9 +363,14 @@ namespace MAAL.Parsing
                             if (data[mIndex + 2] is LocationNameToken)
                                 loc = data[mIndex + 2] as LocationNameToken;
                             else
+                            {
                                 loc = new LocationNameToken(ConvToExpressionToken(data[mIndex + 2]));
+                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + 2]), stuff);
+                            }
+
 
                             data[mIndex] = new ConditionalJumpToken(ConvToExpressionToken(data[mIndex + 1]), loc);
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 1]), stuff);
 
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -358,7 +387,7 @@ namespace MAAL.Parsing
                             data[mIndex + 3] is EndCommandToken)
                         {
                             data[mIndex] = new ConditionalJumpToken(ConvToExpressionToken(data[mIndex + 1]), data[mIndex + 2] as SubroutineNameToken);
-
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 1]), stuff);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -403,6 +432,7 @@ namespace MAAL.Parsing
                                 CouldBeExpessionToken(data[mIndex + 1]))
                             {
                                 ExpressionToken tTok = ConvToExpressionToken(data[mIndex + 1]);
+                                AddStringIfPossible(tTok, stuff);
 
                                 data[mIndex] = new ExpressionToken(new OperatorToken(cOp), tTok);
                                 data.RemoveAt(mIndex + 1);
@@ -477,6 +507,7 @@ namespace MAAL.Parsing
                             foreach (var pair in stuff.Variables)
                                 tempParsedStuff.Variables.Add(pair.Key, pair.Value);
                             ParseStringAdvanced(tempList, tempParsedStuff);
+                            stuff.Strings.AddRange(tempParsedStuff.Strings);
 
 
                             if (tempParsedStuff.parsedTokens[0] is TypeToken)
@@ -513,6 +544,8 @@ namespace MAAL.Parsing
                             {
                                 ExpressionToken lTok = ConvToExpressionToken(data[mIndex - 1]);
                                 ExpressionToken rTok = ConvToExpressionToken(data[mIndex + 1]);
+                                AddStringIfPossible(lTok, stuff);
+                                AddStringIfPossible(rTok, stuff);
 
                                 data[mIndex - 1] = new ExpressionToken(
                                     lTok,
@@ -532,6 +565,7 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
                             ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 1]);
+                            AddStringIfPossible(exprTok, stuff);
 
                             data[mIndex] = new ExpressionToken(new CastToken(exprTok, (cTok as CastTypeToken).CastType));
                             data.RemoveAt(mIndex + 1);
@@ -589,6 +623,7 @@ namespace MAAL.Parsing
                             string varName = (cTok as VarNameToken).VarName;
 
                             ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 2]);
+                            AddStringIfPossible(exprTok, stuff);
                             SetVarToken tok = new SetVarToken(cTok as VarNameToken, exprTok);
 
                             data[mIndex] = tok;
@@ -663,7 +698,9 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
                             ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 1]);
+                            AddStringIfPossible(exprTok, stuff);
                             SetVarToken tok = new SetVarToken(ConvToExpressionToken(data[mIndex - 1]), exprTok);
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex - 1]), stuff);
 
                             data[mIndex] = tok;
                             data.RemoveAt(mIndex + 1);
@@ -735,6 +772,7 @@ namespace MAAL.Parsing
                                 cOp = OperatorToken.OperatorEnum.Mod;
 
                             ExpressionToken exprTok = ConvToExpressionToken(data[mIndex + 1]);
+                            AddStringIfPossible(exprTok, stuff);
 
                             tok = new SetVarToken((data[mIndex - 1] as VarNameToken),
                             new ExpressionToken(
