@@ -23,6 +23,7 @@ namespace MAAL.Compiling
 
             OPERATION_FIX,
             CAST,
+            CAST_FIX,
 
             JUMP_FIX,
             ENTER_SUBROUTINE_FIX,
@@ -43,6 +44,7 @@ namespace MAAL.Compiling
 
             {InstructionEnum.OPERATION_FIX, 10},
             {InstructionEnum.CAST, 15},
+            {InstructionEnum.CAST_FIX, 16},
 
             {InstructionEnum.JUMP_FIX, 20},
             {InstructionEnum.ENTER_SUBROUTINE_FIX, 25},
@@ -609,6 +611,10 @@ namespace MAAL.Compiling
 
         public static void CastXToY(List<AlmostByte> almostCompiledCode, AlmostByte addrX, BasicValueToken.BasicValueTypeEnum typeX, AlmostByte addrY, BasicValueToken.BasicValueTypeEnum typeY)
         {
+            if (addrY.IsAlmostByteOffset)
+                if (DaTyToSize[typeY] != addrY.AlmostByteDataSize)
+                    throw new Exception($"CANT PUT {DaTyToSize[typeY]} BYTES INTO {addrY.AlmostByteDataSize} BYTES! ({typeY}){addrX} => {addrY}");
+
             almostCompiledCode.Add(new AlmostByte($"CASTING {typeX} (at {addrX}) to {typeY} (at {addrY})"));
             almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.CAST]));
             // TXPE X
@@ -621,7 +627,7 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(addrY);
         }
 
-        public static void CompileExpression(ExpressionToken tok, List<AlmostByte> almostCompiledCode, AlmostByte resAddr = null, int layer = 0)
+        public static void CompileExpression(ExpressionToken tok, List<AlmostByte> almostCompiledCode, AlmostByte resAddr)
         {
             if (resAddr == null)
                 resAddr = new AlmostByte(BEC.UInt64ToByteArr((ulong)ResAddr));
@@ -681,17 +687,46 @@ namespace MAAL.Compiling
             if (tok.IsCast)
             {
                 var exprTypeLeft = GetTypeFromExpression(tok.Cast.ToCast);
+                var exprSize = DaTyToSize[exprTypeLeft];
                 var castType = GetTypeFromExpression(tok);
                 var castSize = DaTyToSize[castType];
                 if (resAddr.IsAlmostByteOffset)
                     if (castSize != resAddr.AlmostByteDataSize)
                         throw new Exception($"CANT PUT {castSize} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
 
-                //WriteBytesToAddr(almostCompiledCode, resAddr, new byte[8]);
 
-                CompileExpression(tok.Cast.ToCast, almostCompiledCode, new AlmostByte(BEC.UInt64ToByteArr(ResAddr)), layer + 1);
+                AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.CAST_FIX]);
 
-                CastXToY(almostCompiledCode, new AlmostByte(BEC.UInt64ToByteArr(ResAddr)), exprTypeLeft, resAddr, castType);
+                CompileExpression(tok.Cast.ToCast, almostCompiledCode, new AlmostByte(cmdByte, 3, exprSize));
+
+
+                almostCompiledCode.Add(new AlmostByte($"CASTING {tok.Cast.ToCast} from {exprTypeLeft} to {castType} (into {resAddr})"));
+                almostCompiledCode.Add(cmdByte);
+                // TXPE X
+                almostCompiledCode.Add(new AlmostByte(DaTyToByte[exprTypeLeft]));
+                // TXPE Y
+                almostCompiledCode.Add(new AlmostByte(DaTyToByte[castType]));
+                // X
+                almostCompiledCode.Add(new AlmostByte(new byte[exprSize]));
+                // ADDR Y
+                almostCompiledCode.Add(resAddr);
+
+
+
+
+
+                //var exprTypeLeft = GetTypeFromExpression(tok.Cast.ToCast);
+                //var castType = GetTypeFromExpression(tok);
+                //var castSize = DaTyToSize[castType];
+                //if (resAddr.IsAlmostByteOffset)
+                //    if (castSize != resAddr.AlmostByteDataSize)
+                //        throw new Exception($"CANT PUT {castSize} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
+
+                ////WriteBytesToAddr(almostCompiledCode, resAddr, new byte[8]);
+
+                //CompileExpression(tok.Cast.ToCast, almostCompiledCode, new AlmostByte(BEC.UInt64ToByteArr(ResAddr)));
+
+                //CastXToY(almostCompiledCode, new AlmostByte(BEC.UInt64ToByteArr(ResAddr)), exprTypeLeft, resAddr, castType);
                 return;
             }
 
@@ -701,13 +736,17 @@ namespace MAAL.Compiling
                 var exprTypeLeft = GetTypeFromExpression(tok.Left);
                 var exprSizeLeft = DaTyToSize[exprTypeLeft];
 
+                if (resAddr.IsAlmostByteOffset)
+                    if (exprSizeLeft != resAddr.AlmostByteDataSize)
+                        throw new Exception($"CANT PUT {exprSizeLeft} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
+
                 // Clear left address
                 //WriteBytesToAddr(almostCompiledCode, lAddr, new byte[8]);
 
                 AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.OPERATION_FIX]);
 
                 //int sizeExprLeft = GetTypeFromExpression(tok);
-                CompileExpression(tok.Left, almostCompiledCode, new AlmostByte(cmdByte,3, exprSizeLeft), layer + 1);
+                CompileExpression(tok.Left, almostCompiledCode, new AlmostByte(cmdByte,3, exprSizeLeft));
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
 
                 almostCompiledCode.Add(new AlmostByte($"Calculation of {tok.Operator} {tok.Left} into {resAddr}"));
@@ -728,13 +767,19 @@ namespace MAAL.Compiling
                 var strongerType = GetStrongerType(exprTypeLeft, exprTypeRight);
                 int allowedSize = DaTyToSize[strongerType];
 
+                var resType = GetResultTypeBasedOnTokensAndOperation(strongerType, tok.Operator.Operator, strongerType);
+                int resSize = DaTyToSize[resType];
+
+                if (resAddr.IsAlmostByteOffset)
+                    if (resSize != resAddr.AlmostByteDataSize)
+                        throw new Exception($"CANT PUT {resSize} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
 
                 AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.OPERATION_FIX]);
 
                 //int sizeExprLeft = GetTypeFromExpression(tok);
-                CompileExpression(tok.Left, almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize), layer + 1);
+                CompileExpression(tok.Left, almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize));
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
-                CompileExpression(tok.Right, almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize), layer + 1);
+                CompileExpression(tok.Right, almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize));
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr + 8, DaTyToSize[exprTypeLeft]);
 
                 if (exprTypeLeft != strongerType)
@@ -1161,6 +1206,60 @@ namespace MAAL.Compiling
                             tOffset += tSize;
                         }
                     }
+                }
+                #endregion
+                #region PRINT
+                else if (cTok is SyscallToken)
+                {
+                    //SyscallToken sTok = cTok as SyscallToken;
+
+                    //if (sTok.Arguments.Count < 2)
+                    //    throw new Exception($"SYSCALL HAS TOO LITTLE ARGS! {sTok}");
+                    //if (!(sTok.Arguments[0].IsConstValue))
+                    //    throw new Exception($"SYSCALL ID 1 IS NOT FIXED! {sTok}");
+                    //if (!(sTok.Arguments[1].IsConstValue))
+                    //    throw new Exception($"SYSCALL ID 2 IS NOT FIXED! {sTok}");
+                    //BasicValueToken sysArg1 = sTok.Arguments[0].ConstValue;
+                    //BasicValueToken sysArg2 = sTok.Arguments[1].ConstValue;
+
+                    //if (sysArg1.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
+                    //    throw new Exception($"{sysArg1} IS NOT CHAR! {cTok}");
+                    //if (sysArg2.ValueType != BasicValueToken.BasicValueTypeEnum.CHAR)
+                    //    throw new Exception($"{sysArg2} IS NOT CHAR! {cTok}");
+
+
+
+                    ////int argCount = sTok.Arguments.Count - 2;
+                    ////if (argCount * 8 > StartingGeneralUseSize)
+                    ////    throw new Exception($"TOO MANY ARGUMENTS FOR SYSCALL! (MAXIMUM AMOUNT IS {StartingGeneralUseSize / 8}) {sTok}");
+
+                    //AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    //{
+                    //    int tOffset = 3;
+                    //    for (int i = 2; i < sTok.Arguments.Count; i++)
+                    //    {
+                    //        int tSize = DaTyToSize[GetTypeFromExpression(sTok.Arguments[i])];
+                    //        CompileExpression(sTok.Arguments[i], almostCompiledCode, new AlmostByte(cmdByte, tOffset, tSize));
+                    //        tOffset += tSize;
+                    //    }
+                    //}
+
+                    //almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SOMETHING IG"));
+                    //almostCompiledCode.Add(cmdByte);
+                    //almostCompiledCode.Add(new AlmostByte((byte)sysArg1.Value_Char));
+                    //almostCompiledCode.Add(new AlmostByte((byte)sysArg2.Value_Char));
+
+                    //{
+                    //    int tOffset = 3;
+                    //    for (int i = 2; i < sTok.Arguments.Count; i++)
+                    //    {
+                    //        int tSize = DaTyToSize[GetTypeFromExpression(sTok.Arguments[i])];
+                    //        almostCompiledCode.Add(new AlmostByte(new byte[tSize]));
+                    //        //CompileExpression(sTok.Arguments[i], almostCompiledCode, new AlmostByte(cmdByte, tOffset, tSize));
+                    //        tOffset += tSize;
+                    //    }
+                    //}
                 }
                 #endregion
 

@@ -129,6 +129,17 @@ then cast it into the second datatype and
 save the casted version into the given address.
 
 
+```
+[16]
+[Datatype number of input (1 Byte)]
+[Datatype number of output (1 Byte)]
+[input (x Bytes)]
+[Addr of output (8 Bytes)]
+```
+
+
+
+
 ### Jumping
 Jumps to an address in the RAM (also where the code resides yes).
 ```

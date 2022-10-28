@@ -2,10 +2,12 @@ loc MAIN:
 //char* test;// = "Hello, world!";
 //syscall (char)1 (char)1 'H';
 
-char x = 'H';
-print x;
+//char x = 'H';
+//print x;
 
-exit;
+
+
+//exit;
 
 
 /*
