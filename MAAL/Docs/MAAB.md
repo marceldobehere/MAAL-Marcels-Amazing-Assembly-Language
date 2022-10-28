@@ -3,7 +3,7 @@ Here are the Docs to MAAB (Marcels Amazing Assembly Bytecode)
 
 ## General Stuff
 
-MAAB is using Big Endian Byte Encoding!
+MAAB is using Little Endian Byte Encoding!
 
 ### Instruction Layout
 instructions look like this

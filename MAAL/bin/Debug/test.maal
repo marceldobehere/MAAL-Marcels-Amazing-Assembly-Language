@@ -1,6 +1,6 @@
 loc MAIN:
 
-print "Hello, world!" + (ulong)1;
+print "Hello, world!";
 
 exit;
 
@@ -14,7 +14,6 @@ print "Hoi!";
 
 
 // TODO:
-// GET STRINGS WORKING IN COMPILER
 // ADD POINTER MATH
 // ADD DEREF STUFF
 // ADD FANCY IFs
