@@ -14,52 +14,44 @@ namespace MAAL.Compiling
         public enum InstructionEnum
         {
             NOP,
+
             EXIT,
+            RETURN,
+
             SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL,
             COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM,
-            __DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
-            COPY_VAR_SIZE_FROM_VAR_MEM_TO_VAR_MEM,
-            OPERATION,
+
             OPERATION_FIX,
             CAST,
-            RETURN,
+
             JUMP_FIX,
             ENTER_SUBROUTINE_FIX,
-            JUMP_VAR,
-            ENTER_SUBROUTINE_VAR,
-            IF_JUMP_FIX,
-            IF_JUMP_VAR,
-            IF_JUMP_CONDITION_FIX,
-            IF_SUB_FIX,
-            IF_SUB_VAR,
-            IF_SUB_CONDITION_FIX,
-            SYSCALL
 
+            IF_JUMP_CONDITION_FIX,
+            IF_SUB_CONDITION_FIX,
+
+            SYSCALL,
         }
 
         public static Dictionary<InstructionEnum, byte> IToByte = new Dictionary<InstructionEnum, byte>()
         {
             {InstructionEnum.NOP, 0},
             {InstructionEnum.EXIT, 1},
+
             {InstructionEnum.SET_FIX_SIZE_FIX_MEM_TO_FIX_VAL, 2},
             {InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM, 3},
-            {InstructionEnum.__DANGEROUS_MIX_UP__COPY_FIX_SIZE_FROM_VAR_MEM_TO_VAR_MEM, 4},
-            {InstructionEnum.COPY_VAR_SIZE_FROM_VAR_MEM_TO_VAR_MEM, 5},
-            {InstructionEnum.OPERATION, 10},
-            {InstructionEnum.OPERATION_FIX, 11},
+
+            {InstructionEnum.OPERATION_FIX, 10},
             {InstructionEnum.CAST, 15},
-            {InstructionEnum.RETURN, 30},
+
             {InstructionEnum.JUMP_FIX, 20},
             {InstructionEnum.ENTER_SUBROUTINE_FIX, 25},
-            {InstructionEnum.JUMP_VAR, 21},
-            {InstructionEnum.ENTER_SUBROUTINE_VAR, 26},
 
-            {InstructionEnum.IF_JUMP_FIX, 40},
-            {InstructionEnum.IF_JUMP_VAR, 41},
-            {InstructionEnum.IF_JUMP_CONDITION_FIX, 42},
-            {InstructionEnum.IF_SUB_FIX, 45},
-            {InstructionEnum.IF_SUB_VAR, 46},
-            {InstructionEnum.IF_SUB_CONDITION_FIX, 47},
+            {InstructionEnum.RETURN, 30},
+
+            {InstructionEnum.IF_JUMP_CONDITION_FIX, 40},
+            {InstructionEnum.IF_SUB_CONDITION_FIX, 45},
+
             {InstructionEnum.SYSCALL, 50},
         };
 
@@ -560,7 +552,6 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(new AlmostByte(data));
         }
 
-
         // new AlmostByte(BEC.UInt64ToByteArr((ulong)))
         public static void CastXToY(List<AlmostByte> almostCompiledCode, long addrX, BasicValueToken.BasicValueTypeEnum typeX, long addrY, BasicValueToken.BasicValueTypeEnum typeY)
         {
@@ -630,7 +621,6 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(addrY);
         }
 
-
         public static void CompileExpression(ExpressionToken tok, List<AlmostByte> almostCompiledCode, AlmostByte resAddr = null, int layer = 0)
         {
             if (resAddr == null)
@@ -692,6 +682,10 @@ namespace MAAL.Compiling
             {
                 var exprTypeLeft = GetTypeFromExpression(tok.Cast.ToCast);
                 var castType = GetTypeFromExpression(tok);
+                var castSize = DaTyToSize[castType];
+                if (resAddr.IsAlmostByteOffset)
+                    if (castSize != resAddr.AlmostByteDataSize)
+                        throw new Exception($"CANT PUT {castSize} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
 
                 //WriteBytesToAddr(almostCompiledCode, resAddr, new byte[8]);
 
@@ -801,26 +795,21 @@ namespace MAAL.Compiling
             if (!stuff.Locations.ContainsKey("MAIN"))
                 throw new Exception("NO MAIN LOCATION/ENTRY POINT DECLARED!!!");
 
-
             almostCompiledCode.Add(new AlmostByte("Jumping to MAIN"));
             almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_FIX]));
             almostCompiledCode.Add(new AlmostByte(new LocationNameToken(stuff.Locations["MAIN"])));
             almostCompiledCode.Add(new AlmostByte(0));
 
-
-            //almostCompiledCode.Add(new AlmostByte("1 BYTE RESERVED BC NO NULL POINTERS HERE"));
-            //almostCompiledCode.Add(new AlmostByte(0));
-
-
+            // might not need that if I change casting
             ResAddr = (ulong)GetLenghtOfByteList(almostCompiledCode);
             almostCompiledCode.Add(new AlmostByte("8 BYTES RESERVED FOR RESULT"));
             almostCompiledCode.Add(new AlmostByte(new byte[8]));
 
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA"));
             foreach (var usedVar in stuff.Variables)
-                almostCompiledCode.Add(new AlmostByte(usedVar.Value));//reservedMemory.Add(new ReservedMemoryChunk(usedVar.Value));
+                almostCompiledCode.Add(new AlmostByte(usedVar.Value));
 
-            //almostCompiledCode.Add(new AlmostByte($""));
+
 
             foreach (var cTok in stuff.parsedTokens)
             {

@@ -59,75 +59,14 @@ Example
 [3][Size of Value in bytes (1 Byte)][Address From (8 Bytes)][Address To (8 Bytes)]
 ```
 
-#### Copy fixed data from variable memory address to another variable memory address
-```
-[4][Size of Value in bytes (1 Byte)][Address of Address From (8 Bytes)][Address of Address To (8 Bytes)]
-```
-Example
-```
-[2][0x01][0x00.00.00.00.00.00.00.01][0x0F]
-// will set the byte at address 1 to 15
-
-[2][0x01][0x00.00.00.00.00.00.00.02][0xFF]
-// will set the byte at address 2 to 255
-
-[2][0x01][0x00.00.00.00.00.00.00.0F][0x20]
-// will set the byte at address 15 to 32
-
-[4][0x01][0x00.00.00.00.00.00.00.01][0x00.00.00.00.00.00.00.02]
-// This will copy 1 byte from the address located at 1 
-// to the adress located at 2
-// The adress located at 1 is 15   (FROM)
-// The address located at 2 is 255 (TO)
-// The byte located at 15 is 32    (DATA)
-// Meaning it will copy 1 byte (the value 32) from 15 to 255
-```
-
-
-#### Copy variable data from variable memory address to another variable memory address
-```
-[5][Adress of Size (8 Bytes)][Address of Address From (8 Bytes)][Address of Address To (8 Bytes)]
-```
-Example
-```
-[2][0x01][0x00.00.00.00.00.00.00.01][0x0F]
-// will set the byte at address 1 to 15
-
-[2][0x01][0x00.00.00.00.00.00.00.02][0xFF]
-// will set the byte at address 2 to 255
-
-[2][0x01][0x00.00.00.00.00.00.00.0F][0x20]
-// will set the byte at address 15 to 32
-
-[2][0x01][0x00.00.00.00.00.00.00.03][0x01]
-// will set the byte at address 3 to 1
-
-[5][0x00.00.00.00.00.00.00.03][0x00.00.00.00.00.00.00.01][0x00.00.00.00.00.00.00.02]
-// This will copy 1 byte (Amount of bytes gets read from the value at address 3)
-// from the address located at 1 
-// to the adress located at 2
-// The adress located at 1 is 15   (FROM)
-// The address located at 2 is 255 (TO)
-// The byte located at 15 is 32    (DATA)
-// Meaning it will copy 1 byte (the value 32) from 15 to 255
-```
-
 
 ### Math and Operations
 
 ```
 [10][Operation number (1 Byte)][Datatype number of Operands (1 Byte)]
-[Addr of Operand 1 (8 Bytes)]
-[Addr of Operand 2 (8 Bytes)]
-[Addr of Operand n (8 Bytes)]
-[Addr of return value (8 Bytes)]
-```
-
-```
-[11][Operation number (1 Byte)][Datatype number of Operands (1 Byte)]
 [Operand 1 (x Bytes)]
-[Operand 2 (y Bytes)]
-[Operand n (z Bytes)]
+[Operand 2 (x Bytes)]
+[Operand n (x Bytes)]
 [Addr of return value (8 Bytes)]
 ```
 
@@ -159,24 +98,19 @@ Implementing all those like 1,6k unique choices will be a pain but yes
 
 Example
 ```
-[2][0x01][0x00.00.00.00.00.00.00.0A][0x05]
-// This will set the byte at address 10 to 5
-// Operand 1 = 5
-
-[2][0x01][0x00.00.00.00.00.00.00.0B][0x05]
-// will set the byte at address 11 to 10
-// Operand 2 = 10
-
-[2][0x01][0x00.00.00.00.00.00.00.0C][0x00]
+[2][0x01][0x00.00.00.00.00.00.00.0A][0x00]
 // This will set the byte at address 12 to 0 
 // This will be where out result will be
 
 [10] // OPCODE for Operation
 [0x00] // Number of PLUS Operation
 [0x06] // Number of CHAR Datatype (We are using bytes/chars)
-[0x00.00.00.00.00.00.00.0A] // Operand 1
-[0x00.00.00.00.00.00.00.0B] // Operand 2
-[0x00.00.00.00.00.00.00.0C] // Result
+[0x05] // Operand 1
+[0x0A] // Operand 2
+[0x00.00.00.00.00.00.00.0A] // Result
+
+// will write the result of 5 + 10 into
+// the address located at result
 
 ```
 
@@ -200,9 +134,6 @@ Jumps to an address in the RAM (also where the code resides yes).
 ```
 [20][Address to jump to (8 Bytes)]
 ```
-```
-[21][Address of Address to jump to (8 Bytes)]
-```
 
 
 ### Subroutines
@@ -214,10 +145,6 @@ it goes back to the piece of code where it jumped.
 ```
 [25][Address of subroutine(8 Bytes)]
 ```
-```
-[26][Address of Address of subroutine(8 Bytes)]
-```
-
 
 #### Returning from a subroutine
 You can return from a subroutine using the return command.
@@ -227,20 +154,9 @@ You can return from a subroutine using the return command.
 
 
 ### Conditional Jumps
+
 ```
 [40]
-[Address of bool condition result (8 Bytes)]
-[Address to jump to (8 Bytes)]
-```
-
-```
-[41]
-[Address of bool condition result (8 Bytes)]
-[Address of Address to jump to (8 Bytes)]
-```
-
-```
-[42]
 [bool condition result (1 Byte)]
 [Address to jump to (8 Bytes)]
 ```
@@ -249,17 +165,6 @@ You can return from a subroutine using the return command.
 ### Conditional Subroutines
 ```
 [45]
-[Address of bool condition result (8 Bytes)]
-[Address of Subroutine (8 Bytes)]
-```
-
-```
-[46]
-[Address of bool condition result (8 Bytes)]
-[Address of Address of Subroutine (8 Bytes)]
-```
-```
-[47]
 [bool condition result (1 Byte)]
 [Address of Subroutine (8 Bytes)]
 ```
@@ -284,15 +189,15 @@ The first byte of the syscall is 0x01.
 ```
 [50]
 [0x01.01] // Sycall for Console and Print Char
-[Address of Byte to print (1 Byte)]
+[Byte to print (1 Byte)]
 ```
 
 ##### Printing values
 ```
 [50]
 [0x01.02] // Sycall for Console and Print Char
-[Datatype number (1 Byte)]
-[Address of Data to print (1 Byte)]
+[Datatype of data (1 Byte)]
+[Data to print (x Bytes)]
 ```
 
 
