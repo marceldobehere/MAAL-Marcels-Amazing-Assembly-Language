@@ -941,7 +941,15 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                     string tempCharPointerString = "";
                     for (mIndex++; mIndex < len && data[mIndex] != '"'; mIndex++)
                         if (data[mIndex] == '\\' && mIndex + 1 < len)
-                            tempCharPointerString += data[++mIndex];
+                        {
+                            mIndex++;
+                            if (data[mIndex] == 'n')
+                            {
+                                tempCharPointerString += '\n';
+                            }
+                            else
+                                tempCharPointerString += data[mIndex];
+                        }
                         else
                             tempCharPointerString += data[mIndex];
 

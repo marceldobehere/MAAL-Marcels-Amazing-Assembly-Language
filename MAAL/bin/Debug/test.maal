@@ -2,8 +2,23 @@ loc MAIN:
 
 print "Hello, world!";
 
+int x = 10;
+float z = (float)a;
+
+print "\nX:   ";
+print x;
+print "\nZ:   ";
+print z;
+
+z += 1.5;
+print "\nZ 2: ";
+print z;
+
+
+
 int a = 5;
 int b = 4;
+
 
 int t = a;
 loc LoopStart:
