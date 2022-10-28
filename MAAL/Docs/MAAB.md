@@ -85,10 +85,10 @@ Example
 |`<`      |       9|               2|             |
 |`<=`     |      10|               2|             |
 |`&&`     |      11|               2|Only works with bools|
-|`||`     |      12|               2|Only works with bools|
+|`\|\|`   |      12|               2|Only works with bools|
 |`!`      |      13|               1|Only works with bools|
 |`&`      |      14|               2|             |
-|`|`      |      15|               2|             |
+|`\|`    |      15|               2|             |
 |`~`      |      16|               1|             |
 |`<<`     |      17|               2|             |
 |`>>`     |      18|               2|             |
