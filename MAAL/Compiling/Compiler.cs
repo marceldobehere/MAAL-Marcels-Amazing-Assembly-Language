@@ -138,7 +138,7 @@ namespace MAAL.Compiling
         };
         #endregion
 
-        public static ulong ResAddr = 0;
+        //public static ulong ResAddr = 0;
 
 
         public static BasicValueToken.BasicValueTypeEnum GetResultTypeBasedOnTokensAndOperation(BasicValueToken.BasicValueTypeEnum left, OperatorToken.OperatorEnum op, BasicValueToken.BasicValueTypeEnum right)
@@ -629,9 +629,6 @@ namespace MAAL.Compiling
 
         public static void CompileExpression(ExpressionToken tok, List<AlmostByte> almostCompiledCode, AlmostByte resAddr)
         {
-            if (resAddr == null)
-                resAddr = new AlmostByte(BEC.UInt64ToByteArr((ulong)ResAddr));
-
             if (tok.IsConstValue)
             {
                 BasicValueToken val = tok.ConstValue;
@@ -846,9 +843,9 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(new AlmostByte(0));
 
             // might not need that if I change casting
-            ResAddr = (ulong)GetLenghtOfByteList(almostCompiledCode);
-            almostCompiledCode.Add(new AlmostByte("8 BYTES RESERVED FOR RESULT"));
-            almostCompiledCode.Add(new AlmostByte(new byte[8]));
+            //ResAddr = (ulong)GetLenghtOfByteList(almostCompiledCode);
+            //almostCompiledCode.Add(new AlmostByte("8 BYTES RESERVED FOR RESULT"));
+            //almostCompiledCode.Add(new AlmostByte(new byte[8]));
 
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA"));
             foreach (var usedVar in stuff.Variables)
@@ -1207,19 +1204,6 @@ namespace MAAL.Compiling
                 else if (cTok is PrintToken)
                 {
                     PrintToken pTok = cTok as PrintToken;
-
-
-
-
-                    //{
-                    //    int tOffset = 3;
-                    //    for (int i = 2; i < sTok.Arguments.Count; i++)
-                    //    {
-                    //        int tSize = DaTyToSize[GetTypeFromExpression(sTok.Arguments[i])];
-                    //        CompileExpression(sTok.Arguments[i], almostCompiledCode, new AlmostByte(cmdByte, tOffset, tSize));
-                    //        tOffset += tSize;
-                    //    }
-                    //}
 
                     if (pTok.Argument.IsConstValue && pTok.Argument.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR)
                     {

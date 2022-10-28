@@ -2,7 +2,20 @@ loc MAIN:
 //char* test;// = "Hello, world!";
 //syscall (char)1 (char)1 'H';
 
-int x = 10;
+print 'H';
+print 'e';
+print 'l';
+print 'l';
+print 'o';
+print ',';
+print ' ';
+print 'w';
+print 'o';
+print 'r';
+print 'l';
+print 'd';
+print '!';
+
 
 exit;
 

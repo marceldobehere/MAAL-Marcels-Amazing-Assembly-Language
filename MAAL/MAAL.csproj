@@ -62,6 +62,7 @@
     <None Include="bin\Debug\old test 5.maal" />
     <None Include="bin\Debug\old test 6.maal" />
     <None Include="bin\Debug\old test 7.maal" />
+    <None Include="bin\Debug\old test 8.maal" />
     <None Include="bin\Debug\test include.maal" />
     <None Include="bin\Debug\test.maal" />
     <None Include="Docs\MAAB.md" />
