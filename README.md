@@ -21,6 +21,8 @@ loc MAIN:
 [Docs for MAAB](MAAL/Docs/MAAB.md)
 
 
-## Windows C++ Interpreter (WIP as I've just finished the important things in the compiler so I gotta make the interpreter work now)
+
+
+## Windows C++ Interpreter (WIP)
 
 https://github.com/marceldobehere/MAAB-CPP-Interpreter
