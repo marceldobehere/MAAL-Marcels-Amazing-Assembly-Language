@@ -838,7 +838,7 @@ namespace MAAL.Compiling
 
         public static List<byte> Compile(Parser.ParsedStuff stuff)
         {
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
 
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
 
@@ -998,9 +998,9 @@ namespace MAAL.Compiling
 
 
 
-                    //Console.WriteLine($"<DO EXPRESSION {cTok}>");
+                    //GlobalStuff.WriteLine($"<DO EXPRESSION {cTok}>");
                     CompileExpression((cTok as SetVarToken).SetExpression, almostCompiledCode, strLocs, new AlmostByte((cTok as SetVarToken).VarName));
-                    //Console.WriteLine($"<DID EXPRESSION {cTok}>");
+                    //GlobalStuff.WriteLine($"<DID EXPRESSION {cTok}>");
 
 
                     //almostCompiledCode.Add(new AlmostByte($"Writing Result of Expression into Var"));
@@ -1019,9 +1019,9 @@ namespace MAAL.Compiling
 
 
 
-                    ////Console.WriteLine($"<DO EXPRESSION {cTok}>");
+                    ////GlobalStuff.WriteLine($"<DO EXPRESSION {cTok}>");
                     //CompileExpression((cTok as SetVarToken).SetExpression, almostCompiledCode);
-                    ////Console.WriteLine($"<DID EXPRESSION {cTok}>");
+                    ////GlobalStuff.WriteLine($"<DID EXPRESSION {cTok}>");
 
 
                     //almostCompiledCode.Add(new AlmostByte($"Writing Result of Expression into Var"));
@@ -1278,25 +1278,25 @@ namespace MAAL.Compiling
 
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"<ERROR: COMPILER CANT COMPILE {cTok}!>");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    GlobalStuff.ForegroundColor = ConsoleColor.Red;
+                    GlobalStuff.WriteLine($"<ERROR: COMPILER CANT COMPILE {cTok}!>");
+                    GlobalStuff.ForegroundColor = ConsoleColor.White;
                     throw new Exception($"<ERROR: COMPILER CANT COMPILE {cTok}!>");
                 }
             }
 
-            Console.WriteLine("\n\nAlmost Bytes:");
+            GlobalStuff.WriteLine("\n\nAlmost Bytes:");
             foreach (var almostByte in almostCompiledCode)
             {
-                Console.ForegroundColor = ConsoleColor.White;
+                GlobalStuff.ForegroundColor = ConsoleColor.White;
                 if (almostByte.IsComment)
                 {
-                    Console.WriteLine();
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    GlobalStuff.WriteLine();
+                    GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
                 }
-                Console.WriteLine($" - {almostByte}");
+                GlobalStuff.WriteLine($" - {almostByte}");
             }
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
 
             Dictionary<string, ulong> varAddresses = new Dictionary<string, ulong>();
             Dictionary<string, ulong> locAddresses = new Dictionary<string, ulong>();
@@ -1327,7 +1327,7 @@ namespace MAAL.Compiling
 
 
 
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
             List<byte> compiledCode = new List<byte>();
             foreach (AlmostByte aByte in almostCompiledCode)
             {
@@ -1368,9 +1368,9 @@ namespace MAAL.Compiling
 
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"<ERROR: CANT COMPILE {aByte}!>");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    GlobalStuff.ForegroundColor = ConsoleColor.Red;
+                    GlobalStuff.WriteLine($"<ERROR: CANT COMPILE {aByte}!>");
+                    GlobalStuff.ForegroundColor = ConsoleColor.White;
                     throw new Exception($"<ERROR: CANT COMPILE {aByte}!>");
                 }
             }

@@ -106,7 +106,7 @@ namespace MAAL.Parsing
                         #region STRINGS
                         if (cTok is BasicValueToken && (cTok as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                         {
-                            //Console.WriteLine("BRUH");
+                            //GlobalStuff.WriteLine("BRUH");
                             BasicValueToken sTok = (cTok as BasicValueToken);
                             if (!stuff.Strings.Contains(sTok.Value_CharPointer))
                                 stuff.Strings.Add(sTok.Value_CharPointer);
@@ -206,7 +206,7 @@ namespace MAAL.Parsing
                                 argumentCount++;
                             }
 
-                            //Console.WriteLine($"SYSCALL: ARGS: {argumentCount}, READY: {syscallReady}, {cTok}");
+                            //GlobalStuff.WriteLine($"SYSCALL: ARGS: {argumentCount}, READY: {syscallReady}, {cTok}");
 
                             if (syscallReady && argumentCount > 0 &&
                                 mIndex + argumentCount + 1 < data.Count)
@@ -490,18 +490,18 @@ namespace MAAL.Parsing
                                 throw new Exception("Bracket was not closed!");
 
 
-                            //Console.WriteLine("\n\n<START>");
+                            //GlobalStuff.WriteLine("\n\n<START>");
 
-                            //Console.WriteLine("Input Tokens:");
+                            //GlobalStuff.WriteLine("Input Tokens:");
                             List<Token> tempList = new List<Token>();
                             data.RemoveAt(mIndex);
                             for (int x = mIndex + 1; x < tIndex; x++)
                             {
-                                //Console.WriteLine($" - {data[mIndex]}");
+                                //GlobalStuff.WriteLine($" - {data[mIndex]}");
                                 tempList.Add(data[mIndex]);
                                 data.RemoveAt(mIndex);
                             }
-                            //Console.WriteLine();
+                            //GlobalStuff.WriteLine();
 
                             ParsedStuff tempParsedStuff = new ParsedStuff();
                             foreach (var pair in stuff.Variables)
@@ -513,13 +513,13 @@ namespace MAAL.Parsing
                             if (tempParsedStuff.parsedTokens[0] is TypeToken)
                                 tempParsedStuff.parsedTokens[0] = new CastTypeToken(tempParsedStuff.parsedTokens[0] as TypeToken);
 
-                            //Console.WriteLine("Token Result:");
+                            //GlobalStuff.WriteLine("Token Result:");
                             //foreach (Token token in tempParsedStuff.other)
-                            //    Console.WriteLine($" - {token}");
+                            //    GlobalStuff.WriteLine($" - {token}");
 
 
-                            //Console.WriteLine("<END>");
-                            //Console.ReadLine();
+                            //GlobalStuff.WriteLine("<END>");
+                            //GlobalStuff.ReadLine();
 
                             if (tempParsedStuff.parsedTokens.Count != 1)
                                 throw new Exception($"COUNT IS NOT 1");

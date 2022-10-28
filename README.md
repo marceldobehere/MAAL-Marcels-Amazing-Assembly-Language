@@ -26,3 +26,19 @@ loc MAIN:
 ## Windows C++ Interpreter (WIP)
 
 https://github.com/marceldobehere/MAAB-CPP-Interpreter
+
+
+
+### EXE Arguments
+
+```
+[EXE PATH] [FILE PATH] (-no_debug_out) (-no_time_out)
+```
+
+#### No Debug out
+This flag will not show debug infos like the parsed tokens and bytes
+
+
+#### No Time out
+This flag will not show timer infos.
+

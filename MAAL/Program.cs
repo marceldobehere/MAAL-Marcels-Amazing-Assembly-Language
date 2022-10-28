@@ -8,21 +8,77 @@ namespace MAAL
     using Parsing;
     using Compiling;
     using System.IO;
+    using System.Diagnostics;
+
+    public static class GlobalStuff
+    {
+        public static bool ShowText = true;
+        public static bool ShowTimeStats = true;
+
+        public static void WriteLine(string str)
+        {
+            if (ShowText)
+                Console.WriteLine(str);
+        }
+        public static void WriteLine()
+        {
+            if (ShowText)
+                Console.WriteLine();
+        }
+        public static void Write(string str)
+        {
+            if (ShowText)
+                Console.Write(str);
+        }
+        public static ConsoleColor ForegroundColor
+        {
+            get
+                => Console.ForegroundColor;
+            set
+            {
+                if (ShowText)
+                    Console.ForegroundColor = value;
+            }
+        }
+        public static ConsoleColor BackgroundColor
+        {
+            get
+                => Console.BackgroundColor;
+            set
+            {
+                if (ShowText)
+                    Console.BackgroundColor = value;
+            }
+        }
+    }
+
 
     // MAAL
     // Marcels Amazing Assembly Language
 
     // MAAB
     // Marcels Amazing Assembly Bytecode
-    class Program
+    public class Program
     {
         private static readonly string[] stages = new string[] { "starting", "parsing", "compiling", "writing to file" };
         private static int stage = 0;
+
 
         static void Main(string[] args)
         {
             bool catchErr = true;
             //catchErr = false;
+            //GlobalStuff.ShowText = false;
+
+
+            if (args.Length > 1)
+            {
+                if (args.ToList().Contains("-no_debug_out"))
+                    GlobalStuff.ShowText = false;
+                if (args.ToList().Contains("-no_time_out"))
+                    GlobalStuff.ShowTimeStats = false;
+            }
+
 
             if (catchErr)
             {
@@ -60,7 +116,7 @@ namespace MAAL
         static void DoStuff(string[] args)
         {
             stage = 0;
-            if (args.Length != 1)
+            if (args.Length < 1)
             {
                 Console.WriteLine("No Files selected!");
                 return;
@@ -72,71 +128,103 @@ namespace MAAL
             }
 
             stage = 1;
-            Console.WriteLine("> Parsing file...");
+
+            Stopwatch timerParse = Stopwatch.StartNew();
+            GlobalStuff.WriteLine("> Parsing file...");
             Parser.ParsedStuff stuff = Parser.ParseFile(args[0]);
-            Console.WriteLine("> Parsing done!");
+            GlobalStuff.WriteLine("> Parsing done!");
+            timerParse.Stop();
 
-
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
             foreach (var token in stuff.Variables.Values)
-                Console.WriteLine($" - {token}");
-            Console.WriteLine();
-            Console.WriteLine($"Locations: (Count: {stuff.Locations.Count})");
+                GlobalStuff.WriteLine($" - {token}");
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine($"Locations: (Count: {stuff.Locations.Count})");
             foreach (var token in stuff.Locations.Values)
-                Console.WriteLine($" - {token}");
-            Console.WriteLine();
-            Console.WriteLine($"Subroutines: (Count: {stuff.Subroutines.Count})");
+                GlobalStuff.WriteLine($" - {token}");
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine($"Subroutines: (Count: {stuff.Subroutines.Count})");
             foreach (var token in stuff.Subroutines.Values)
-                Console.WriteLine($" - {token}");
-            Console.WriteLine();
+                GlobalStuff.WriteLine($" - {token}");
+            GlobalStuff.WriteLine();
 
-            Console.WriteLine(new String('-', 40) + "\n");
+            GlobalStuff.WriteLine(new String('-', 40) + "\n");
 
-            Console.WriteLine($"Tokens: (Count: {stuff.parsedTokens.Count})");
+            GlobalStuff.WriteLine($"Tokens: (Count: {stuff.parsedTokens.Count})");
             foreach (Token token in stuff.parsedTokens)
             {
                 if (token is DefineLocationToken || token is DefineSubroutineToken)
-                    Console.WriteLine();
+                    GlobalStuff.WriteLine();
 
-                Console.Write($"{token} ");
+                GlobalStuff.Write($"{token} ");
 
                 if (token is EndCommandToken || token is SetVarToken || token is DefineLocationToken ||
                     token is DefineSubroutineToken || token is ExitToken || token is ReturnToken ||
                     token is ConditionalJumpToken || token is FixedJumpToken || token is SyscallToken || token is PrintToken)
-                    Console.WriteLine();
+                    GlobalStuff.WriteLine();
             }
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine();
 
+
+            Stopwatch timerCompile = Stopwatch.StartNew();
             stage = 2;
-            Console.WriteLine("> Compiling file...");
+            GlobalStuff.WriteLine("> Compiling file...");
             List<byte> compiledData = Compiler.Compile(stuff);
-            Console.WriteLine("> Compiling done!");
+            GlobalStuff.WriteLine("> Compiling done!");
+            timerCompile.Stop();
 
-            Console.WriteLine();
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine();
 
-            Console.WriteLine("Compiled Data:");
+            GlobalStuff.WriteLine("Compiled Data:");
             //foreach (var data in compiledData)
-            //Console.WriteLine($"{data} ({(char)data})");
-            Console.WriteLine(String.Join(", ", compiledData));
+            //GlobalStuff.WriteLine($"{data} ({(char)data})");
+            GlobalStuff.WriteLine(String.Join(", ", compiledData));
 
-            Console.WriteLine();
-            Console.WriteLine($"Compiled Data Size: {compiledData.Count} Bytes.");
-            Console.WriteLine();
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine($"Compiled Data Size: {compiledData.Count} Bytes.");
+            GlobalStuff.WriteLine();
 
 
 
             stage = 3;
-            Console.WriteLine("> Writing to file...");
+            Stopwatch timerWrite = Stopwatch.StartNew();
+            GlobalStuff.WriteLine("> Writing to file...");
             using (BinaryWriter writer = new BinaryWriter(new FileStream($"{args[0]}.maab", FileMode.Create)))
             {
                 writer.Write(compiledData.ToArray());
             }
-            Console.WriteLine("> Writing to file done!");
+            GlobalStuff.WriteLine("> Writing to file done!");
+            timerWrite.Stop();
+
+            GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine();
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            {
+                string msg = "COMPILATION DONE";
+                int w = Console.WindowWidth - msg.Length;
+                Console.Write(new string('-', w / 2));
+                Console.Write(msg);
+                Console.WriteLine(new string('-', w - (w / 2)));
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+            Console.WriteLine($"Compiled to:  \"{args[0]}.maab\". ({compiledData.Count} Bytes)");
+            if (GlobalStuff.ShowTimeStats)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"Parse Time:   {timerParse.Elapsed.TotalMilliseconds} ms.");
+                Console.WriteLine($"Compile Time: {timerCompile.Elapsed.TotalMilliseconds} ms.");
+                Console.WriteLine($"Write Time:   {timerWrite.Elapsed.TotalMilliseconds} ms.");
+                Console.WriteLine();
+                Console.WriteLine($"Total Time:   {timerParse.Elapsed.TotalMilliseconds + timerCompile.Elapsed.TotalMilliseconds + timerWrite.Elapsed.TotalMilliseconds} ms.");
+            }
+
         }
     }
 }

@@ -1,0 +1,8 @@
+E:\C SHARP\MAAL\MAAL\bin\Release\MAAL.exe.config
+E:\C SHARP\MAAL\MAAL\bin\Release\MAAL.exe
+E:\C SHARP\MAAL\MAAL\bin\Release\MAAL.pdb
+E:\C SHARP\MAAL\MAAL\obj\Release\MAAL.csproj.AssemblyReference.cache
+E:\C SHARP\MAAL\MAAL\obj\Release\MAAL.csproj.SuggestedBindingRedirects.cache
+E:\C SHARP\MAAL\MAAL\obj\Release\MAAL.csproj.CoreCompileInputs.cache
+E:\C SHARP\MAAL\MAAL\obj\Release\MAAL.exe
+E:\C SHARP\MAAL\MAAL\obj\Release\MAAL.pdb
