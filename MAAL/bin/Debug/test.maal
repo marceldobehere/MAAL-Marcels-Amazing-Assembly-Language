@@ -1,16 +1,55 @@
 loc MAIN:
 
-char x = 'H';
+char x = 'B';
+
+/*
+int a = 5;
+int b = 4;
+
+int t = a;
+loc LoopStart:
+	if_jump (b <= 1) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	exit;
+*/
 
 
-print x;
-print 10 + 10;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//char x = 'H';
+
+//int x = 5;
+//int y = x + 10;
+
+
+//print x;
+//print 10 + 10;
 //syscall (char)1 (char)1 &x 12;
-exit;
+//exit;
 
 
 // TODO:
 // ADD SYSCALLS
+// IDEA:
+//      REDO MOST COMPILE THINGS TO COPY THE VALUE INTO THE ARGUMENT DIRECTLY
 // GET STRINGS WORKING IN COMPILER
 // ADD POINTER MATH
 // ADD DEREF STUFF

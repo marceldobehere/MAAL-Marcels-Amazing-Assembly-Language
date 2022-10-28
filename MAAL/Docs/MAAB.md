@@ -123,6 +123,14 @@ Example
 [Addr of return value (8 Bytes)]
 ```
 
+```
+[11][Operation number (1 Byte)][Datatype number of Operands (1 Byte)]
+[Operand 1 (x Bytes)]
+[Operand 2 (y Bytes)]
+[Operand n (z Bytes)]
+[Addr of return value (8 Bytes)]
+```
+
 #### List of Operators with their numbers:
 | Operator | Number | Argument Count | Constraints |
 |----------|--------|----------------|-------------|
@@ -231,6 +239,13 @@ You can return from a subroutine using the return command.
 [Address of Address to jump to (8 Bytes)]
 ```
 
+```
+[42]
+[bool condition result (1 Byte)]
+[Address to jump to (8 Bytes)]
+```
+
+
 ### Conditional Subroutines
 ```
 [45]
@@ -243,7 +258,11 @@ You can return from a subroutine using the return command.
 [Address of bool condition result (8 Bytes)]
 [Address of Address of Subroutine (8 Bytes)]
 ```
-
+```
+[47]
+[bool condition result (1 Byte)]
+[Address of Subroutine (8 Bytes)]
+```
 
 
 ### Syscalls
