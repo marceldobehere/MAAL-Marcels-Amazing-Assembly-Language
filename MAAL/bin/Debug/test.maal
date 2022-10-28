@@ -1,8 +1,7 @@
 loc MAIN:
-//char* test;// = "Hello, world!";
-//syscall (char)1 (char)1 'H';
 
-int x = 10;
+char* test = "Hello, world!";
+print test;
 
 exit;
 

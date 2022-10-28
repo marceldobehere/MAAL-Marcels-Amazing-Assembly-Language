@@ -211,6 +211,13 @@ The first byte of the syscall is 0x01.
 [Data to print (x Bytes)]
 ```
 
+##### Printing a string
+```
+[50]
+[0x01.03] // Sycall for Console and Print String
+[Address of string (8 Bytes)]
+```
+
 
 
 #### malloc
@@ -225,7 +232,9 @@ This is the table
 
 |First Byte|Last Byte|Decimal Form|Description|
 |----------|---------|------------|-----------|
-|0x01      |0x00     |256         |Print a char to the console|
+|0x01      |0x01     |257         |Print a char to the console|
+|0x01      |0x02     |258         |Print a value to the console|
+|0x01      |0x03     |259         |Print a string to the console|
 
 
 

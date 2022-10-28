@@ -13,6 +13,7 @@ namespace MAAL.Parsing
             public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
             public Dictionary<string, DefineLocationToken> Locations = new Dictionary<string, DefineLocationToken>();
             public Dictionary<string, DefineSubroutineToken> Subroutines = new Dictionary<string, DefineSubroutineToken>();
+            public List<string> Strings = new List<string>();
 
             public List<Token> parsedTokens = new List<Token>();
         }
@@ -87,9 +88,18 @@ namespace MAAL.Parsing
                     {
                         Token cTok = data[mIndex];
 
+                        #region STRINGS
+                        if (cTok is BasicValueToken && (cTok as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                        {
+                            BasicValueToken sTok = (cTok as BasicValueToken);
+                            if (!stuff.Strings.Contains(sTok.Value_CharPointer))
+                                stuff.Strings.Add(sTok.Value_CharPointer);
+                        }
+                        #endregion
+
                         #region DEFINE LOCATION AND SUB
                         // loc MAIN:
-                        if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             data[mIndex + 1] is GenericNameToken && data[mIndex + 2] is ColonToken)
                         {
                             string kWord = (cTok as KeywordToken).Keyword;

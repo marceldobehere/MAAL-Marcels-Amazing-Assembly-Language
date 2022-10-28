@@ -74,13 +74,15 @@ namespace MAAL.Compiling
             NONE,
             PRINT_CHAR,
             PRINT_VAL,
+            PRINT_STR,
         }
 
         public static Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
         {
             {SyscallConsoleEnum.NONE, 0 },
             {SyscallConsoleEnum.PRINT_CHAR, 1 },
-            {SyscallConsoleEnum.PRINT_VAL, 1 },
+            {SyscallConsoleEnum.PRINT_VAL, 2 },
+            {SyscallConsoleEnum.PRINT_STR, 3 },
         };
 
         #region OP AND VARTYPE STUFF
@@ -474,7 +476,7 @@ namespace MAAL.Compiling
             throw new Exception($"Cant find Stronger Type From Types! ({left} and {right})");
         }
 
-        public static BasicValueToken.BasicValueTypeEnum GetTypeFromExpression(ExpressionToken tok)
+        public static BasicValueToken.BasicValueTypeEnum GetTypeFromExpression(ExpressionToken tok, bool allowCharPointer = false)
         {
             if (tok.IsConstValue)
             {
@@ -482,19 +484,23 @@ namespace MAAL.Compiling
             }
             if (tok.IsCast)
             {
+                if (allowCharPointer && tok.Cast.CastType.BaseType.Equals("char") &&
+                    tok.Cast.CastType.PointerCount == 1)
+                    return BasicValueToken.BasicValueTypeEnum.CHAR_POINTER;
+
                 if (tok.Cast.CastType.PointerCount > 0)
                     return BasicValueToken.BasicValueTypeEnum.ULONG;
-                else
-                {
-                    string typeAsString = tok.Cast.CastType.BaseType;
-                    return TypeToken.TypeEnumList[TypeToken.TypeList.IndexOf(typeAsString)];
-                }
 
 
-                throw new Exception($"CANT GET TYPE OF CAST EXPRESSION TOKEN! {tok}");
+                string typeAsString = tok.Cast.CastType.BaseType;
+                return TypeToken.TypeEnumList[TypeToken.TypeList.IndexOf(typeAsString)];
             }
             if (tok.IsVariable)
             {
+                if (allowCharPointer && !tok.Variable.UseAddr && tok.Variable.VarType.BaseType.Equals("char") && 
+                    tok.Variable.VarType.PointerCount - tok.Variable.DereferenceCount == 1)
+                    return BasicValueToken.BasicValueTypeEnum.CHAR_POINTER;
+
                 if (tok.Variable.UseAddr || tok.Variable.DereferenceCount < tok.Variable.VarType.PointerCount)
                     return BasicValueToken.BasicValueTypeEnum.ULONG;
 
@@ -850,6 +856,20 @@ namespace MAAL.Compiling
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA"));
             foreach (var usedVar in stuff.Variables)
                 almostCompiledCode.Add(new AlmostByte(usedVar.Value));
+
+            Dictionary<string, ulong> StrLocations = new Dictionary<string, ulong>();
+
+            almostCompiledCode.Add(new AlmostByte("STRINGS DATA"));
+            foreach (var usedVar in stuff.Strings)
+            {
+                List<byte> strData = new List<byte>();
+                foreach (var x in usedVar)
+                    strData.Add((byte)x);
+                strData.Add(0);
+
+                StrLocations.Add(usedVar, (ulong)GetLenghtOfByteList(almostCompiledCode));
+                almostCompiledCode.Add(new AlmostByte(strData.ToArray()));
+            }
 
 
 
@@ -1215,19 +1235,35 @@ namespace MAAL.Compiling
                     }
                     else
                     {
-                        var argType = GetTypeFromExpression(pTok.Argument);
-                        int argSize = DaTyToSize[argType];
+                        var argType = GetTypeFromExpression(pTok.Argument, true);
 
-                        AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+                        if (argType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                        {
+                            AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
 
-                        CompileExpression(pTok.Argument, almostCompiledCode, new AlmostByte(cmdByte, 4, argSize));
+                            CompileExpression(pTok.Argument, almostCompiledCode, new AlmostByte(cmdByte, 3, 8));
 
-                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR PRINT VAL"));
-                        almostCompiledCode.Add(cmdByte);
-                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
-                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_VAL]));
-                        almostCompiledCode.Add(new AlmostByte(DaTyToByte[argType]));
-                        almostCompiledCode.Add(new AlmostByte(new byte[argSize]));
+                            almostCompiledCode.Add(new AlmostByte("SYSCALL FOR PRINT STR"));
+                            almostCompiledCode.Add(cmdByte);
+                            almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                            almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_STR]));
+                            almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                        }
+                        else
+                        {
+                            int argSize = DaTyToSize[argType];
+
+                            AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                            CompileExpression(pTok.Argument, almostCompiledCode, new AlmostByte(cmdByte, 4, argSize));
+
+                            almostCompiledCode.Add(new AlmostByte("SYSCALL FOR PRINT VAL"));
+                            almostCompiledCode.Add(cmdByte);
+                            almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                            almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_VAL]));
+                            almostCompiledCode.Add(new AlmostByte(DaTyToByte[argType]));
+                            almostCompiledCode.Add(new AlmostByte(new byte[argSize]));
+                        }
                     }
                 }
                 #endregion
