@@ -58,7 +58,7 @@ jobs:
     env:
       Solution_Name: MAAL.sln                         # Replace with your solution name, i.e. MyWpfApp.sln.
       Test_Project_Path: MAAL\MAAL.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: your-wap-project-directory-name    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
+#      Wap_Project_Directory: your-wap-project-directory-name    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
 #      Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
 
     steps:
@@ -117,13 +117,13 @@ jobs:
 
     - name: Build Solution
       run: |
-        msbuild.exe MAAL.sln /p:platform="Any CPU" /p:configuration="Release"
+        msbuild.exe MAAL.sln /p:platform="Any CPU" /p:configuration="${{ matrix.configuration }}"
 
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: BUILD_TEST
-        path: "MAAL/bin/Release/MAAL.exe"
+        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
 
