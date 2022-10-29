@@ -121,9 +121,9 @@ jobs:
 
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+      uses: actions/upload-artifact@v3.1.1
       with:
-        name: BUILD_TEST
+        name: BUILD ${{matrix.configuration}}
         path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
 
