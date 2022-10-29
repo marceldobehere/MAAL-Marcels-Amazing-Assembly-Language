@@ -68,7 +68,7 @@ jobs:
     - name: Set the value
       id: step_one
       run: |
-        echo "action_state=yellow" >> $GITHUB_ENV
+        echo "action_state=yellow" >> $env:GITHUB_ENV
     - name: Use the value
       id: step_two
       run: |
@@ -79,7 +79,7 @@ jobs:
     - name: ded1
       run: |
         echo  "DATE $(date +'%Y-%m-%d_%H-%M')"
-        echo "NOW=DATE_$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_ENV
+        echo "NOW=DATE_$(date +'%Y-%m-%d_%H-%M')" >> $env:GITHUB_ENV
         echo  "DATE2 ${{ env.NOW }}"
 
 
