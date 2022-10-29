@@ -1,7 +1,7 @@
 # MAAL-Marcels-Amazing-Assembly-Language
-This tool will compile MAAL into MAALB (Bytecode)
+This tool compiles MAAL into MAALB (Bytecode)
 
-The Bytecode is planned to be run by MaslOS and possibly a windows interpreter.
+The Bytecode is planned to be run by MaslOS already has a windows interpreter.
 
 
 ## Example
@@ -10,6 +10,8 @@ loc MAIN:
   print "Hello, world!";
   exit;
 ```
+
+[More Examples can be found here](https://github.com/marceldobehere/MAAL-Marcels-Amazing-Assembly-Language/tree/master/MAAL/bin/Debug/examples/MAAL)
 
 
 ## Documentation
