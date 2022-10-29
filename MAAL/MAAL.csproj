@@ -32,6 +32,16 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'asdfasdfasdfsdafsd|AnyCPU'">
+    <OutputPath>bin\asdfasdfasdfsdafsd\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -59,6 +69,16 @@
     <None Include="bin\Debug\examples\empty.maal.maab" />
     <None Include="bin\Debug\examples\hello world.maal" />
     <None Include="bin\Debug\examples\hello world.maal.maab" />
+    <None Include="bin\Debug\examples\MAAB\conditional jumps and subroutines.maal.maab" />
+    <None Include="bin\Debug\examples\MAAB\ello world.maal.maab" />
+    <None Include="bin\Debug\examples\MAAB\empty.maal.maab" />
+    <None Include="bin\Debug\examples\MAAB\hello world.maal.maab" />
+    <None Include="bin\Debug\examples\MAAB\some math and var stuff.maal.maab" />
+    <None Include="bin\Debug\examples\MAAL\conditional jumps and subroutines.maal" />
+    <None Include="bin\Debug\examples\MAAL\ello world.maal" />
+    <None Include="bin\Debug\examples\MAAL\empty.maal" />
+    <None Include="bin\Debug\examples\MAAL\hello world.maal" />
+    <None Include="bin\Debug\examples\MAAL\some math and var stuff.maal" />
     <None Include="bin\Debug\MAAL.exe.config" />
     <None Include="bin\Debug\old test.maal" />
     <None Include="bin\Debug\old test 2.maal" />
@@ -86,7 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="bin\Debug\examples\MAAB CPP Interpreter.exe" />
+    <Content Include="bin\Debug\examples\MAAB\_MAAB %28INTERPRETER%29.exe" />
     <Content Include="bin\Debug\examples\MAAL.exe" />
+    <Content Include="bin\Debug\examples\MAAL\_MAAL %28COMPILER%29.exe" />
     <Content Include="bin\Debug\MAAB CPP Interpreter.exe" />
     <Content Include="bin\Debug\MAAL.exe" />
     <Content Include="bin\Debug\MAAL.pdb" />
