@@ -126,14 +126,18 @@ jobs:
 #        name: BUILD ${{matrix.configuration}}
 #        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
+    - name: ded
+      run: echo "::set-env name=NOW::v$(date +'%Y%m%d.%H%M%S')"
+
+
     - name: Release thingy
       uses: actions/create-release@v1
       id: create_release
       with:
         draft: false
         prerelease: true
-        release_name: Windows Build - ${{matrix.configuration}} - ${{ env.date }}
-        tag_name: ${{ github.ref }}-${{matrix.configuration}}-WIN-${{ github.ref }}
+        release_name: Windows Build - ${{matrix.configuration}} - ${{ env.NOW }}
+        tag_name: ${{ github.ref }}-${{matrix.configuration}}-WIN-${{ env.NOW }}
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
