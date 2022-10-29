@@ -120,11 +120,11 @@ jobs:
         msbuild.exe MAAL.sln /p:platform="Any CPU" /p:configuration="${{ matrix.configuration }}"
 
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3.1.1
-      with:
-        name: BUILD ${{matrix.configuration}}
-        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
+#    - name: Upload artifact
+#      uses: actions/upload-artifact@v3.1.1
+#      with:
+#        name: BUILD ${{matrix.configuration}}
+#        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
     - name: Release thingy
       uses: actions/create-release@v1
@@ -132,8 +132,19 @@ jobs:
       with:
         draft: false
         prerelease: true
-        release_name: Windows Build - ${{matrix.configuration}} - ${{ steps.date.outputs.date }}
+        release_name: Windows Build - ${{matrix.configuration}} - ${{ env.date }}
         tag_name: ${{ github.ref }}-${{matrix.configuration}}-WIN
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        
+      
+    - name: Upload Windows EXE
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
+        asset_name: MAAL-windows.exe
+        asset_content_type: application/exe
