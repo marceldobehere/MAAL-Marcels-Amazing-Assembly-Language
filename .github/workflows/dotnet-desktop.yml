@@ -127,7 +127,7 @@ jobs:
 #        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
     - name: ded
-      run: echo "::set-env name=NOW::v$(date +'%Y%m%d.%H%M%S')"
+      run: echo "NOW=$(date + '%Y%m%d.%H%M%S')" >> $GITHUB_ENV
 
 
     - name: Release thingy
