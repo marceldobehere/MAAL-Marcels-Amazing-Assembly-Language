@@ -74,7 +74,7 @@ jobs:
     - name: ded2
 #      env:
 #          TEST_THING: ${{ env.NOW }}
-      run: echo  "DATE ${env.NOW}}"
+      run: echo  "DATE ${{ env.NOW }}"
       
 #    - name: ded3
 #      env:
