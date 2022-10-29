@@ -64,23 +64,10 @@ jobs:
 
     steps:
     
-    
-    - name: Set the value
-      id: step_one
-      run: |
-        echo "action_state=yellow" >> $env:GITHUB_ENV
-    - name: Use the value
-      id: step_two
-      run: |
-        echo "${{ env.action_state }}" # This will output 'yellow'
-    
-    
-    
     - name: ded1
       run: |
-        echo  "DATE $(date +'%Y-%m-%d_%H-%M')"
-        echo "NOW=DATE_$(date +'%Y-%m-%d_%H-%M')" >> $env:GITHUB_ENV
-        echo  "DATE2 ${{ env.NOW }}"
+        echo "NOW=$(date +'%Y-%m-%d_%H-%M')" >> $env:GITHUB_ENV
+        echo  "DATE ${{ env.NOW }}"
 
 
     - name: ded2
@@ -174,7 +161,7 @@ jobs:
         draft: false
         prerelease: true
         release_name: Windows Build - ${{matrix.configuration}} - ${{ env.NOW }}
-        tag_name: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+        tag_name: WIN-BUILD-${{ matrix.configuration }}-${{ env.NOW }}
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -187,5 +174,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
-        asset_name: MAAL-windows.exe
+        asset_name: MAAL-windows-${{ matrix.configuration }}.exe
         asset_content_type: application/exe
