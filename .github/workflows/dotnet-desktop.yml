@@ -72,14 +72,14 @@ jobs:
       run: echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
       
     - name: ded2
-      env:
-          TEST_THING: ${{ env.NOW }}
-      run: echo  "DATE ${{TEST_THING}}"
+#      env:
+#          TEST_THING: ${{ env.NOW }}
+      run: echo  "DATE ${env.NOW}}"
       
-    - name: ded3
-      env:
-          TEST_THING2: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
-      run: echo "TAG ${{TEST_THING2}}"
+#    - name: ded3
+#      env:
+#          TEST_THING2: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+#      run: echo "TAG ${{TEST_THING2}}"
 
 
 
