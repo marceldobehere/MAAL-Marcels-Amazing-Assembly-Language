@@ -67,6 +67,20 @@ jobs:
       with:
         fetch-depth: 0
 
+
+    - name: ded1
+      run: echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+      
+    - name: ded2
+      env:
+          TEST_THING: ${{ env.NOW }}
+      run: echo  "TAG $TEST_THING"
+      
+    - name: ded3
+      run: echo  WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+
+
+
     # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v3
@@ -126,14 +140,7 @@ jobs:
 #        name: BUILD ${{matrix.configuration}}
 #        path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
-    - name: ded
-      run: echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
-      
-    - name: ded2
-      run: echo  ${{ env.NOW }}
-      
-    - name: ded3
-      run: echo  WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+
 
 
     - name: Release thingy
