@@ -126,4 +126,14 @@ jobs:
         name: BUILD ${{matrix.configuration}}
         path: MAAL/bin/${{ matrix.configuration }}/MAAL.exe
 
-
+    - name: Release thingy
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: true
+        release_name: Windows Build - ${{matrix.configuration}} - "`r format(Sys.time(), '%d %B, %Y')`"
+        tag_name: ${{ github.ref }}
+        body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
