@@ -66,8 +66,8 @@ jobs:
     
     - name: ded1
       run: |
-        echo  "DATE $(date +'%Y%m%d.%H%M%S')"
-        echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+        echo  "DATE $(date +'%Y-%m-%d--%H-%M')"
+#        echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
     
     
     - name: Checkout
@@ -154,8 +154,8 @@ jobs:
       with:
         draft: false
         prerelease: true
-        release_name: Windows Build - ${{matrix.configuration}} - ${{ env.NOW }}
-        tag_name: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+        release_name: Windows Build - ${{matrix.configuration}} -$(date +'%Y-%m-%d--%H-%M')
+        tag_name: WIN-BUILD-${{matrix.configuration}}-$(date +'%Y-%m-%d--%H-%M')
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
