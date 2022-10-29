@@ -69,12 +69,11 @@ jobs:
 
 
     - name: ded1
-      run: echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+      run: |
+        echo  "DATE ${{ steps.date.outputs.date }}"
+        echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
       
-    - name: ded2
-#      env:
-#          TEST_THING: ${{ env.NOW }}
-      run: echo  "DATE ${{ env.NOW }}"
+
       
 #    - name: ded3
 #      env:
