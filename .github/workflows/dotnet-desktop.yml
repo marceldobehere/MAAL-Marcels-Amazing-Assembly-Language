@@ -124,6 +124,6 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: BUILD_TEST
-        path: "./_build"
+        path: "MAAL/bin/Release/MAAL.exe"
 
 
