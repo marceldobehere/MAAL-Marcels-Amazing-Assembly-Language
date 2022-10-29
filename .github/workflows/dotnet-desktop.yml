@@ -74,10 +74,12 @@ jobs:
     - name: ded2
       env:
           TEST_THING: ${{ env.NOW }}
-      run: echo  "TAG $TEST_THING"
+      run: echo  "DATE $TEST_THING"
       
     - name: ded3
-      run: echo  WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+      env:
+          TEST_THING2: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
+      run: echo "TAG $TEST_THING2"
 
 
 
