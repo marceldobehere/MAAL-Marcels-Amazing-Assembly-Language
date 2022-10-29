@@ -134,6 +134,6 @@ jobs:
         prerelease: true
         release_name: Windows Build - ${{matrix.configuration}} - "`r format(Sys.time(), '%d %B, %Y')`"
         tag_name: ${{ github.ref }}
-        body_path: CHANGELOG.md
+        body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
