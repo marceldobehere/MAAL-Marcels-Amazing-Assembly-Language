@@ -68,15 +68,16 @@ namespace MAAL
         {
             bool catchErr = true;
             //catchErr = false;
-            //GlobalStuff.ShowText = false;
+            GlobalStuff.ShowText = false;
+            GlobalStuff.ShowTimeStats = false;
 
 
             if (args.Length > 1)
             {
-                if (args.ToList().Contains("-no_debug_out"))
-                    GlobalStuff.ShowText = false;
-                if (args.ToList().Contains("-no_time_out"))
-                    GlobalStuff.ShowTimeStats = false;
+                if (args.ToList().Contains("-yes_debug_out"))
+                    GlobalStuff.ShowText = true;
+                if (args.ToList().Contains("-yes_time_out"))
+                    GlobalStuff.ShowTimeStats = true;
             }
 
 
@@ -88,7 +89,18 @@ namespace MAAL
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("\n\n\n");
+                    GlobalStuff.WriteLine("\n\n\n");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    {
+                        string msg = "COMPILATION FAILED";
+                        int w = Console.WindowWidth - msg.Length;
+                        Console.Write(new string('-', w / 2));
+                        Console.Write(msg);
+                        Console.WriteLine(new string('-', w - (w / 2)));
+                    }
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    Console.WriteLine("\n");
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"An Error occured while {stages[stage]}!");
                     Console.ForegroundColor = ConsoleColor.Yellow;
@@ -206,7 +218,7 @@ namespace MAAL
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Cyan;
             {
-                string msg = "COMPILATION DONE";
+                string msg = "COMPILATION SUCCESSFUL";
                 int w = Console.WindowWidth - msg.Length;
                 Console.Write(new string('-', w / 2));
                 Console.Write(msg);

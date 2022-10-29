@@ -32,13 +32,13 @@ https://github.com/marceldobehere/MAAB-CPP-Interpreter
 ### EXE Arguments
 
 ```
-[EXE PATH] [FILE PATH] (-no_debug_out) (-no_time_out)
+[EXE PATH] [FILE PATH] (-yes_debug_out) (-yes_time_out)
 ```
 
-#### No Debug out
-This flag will not show debug infos like the parsed tokens and bytes
+#### Yes Debug out
+This flag will show debug infos like the parsed tokens and bytes
 
 
-#### No Time out
-This flag will not show timer infos.
+#### Yes Time out
+This flag will show timer stats.
 

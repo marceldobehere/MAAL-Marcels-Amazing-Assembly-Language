@@ -1,0 +1,26 @@
+loc MAIN:
+
+	int x = 10;
+	int y = 20;
+	sub PRINT;
+	
+	x = 100;
+	y = 99;
+	sub PRINT;
+	
+	exit;
+	
+	
+sub PRINT:
+	print x;
+	if_jump (x >= 20) X_NOT_LESS_Y;
+	jump continue;
+	
+loc X_NOT_LESS_Y:
+	print " not";
+
+loc continue:
+	print " less than ";
+	print y;
+	print "\n\n";
+	ret;

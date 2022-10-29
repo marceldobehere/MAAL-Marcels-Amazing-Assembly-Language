@@ -1,0 +1,162 @@
+loc MAIN:
+
+print "Hello, world!";
+
+
+int a = 5;
+int b = 4;
+int t = a;
+
+print "\nA: ";
+print a;
+print "\nB: ";
+print b;
+
+print "\nA**B: ";
+
+loc LoopStart:
+	if_jump (b < 2) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	print a;
+
+
+
+
+exit;
+
+
+
+
+
+
+
+
+
+
+
+/*
+int x = 10;
+float z = (float)x;
+
+print "\nX:   ";
+print x;
+print "\nZ:   ";
+print z;
+
+z += 1.5;
+print "\nZ 2: ";
+print z;
+print "\n";
+
+
+int a = 5;
+int b = 4;
+
+
+int t = a;
+loc LoopStart:
+	if_jump (b < 2) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	print "\nRES: ";
+	print a;
+
+
+
+
+exit;
+
+*/
+
+/*
+syscall (char)1 (char)3 "Hello, world!";
+print "Hoi!";
+
+//char* test = "Hello, world!";
+//print test;
+*/
+
+
+// TODO:
+// ADD POINTER MATH
+// ADD DEREF STUFF
+// ADD FANCY IFs
+// ADD FANCY WHILEs
+// ADD NAMESPACES
+
+
+
+
+/*
+int a = 5;
+int b = 4;
+
+int t = a;
+loc LoopStart:
+	if_jump (b <= 1) LoopEnd;
+	a *= t;
+	b--;
+	jump LoopStart;
+
+loc LoopEnd:
+	exit;
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//char x = 'H';
+
+//int x = 5;
+//int y = x + 10;
+
+
+//print x;
+//print 10 + 10;
+//syscall (char)1 (char)1 &x 12;
+//exit;
+
+
+
+
+
+
+/*
+
+if (x)
+{
+	...
+	...
+}
+...
+
+->
+
+if_jump (!x) END_OF_IF_13423471289374891;
+...
+...
+loc END_OF_IF_13423471289374891:
+...
+
+*/

@@ -54,6 +54,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="bin\Debug\examples\ello world.maal" />
+    <None Include="bin\Debug\examples\empty.maal" />
+    <None Include="bin\Debug\examples\empty.maal.maab" />
+    <None Include="bin\Debug\examples\hello world.maal" />
+    <None Include="bin\Debug\examples\hello world.maal.maab" />
     <None Include="bin\Debug\MAAL.exe.config" />
     <None Include="bin\Debug\old test.maal" />
     <None Include="bin\Debug\old test 2.maal" />
@@ -63,12 +68,26 @@
     <None Include="bin\Debug\old test 6.maal" />
     <None Include="bin\Debug\old test 7.maal" />
     <None Include="bin\Debug\old test 8.maal" />
+    <None Include="bin\Debug\old test 9.maal" />
+    <None Include="bin\Debug\old\old test 2.maal" />
+    <None Include="bin\Debug\old\old test 3.maal" />
+    <None Include="bin\Debug\old\old test 4.maal" />
+    <None Include="bin\Debug\old\old test 5.maal" />
+    <None Include="bin\Debug\old\old test 6.maal" />
+    <None Include="bin\Debug\old\old test 7.maal" />
+    <None Include="bin\Debug\old\old test 8.maal" />
+    <None Include="bin\Debug\old\old test 9.maal" />
+    <None Include="bin\Debug\old\old test.maal" />
+    <None Include="bin\Debug\old\test include.maal" />
     <None Include="bin\Debug\test include.maal" />
     <None Include="bin\Debug\test.maal" />
     <None Include="Docs\MAAB.md" />
     <None Include="Docs\MAAL.md" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Debug\examples\MAAB CPP Interpreter.exe" />
+    <Content Include="bin\Debug\examples\MAAL.exe" />
+    <Content Include="bin\Debug\MAAB CPP Interpreter.exe" />
     <Content Include="bin\Debug\MAAL.exe" />
     <Content Include="bin\Debug\MAAL.pdb" />
   </ItemGroup>

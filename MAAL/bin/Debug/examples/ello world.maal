@@ -1,0 +1,3 @@
+loc MAIN:
+	print (char*)("Hello, world!" + 1);
+	exit;

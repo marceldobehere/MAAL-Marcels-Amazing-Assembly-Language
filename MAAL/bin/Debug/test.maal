@@ -1,122 +1,19 @@
 loc MAIN:
 
-print "Hello, world!";
-
-int x = 10;
-float z = (float)a;
-
-print "\nX:   ";
-print x;
-print "\nZ:   ";
-print z;
-
-z += 1.5;
-print "\nZ 2: ";
-print z;
+	int x = 5;
+	print "\nX: ";
+	print x;
 
 
+	sub TEST;
 
-int a = 5;
-int b = 4;
+	print "\nX: ";
+	print x;
 
-
-int t = a;
-loc LoopStart:
-	if_jump (b <= 1) LoopEnd;
-	a *= t;
-	b--;
-	jump LoopStart;
-
-loc LoopEnd:
-	print a;
-
-
-
-
-exit;
-
-/*
-syscall (char)1 (char)3 "Hello, world!";
-print "Hoi!";
-
-//char* test = "Hello, world!";
-//print test;
-*/
-
-
-// TODO:
-// ADD POINTER MATH
-// ADD DEREF STUFF
-// ADD FANCY IFs
-// ADD FANCY WHILEs
-// ADD NAMESPACES
-
-
-
-
-/*
-int a = 5;
-int b = 4;
-
-int t = a;
-loc LoopStart:
-	if_jump (b <= 1) LoopEnd;
-	a *= t;
-	b--;
-	jump LoopStart;
-
-loc LoopEnd:
 	exit;
-*/
 
 
+sub TEST:
+	x = 10;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//char x = 'H';
-
-//int x = 5;
-//int y = x + 10;
-
-
-//print x;
-//print 10 + 10;
-//syscall (char)1 (char)1 &x 12;
-//exit;
-
-
-
-
-
-
-/*
-
-if (x)
-{
-	...
-	...
-}
-...
-
-->
-
-if_jump (!x) END_OF_IF_13423471289374891;
-...
-...
-loc END_OF_IF_13423471289374891:
-...
-
-*/
+	ret;

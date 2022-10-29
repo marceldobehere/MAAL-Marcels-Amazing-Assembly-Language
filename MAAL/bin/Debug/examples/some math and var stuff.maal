@@ -1,0 +1,63 @@
+loc MAIN:
+	int x = 10;
+	int y = x + 5;
+	float f = 12.5;
+	double d = (double)-5.1;
+	
+	print "\nx: ";
+	print x;
+	
+	print "\ny: ";
+	print y;
+	
+	print "\nf: ";
+	print f;	
+	
+	print "\nd: ";
+	print d;
+	
+	print "\n----------------------------";
+	
+	print "\nd*f: ";
+	print d*f;
+	
+	int test = (int)(x + 7.5);
+	print "\ntest: ";
+	print test;
+	
+	print "\n----------------------------";
+	
+	char c = 'A';
+	print "\nc: ";
+	print c;
+	
+	c += (char)1;
+	print "\nc + 1: ";
+	print c;
+	
+	c = (char)33;
+	print "\n33: ";
+	print c;
+	
+	
+	print "\n----------------------------";
+	
+	int a = 100; 
+	print "\na: ";
+	print a;
+	
+	a = a + 1;
+	print "\na: ";
+	print a;
+	
+	a += 1;
+	print "\na: ";
+	print a;
+	
+	a++;
+	print "\na: ";
+	print a;
+	
+	
+	
+	exit;

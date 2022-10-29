@@ -1,0 +1,3 @@
+loc MAIN:
+	print "Hello, world!";
+	exit;
