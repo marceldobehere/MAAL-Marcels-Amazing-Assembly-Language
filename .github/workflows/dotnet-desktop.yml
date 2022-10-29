@@ -68,6 +68,7 @@ jobs:
       run: |
         echo  "DATE $(date +'%Y-%m-%d_%H-%M')"
         echo "NOW=DATE_$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_ENV
+        echo  "DATE2 ${{ env.NOW }}"
     
     
     - name: Checkout
