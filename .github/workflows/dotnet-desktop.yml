@@ -128,6 +128,12 @@ jobs:
 
     - name: ded
       run: echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+      
+    - name: ded2
+      run: echo  ${{ env.NOW }}
+      
+    - name: ded3
+      run: echo  WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
 
 
     - name: Release thingy
@@ -137,7 +143,7 @@ jobs:
         draft: false
         prerelease: true
         release_name: Windows Build - ${{matrix.configuration}} - ${{ env.NOW }}
-        tag_name: ${{ github.ref }}-${{matrix.configuration}}-WIN-${{ env.NOW }}
+        tag_name: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
