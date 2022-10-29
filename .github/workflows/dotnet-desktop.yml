@@ -62,16 +62,20 @@ jobs:
 #      Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
 
     steps:
+    
+    
+    - name: ded1
+      run: |
+        echo  "DATE $(date +'%Y%m%d.%H%M%S')"
+        echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+    
+    
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
 
-    - name: ded1
-      run: |
-        echo  "DATE ${{ steps.date.outputs.date }}"
-        echo "NOW=$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
       
 
       
