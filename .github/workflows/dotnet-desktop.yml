@@ -70,7 +70,13 @@ jobs:
         echo  "DATE $(date +'%Y-%m-%d_%H-%M')"
         echo "NOW=DATE_$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_ENV
         echo  "DATE2 ${{ env.NOW }}"
-    
+
+
+    - name: ded2
+      run: |
+        echo  "DATE2 ${{ env.NOW }}"
+
+
     
     - name: Checkout
       uses: actions/checkout@v3
