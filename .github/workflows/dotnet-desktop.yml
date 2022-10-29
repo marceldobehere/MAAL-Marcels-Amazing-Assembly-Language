@@ -154,8 +154,8 @@ jobs:
       with:
         draft: false
         prerelease: true
-        release_name: Windows Build - ${{matrix.configuration}} -$(date +'%Y-%m-%d--%H-%M')
-        tag_name: WIN-BUILD-${{matrix.configuration}}-$(date +'%Y-%m-%d--%H-%M')
+        release_name: Windows Build - ${{matrix.configuration}} - ${{ env.NOW }}
+        tag_name: WIN-BUILD-${{matrix.configuration}}-${{ env.NOW }}
         body_path: TEST.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
