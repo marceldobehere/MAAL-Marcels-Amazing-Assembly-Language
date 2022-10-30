@@ -573,7 +573,7 @@ namespace MAAL.Parsing
             {
                 bool change = false;
                 change |= TryOptimizeExpressionToken(tok.Cast.ToCast);
-                Console.WriteLine($"Trying to opt {tok.Cast.ToCast}");
+                //Console.WriteLine($"Trying to opt {tok.Cast.ToCast}");
                 if (tok.Cast.ToCast.IsConstValue)
                 {
                     var val = tok.Cast.ToCast.ConstValue;
@@ -583,6 +583,10 @@ namespace MAAL.Parsing
 
 
                 return change;
+            }
+            if (tok.IsDeref)
+            {
+                return TryOptimizeExpressionToken(tok.Deref.ToDeref);
             }
             if (tok.OnlyUseLeft)
             {

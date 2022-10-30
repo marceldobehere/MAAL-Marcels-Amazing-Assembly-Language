@@ -322,30 +322,23 @@ namespace MAAL.Parsing
     {
         public string VarName;
         public TypeToken VarType;
-        public int DereferenceCount = 0;
         public bool UseAddr = false;
 
         public VarNameToken(string name, TypeToken typeToken)
         {
             VarName = name;
             VarType = typeToken;
-            DereferenceCount = 0;
             UseAddr = false;
         }
 
         public override string ToString()
         {
-            int dif = VarType.PointerCount - DereferenceCount;
-            if (dif < 0)
-                throw new Exception("Too many Dereferences!");
-
-            VarType.PointerCount -= DereferenceCount;
             string res;
             if (UseAddr)
                 res = $"<VAR: \"{VarName}\" (&{VarType})>";
             else
                 res = $"<VAR: \"{VarName}\" ({VarType})>";
-            VarType.PointerCount += DereferenceCount;
+
             return res;
         }
 
@@ -389,6 +382,20 @@ namespace MAAL.Parsing
             => $"<{VarType} \"{VarName}\">";
     }
 
+    public class DerefToken : Token
+    {
+        public ExpressionToken ToDeref;
+
+        public DerefToken(ExpressionToken toDeref)
+        {
+            ToDeref = toDeref;
+        }
+
+        public override string ToString()
+            => $"<*{ToDeref}>";
+    }
+
+
     public class ExpressionToken : Token
     {
         public OperatorToken Operator = null;
@@ -396,10 +403,12 @@ namespace MAAL.Parsing
         public BasicValueToken ConstValue = null;
         public VarNameToken Variable = null;
         public CastToken Cast = null;
+        public DerefToken Deref = null;
         public bool IsConstValue = false;
         public bool OnlyUseLeft = false;
         public bool IsVariable = false;
         public bool IsCast = false;
+        public bool IsDeref = false;
 
         public ExpressionToken(ExpressionToken left, OperatorToken op, ExpressionToken right)
         {
@@ -428,6 +437,11 @@ namespace MAAL.Parsing
             IsConstValue = true;
             IsVariable = false;
             IsCast = false;
+        }
+        public ExpressionToken(DerefToken val)
+        {
+            Deref = val;
+            IsDeref = true;
         }
         public ExpressionToken(VarNameToken val)
         {
@@ -480,6 +494,8 @@ namespace MAAL.Parsing
                 return $"{Variable}";
             if (IsCast)
                 return $"{Cast}";
+            if (IsDeref)
+                return $"{Deref}";
 
             if (OnlyUseLeft)
                 return $"<{Operator} {Left}>";

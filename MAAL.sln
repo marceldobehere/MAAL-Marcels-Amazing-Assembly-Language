@@ -7,13 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAAL", "MAAL\MAAL.csproj", 
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		asdfasdfasdfsdafsd|Any CPU = asdfasdfasdfsdafsd|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8292F520-AE71-4EAE-81EB-7F40BF0CE602}.asdfasdfasdfsdafsd|Any CPU.ActiveCfg = asdfasdfasdfsdafsd|Any CPU
-		{8292F520-AE71-4EAE-81EB-7F40BF0CE602}.asdfasdfasdfsdafsd|Any CPU.Build.0 = asdfasdfasdfsdafsd|Any CPU
 		{8292F520-AE71-4EAE-81EB-7F40BF0CE602}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8292F520-AE71-4EAE-81EB-7F40BF0CE602}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8292F520-AE71-4EAE-81EB-7F40BF0CE602}.Release|Any CPU.ActiveCfg = Release|Any CPU

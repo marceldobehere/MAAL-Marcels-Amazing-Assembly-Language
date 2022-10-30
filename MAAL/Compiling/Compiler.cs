@@ -493,6 +493,8 @@ namespace MAAL.Compiling
                 if (tok.Cast.CastType.PointerCount > 0)
                     return BasicValueToken.BasicValueTypeEnum.ULONG;
 
+                if (tok.Cast.CastType.PointerCount < 0)
+                    throw new Exception($"POINTER CANT BE BELOW 0! {tok}");
 
                 string typeAsString = tok.Cast.CastType.BaseType;
                 return TypeToken.TypeEnumList[TypeToken.TypeList.IndexOf(typeAsString)];
@@ -500,11 +502,14 @@ namespace MAAL.Compiling
             if (tok.IsVariable)
             {
                 if (allowCharPointer && !tok.Variable.UseAddr && tok.Variable.VarType.BaseType.Equals("char") && 
-                    tok.Variable.VarType.PointerCount - tok.Variable.DereferenceCount == 1)
+                    tok.Variable.VarType.PointerCount == 1)
                     return BasicValueToken.BasicValueTypeEnum.CHAR_POINTER;
 
-                if (tok.Variable.UseAddr || tok.Variable.DereferenceCount < tok.Variable.VarType.PointerCount)
+                if (tok.Variable.UseAddr || 0 < tok.Variable.VarType.PointerCount)
                     return BasicValueToken.BasicValueTypeEnum.ULONG;
+
+                if (tok.Variable.VarType.PointerCount < 0)
+                    throw new Exception($"POINTER CANT BE BELOW 0! {tok}");
 
                 string typeAsString = tok.Variable.VarType.BaseType;
                 return TypeToken.TypeEnumList[TypeToken.TypeList.IndexOf(typeAsString)];
@@ -513,6 +518,27 @@ namespace MAAL.Compiling
             if (tok.OnlyUseLeft)
             {
                 return GetTypeFromExpression(tok.Left);
+            }
+
+            if (tok.IsDeref)
+            {
+                ExpressionToken toDeref = tok.Deref.ToDeref;
+                if (toDeref.IsVariable)
+                {
+                    toDeref.Variable.VarType.PointerCount--;
+                    var t = GetTypeFromExpression(toDeref);
+                    toDeref.Variable.VarType.PointerCount++;
+                    return t;
+                }
+                if (toDeref.IsCast)
+                {
+                    toDeref.Cast.CastType.PointerCount--;
+                    var t = GetTypeFromExpression(toDeref);
+                    toDeref.Cast.CastType.PointerCount++;
+                    return t;
+                }
+
+                throw new Exception($"CANT DEREF NON-VAR OR NON-CAST! {tok} {toDeref}");
             }
 
             // tok is Expression
@@ -688,6 +714,30 @@ namespace MAAL.Compiling
                 return;
             }
 
+            if (tok.IsDeref)
+            {
+                var oType = GetTypeFromExpression(tok.Deref.ToDeref);
+                byte oSize = DaTyToSize[oType];
+                if (oType != BasicValueToken.BasicValueTypeEnum.ULONG && oType != BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                    throw new Exception($"CANT DEREF NON-POINTER OR ULONG!");
+
+                var dType = GetTypeFromExpression(tok);
+                byte dSize = DaTyToSize[dType];
+
+                AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.COPY_FIX_SIZE_FROM_FIX_MEM_TO_FIX_MEM]);
+
+                CompileExpression(tok.Deref.ToDeref, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 2, 8));
+
+                almostCompiledCode.Add(new AlmostByte($"DEREFING {tok.Deref.ToDeref} into {dType}"));
+                almostCompiledCode.Add(cmdByte);
+                almostCompiledCode.Add(new AlmostByte(dSize));
+                almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                almostCompiledCode.Add(resAddr);
+
+                //throw new Exception($"BRO HOW TO DO DEREFS? {dType} <- {tok.Deref.ToDeref} | {oType} <- {tok}");
+                
+                return;
+            }
 
             if (tok.IsCast)
             {
@@ -1560,7 +1610,7 @@ namespace MAAL.Compiling
 
         public static int GetSizeFromVarToken(VarNameToken var)
         {
-            if (var.VarType.PointerCount - var.DereferenceCount > 0)
+            if (var.VarType.PointerCount > 0)
                 return 8; // Pointers are 8 bytes
             if (var.UseAddr)
                 return 8;

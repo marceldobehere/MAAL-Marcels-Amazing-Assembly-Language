@@ -59,6 +59,8 @@ namespace MAAL.Parsing
                 return new ExpressionToken(tok as BasicValueToken);
             else if (tok is VarNameToken)
                 return new ExpressionToken(tok as VarNameToken);
+            else if (tok is DerefToken)
+                return new ExpressionToken(tok as DerefToken);
             else if (tok is ExpressionToken)
                 return (tok as ExpressionToken);
             else
@@ -67,7 +69,7 @@ namespace MAAL.Parsing
 
         private static bool CouldBeExpessionToken(Token tok)
         {
-            return tok is ExpressionToken || tok is BasicValueToken || tok is VarNameToken;
+            return tok is ExpressionToken || tok is BasicValueToken || tok is VarNameToken || tok is DerefToken;
         }
         #endregion
 
@@ -397,14 +399,27 @@ namespace MAAL.Parsing
                         #endregion
 
 
-                        #region DEREF
+                        //#region OLD DEREF
+                        ////*test
+                        //if (false && cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken
+                        //    && (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
+                        //{
+                        //    VarNameToken tok = data[mIndex + 1] as VarNameToken;
+                        //    tok.DereferenceCount++;
+                        //    data.RemoveAt(mIndex);
+                        //    change = true;
+                        //    break;
+                        //}
+                        //#endregion
+                        #region DEREF EXPR
                         //*test
-                        if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken
-                            && (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
+                        if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && 
+                            mIndex + 1 < data.Count &&
+                            CouldBeExpessionToken(data[mIndex + 1]) && 
+                            (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
                         {
-                            VarNameToken tok = data[mIndex + 1] as VarNameToken;
-                            tok.DereferenceCount++;
-                            data.RemoveAt(mIndex);
+                            data[mIndex] = new DerefToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
                             change = true;
                             break;
                         }
@@ -599,7 +614,7 @@ namespace MAAL.Parsing
                         if (cTok is TypeToken && mIndex + 4 < data.Count &&
                             (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 4] is EndCommandToken) &&
                             (data[mIndex + 2] is OperatorToken) && (data[mIndex + 2] as OperatorToken).Operator == OperatorToken.OperatorEnum.Set &&
-                            ((data[mIndex + 3] is GenericNameToken) || (data[mIndex + 3] is VarNameToken) || (data[mIndex + 3] is BasicValueToken) || (data[mIndex + 3] is ExpressionToken)))
+                            CouldBeExpessionToken(data[mIndex + 3]))
                         {
                             string varName = (data[mIndex + 1] as GenericNameToken).Name;
                             DeclareVarToken tok = new DeclareVarToken(

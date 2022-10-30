@@ -1,19 +1,24 @@
 loc MAIN:
+	char* str = "This is a test!";
 
-	int x = 5;
-	print "\nX: ";
-	print x;
+	ulong strAddr = (ulong)str;
+	print "\nADDR1: ";
+	print strAddr;
+
+	strAddr++;
+	print "\nADDR2: ";
+	print strAddr;
+
+	char* str2 = (char*)strAddr;
+	print "\nADDR3: ";
+	print (ulong)str2;
 
 
-	sub TEST;
+	char chr = *str2;
+	print "\nCHR: ";
+	print chr;
 
-	print "\nX: ";
-	print x;
-
+	print "\nCHR: ";
+	print *((char*)((ulong)strAddr - 1));
+		
 	exit;
-
-
-sub TEST:
-	x = 10;
-
-	ret;
