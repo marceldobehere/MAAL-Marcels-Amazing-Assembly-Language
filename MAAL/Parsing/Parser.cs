@@ -485,6 +485,24 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
+                        #region NEGATIVE EXPRESSIONS
+                        // -x
+                        if (cTok is OperatorToken && mIndex + 1 < data.Count &&
+                            (cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Minus &&
+                            (mIndex < 1 || !CouldBeExpessionToken(data[mIndex - 1])) &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            (mIndex + 2 >= data.Count || !CouldBeExpessionToken(data[mIndex + 2]))
+                            )
+                        // data[mIndex - 1] data[mIndex + 1]  data[mIndex + 2]
+                        {
+                            ExpressionToken valTok = ConvToExpressionToken(data[mIndex + 1]);
+                            ExpressionToken minusTok = new ExpressionToken(new ExpressionToken(new BasicValueToken(0)), new OperatorToken(OperatorToken.OperatorEnum.Minus), valTok);
+                            data[mIndex + 1] = minusTok;
+                            data.RemoveAt(mIndex);
+                            change = true;
+                            break;
+                        }
+                        #endregion
 
 
                         #region MULTI VALUE BRACKETS

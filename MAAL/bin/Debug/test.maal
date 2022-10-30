@@ -1,24 +1,3 @@
 loc MAIN:
-	char* str = "This is a test!";
-
-	ulong strAddr = (ulong)str;
-	print "\nADDR1: ";
-	print strAddr;
-
-	strAddr++;
-	print "\nADDR2: ";
-	print strAddr;
-
-	char* str2 = (char*)strAddr;
-	print "\nADDR3: ";
-	print (ulong)str2;
-
-
-	char chr = *str2;
-	print "\nCHR: ";
-	print chr;
-
-	print "\nCHR: ";
-	print *((char*)((ulong)strAddr - 1));
-		
+	print "Hello, world!";
 	exit;

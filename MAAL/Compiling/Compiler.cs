@@ -1289,6 +1289,14 @@ namespace MAAL.Compiling
                         almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_CHAR]));
                         almostCompiledCode.Add(new AlmostByte((byte)pTok.Argument.ConstValue.Value_Char));
                     }
+                    else if (pTok.Argument.IsConstValue && pTok.Argument.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                    {
+                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR (DIRECT) PRINT STR"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
+                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.PRINT_STR]));
+                        almostCompiledCode.Add(new AlmostByte(BEC.UInt64ToByteArr(strLocs[pTok.Argument.ConstValue.Value_CharPointer])));
+                    }
                     else
                     {
                         var argType = GetTypeFromExpression(pTok.Argument, true);
