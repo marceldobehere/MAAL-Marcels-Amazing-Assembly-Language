@@ -55,6 +55,8 @@ jobs:
     runs-on: windows-latest  # For a list of available runner types, refer to
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
+    if: ${{ contains(github.event.head_commit.message, '#release') }}
+
     env:
       Solution_Name: MAAL.sln                         # Replace with your solution name, i.e. MyWpfApp.sln.
       Test_Project_Path: MAAL\MAAL.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
