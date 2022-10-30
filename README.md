@@ -1,7 +1,8 @@
 # MAAL-Marcels-Amazing-Assembly-Language
 This tool compiles MAAL into MAALB (Bytecode)
 
-The Bytecode is planned to be run by MaslOS already has a windows interpreter.
+The Bytecode can be interpreted in [Masl OS](https://github.com/marceldobehere/MaslOS).
+It also has a [Windows Interpreter](https://github.com/marceldobehere/MAAB-CPP-Interpreter).
 
 
 ## Example
