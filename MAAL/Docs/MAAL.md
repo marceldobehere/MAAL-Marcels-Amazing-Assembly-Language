@@ -207,6 +207,36 @@ print test;
 ```
 
 
+#### malloc
+You can allocate some memory by doing:
+```
+malloc (size in bytes) (address of var to store);
+```
+Example
+```
+char* data;
+malloc 10 &data;
+// this will malloc 10 bytes and set data to the address.
+```
+
+#### free
+You can free allocated memory by doing:
+```
+free (address of malloc);
+```
+Example:
+```
+char* data;
+malloc 20 &data; // will malloc 20 bytes
+// ...
+free data; // will free the data again
+```
+
+
+
+
+
+
 ### Including other files
 You can include files by using
 ```

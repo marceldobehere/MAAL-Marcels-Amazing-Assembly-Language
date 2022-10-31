@@ -218,12 +218,28 @@ The first byte of the syscall is 0x01.
 [Address of string (8 Bytes)]
 ```
 
+#### Memory
+There are some syscalls connected to dynamic memory.
+The first byte of the syscall is 0x02.
 
 
-#### malloc
+##### Malloc
+This is will alloc some bytes.
+```
+[50]
+[0x02.01] // Sycall for Memory and Alloc
+[Size in bytes (4 Bytes)]
+[Address to save Address to (8 Bytes)]
+```
 
 
-#### free
+##### Free
+```
+[50]
+[0x02.02] // Sycall for Memory and Free
+[Address to free (8 Bytes)]
+```
+
 
 
 
@@ -235,6 +251,10 @@ This is the table
 |0x01      |0x01     |257         |Print a char to the console|
 |0x01      |0x02     |258         |Print a value to the console|
 |0x01      |0x03     |259         |Print a string to the console|
+|0x02      |0x01     |513         |Malloc     |
+|0x02      |0x02     |514         |Free       |
+
+
 
 
 

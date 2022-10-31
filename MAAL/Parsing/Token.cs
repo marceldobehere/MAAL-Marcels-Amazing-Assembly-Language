@@ -88,14 +88,13 @@ namespace MAAL.Parsing
     {
         public static List<string> KeywordList = new List<string>()
         {
-            "__TEST__",
             "exit",
             "loc", "location",
             "sub", "subroutine", "jump",
             "ret", "return",
             "if_jump", "if_sub",
             "#include", "syscall",
-            "print"
+            "print", "malloc", "free"
         };
 
         public string Keyword = "";
@@ -708,7 +707,7 @@ namespace MAAL.Parsing
     {
         public ExpressionToken Argument;
 
-        public PrintToken (ExpressionToken argument)
+        public PrintToken(ExpressionToken argument)
         {
             Argument = argument;
         }
@@ -716,6 +715,37 @@ namespace MAAL.Parsing
         public override string ToString()
         {
             return $"<PRINT {Argument}>";
+        }
+    }
+
+    public class FreeToken : Token
+    {
+        public ExpressionToken ToFree;
+
+        public FreeToken(ExpressionToken toFree)
+        {
+            ToFree = toFree;
+        }
+
+        public override string ToString()
+        {
+            return $"<FREE {ToFree}>";
+        }
+    }
+
+    public class MallocToken : Token
+    {
+        public ExpressionToken Size, ToMalloc;
+
+        public MallocToken(ExpressionToken size, ExpressionToken toMalloc)
+        {
+            Size = size;
+            ToMalloc = toMalloc;
+        }
+
+        public override string ToString()
+        {
+            return $"<MALLOC {Size} bytes to {ToMalloc}>";
         }
     }
 

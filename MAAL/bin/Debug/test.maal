@@ -1,3 +1,10 @@
 loc MAIN:
-	print "Hello, world!";
+	char* test; 
+	malloc 4 &test;
+	*((char*)((ulong)test + 0)) = 'H';
+	*((char*)((ulong)test + 1)) = 'I';
+	*((char*)((ulong)test + 2)) = '!';
+	*((char*)((ulong)test + 3)) = (char)0;
+	print test;
+	free test;
 	exit;

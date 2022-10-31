@@ -242,6 +242,37 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        #region FREE
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("free") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new FreeToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region MALLOC
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("malloc") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]))
+                        {
+                            data[mIndex] = new MallocToken(ConvToExpressionToken(data[mIndex + 1]), ConvToExpressionToken(data[mIndex + 2]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
                         #region POINTERS  INT**
                         // int*
                         if (cTok is TypeToken && mIndex + 1 < data.Count &&
@@ -398,19 +429,6 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
-
-                        //#region OLD DEREF
-                        ////*test
-                        //if (false && cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken
-                        //    && (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
-                        //{
-                        //    VarNameToken tok = data[mIndex + 1] as VarNameToken;
-                        //    tok.DereferenceCount++;
-                        //    data.RemoveAt(mIndex);
-                        //    change = true;
-                        //    break;
-                        //}
-                        //#endregion
                         #region DEREF EXPR
                         //*test
                         if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && 

@@ -1,0 +1,11 @@
+loc MAIN:
+	int x = 0;
+	print "Start!";
+loc LOOP:
+	x++;
+	if_jump (x < 10000000) LOOP;
+	print "\nx: ";
+	print x;
+	
+	print "\nEnd.";
+	exit;
