@@ -10,12 +10,53 @@ namespace MAAL.Parsing
     {
         public class ParsedStuff
         {
-            public Dictionary<string, DeclareVarToken> Variables = new Dictionary<string, DeclareVarToken>();
-            public Dictionary<string, DefineLocationToken> Locations = new Dictionary<string, DefineLocationToken>();
-            public Dictionary<string, DefineSubroutineToken> Subroutines = new Dictionary<string, DefineSubroutineToken>();
+            public List<DeclareVarToken> Variables = new List<DeclareVarToken>();
+            public List<DefineLocationToken> Locations = new List<DefineLocationToken>();
+            public List<DefineSubroutineToken> Subroutines = new List<DefineSubroutineToken>();
             public List<string> Strings = new List<string>();
+            public List<string> Namespaces = new List<string>();
 
             public List<Token> parsedTokens = new List<Token>();
+
+            public DeclareVarToken GetVarFromNameAndNamespace(string namespacePref, string varName)
+            {
+                foreach (var v in Variables)
+                    if (v.NamespacePrefix.Equals(namespacePref) && v.VarName.Equals(varName))
+                        return v;
+
+                return null;
+            }
+            public DefineLocationToken GetLocFromNameAndNamespace(string namespacePref, string locName)
+            {
+                foreach (var v in Locations)
+                    if (v.NamespacePrefix.Equals(namespacePref) && v.LocationName.Equals(locName))
+                        return v;
+
+                return null;
+            }
+            public DefineSubroutineToken GetSubFromNameAndNamespace(string namespacePref, string subName)
+            {
+                foreach (var v in Subroutines)
+                    if (v.NamespacePrefix.Equals(namespacePref) && v.SubroutineName.Equals(subName))
+                        return v;
+
+                return null;
+            }
+
+            public bool HasVarFromNameAndNamespace(string namespacePref, string tName)
+            {
+                return GetVarFromNameAndNamespace(namespacePref, tName) != null;
+            }
+            public bool HasLocFromNameAndNamespace(string namespacePref, string tName)
+            {
+                return GetLocFromNameAndNamespace(namespacePref, tName) != null;
+            }
+            public bool HasSubFromNameAndNamespace(string namespacePref, string tName)
+            {
+                return GetSubFromNameAndNamespace(namespacePref, tName) != null;
+            }
+
+
         }
 
         public static ParsedStuff ParseFile(string filename)
@@ -105,8 +146,112 @@ namespace MAAL.Parsing
                     {
                         Token cTok = data[mIndex];
 
+                        #region NAMESPACE
+                        if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                           (cTok as KeywordToken).Keyword.Equals("namespace") &&
+                           data[mIndex + 1] is GenericNameToken &&
+                           data[mIndex + 2] is CurlyBracketOpenToken)
+                        {
+                            string namespaceName = (data[mIndex + 1] as GenericNameToken).Name + "::";
+                            string namespacePref = (data[mIndex + 1] as GenericNameToken).NamespacePrefix;
+
+                            int cCloseIndex = -1;
+                            int layer = 1;
+                            for (int tI = mIndex + 3; layer > 0 && tI < data.Count; tI++)
+                            {
+                                if (data[tI] is CurlyBracketOpenToken)
+                                    layer++;
+                                if (data[tI] is CurlyBracketCloseToken)
+                                    layer--;
+                                if (layer == 0)
+                                    cCloseIndex = tI;
+                            }
+                            if (layer != 0)
+                            {
+                                throw new Exception($"NAMESPACE WAS NOT CLOSED!");
+                            }
+
+                            for (int tI = mIndex + 3; tI < cCloseIndex; tI++)
+                                data[tI].NamespacePrefix += namespaceName;
+                            stuff.Namespaces.Add(namespacePref+namespaceName);
+
+                            data.RemoveAt(cCloseIndex);
+                            data.RemoveAt(mIndex + 2);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
+                        #region NAMESPACE::
+                        else if (cTok is GenericNameToken && mIndex + 1 < data.Count &&
+                            data[mIndex + 1] is DoubleColonToken)
+                        {
+                            string pref = (cTok as GenericNameToken).NamespacePrefix;
+                            string name = (cTok as GenericNameToken).Name;
+
+                            int sIndex = mIndex + 1;
+
+                            string tPref = pref;
+
+                            if (name.ToLower().Equals("global"))
+                            {
+                                tPref = "";
+                            }
+                            else
+                                tPref += name + "::";
+                            //if (name.ToLower().Equals("global"))
+                            //{
+                            //    data[mIndex] = new NamespaceUseToken("");
+                            //    data.RemoveAt(mIndex + 1);
+                            //    change = true;
+                            //    break;
+                            //}
+
+                            int wIndex = mIndex + 2;
+
+                            while (wIndex + 1 < data.Count &&
+                                (data[wIndex] is GenericNameToken) &&
+                                (data[wIndex + 1] is DoubleColonToken))
+                            {
+                                tPref += (data[wIndex] as GenericNameToken).Name + "::";
+                                wIndex += 2;
+                            }
+
+                            if (!tPref.Equals("") && !stuff.Namespaces.Contains(tPref))
+                            {
+                                continue;
+                                //throw new Exception($"NAMESPACE {tPref} DOES NOT EXIST! {cTok}");
+                            }
+
+
+                            int eIndex = wIndex - 2;
+                            data[mIndex] = new NamespaceUseToken(tPref);
+                            for (int i = sIndex; i < wIndex; i++)
+                                data.RemoveAt(sIndex);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region NAMESPACE::x
+                        if (cTok is NamespaceUseToken && mIndex + 1 < data.Count)
+                        {
+                            Console.WriteLine($" - 1: {data[mIndex + 1]}");
+                            data[mIndex + 1].NamespacePrefix = (cTok as NamespaceUseToken).NamespacePrefix;
+                            Console.WriteLine($" - 2: {data[mIndex + 1]}\n");
+                            data.RemoveAt(mIndex);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
                         #region STRINGS
-                        if (cTok is BasicValueToken && (cTok as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                        else if (cTok is BasicValueToken && (cTok as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
                         {
                             //GlobalStuff.WriteLine("BRUH");
                             BasicValueToken sTok = (cTok as BasicValueToken);
@@ -125,8 +270,8 @@ namespace MAAL.Parsing
                             if (kWord.Equals("loc") || kWord.Equals("location"))
                             {
                                 string locName = (data[mIndex + 1] as GenericNameToken).Name;
-                                data[mIndex] = new DefineLocationToken(locName);
-                                stuff.Locations.Add(locName, data[mIndex] as DefineLocationToken);
+                                data[mIndex] = new DefineLocationToken(locName, (data[mIndex + 1] as GenericNameToken).NamespacePrefix);
+                                stuff.Locations.Add(data[mIndex] as DefineLocationToken);
                                 data.RemoveAt(mIndex + 1);
                                 data.RemoveAt(mIndex + 1);
                                 change = true;
@@ -135,8 +280,8 @@ namespace MAAL.Parsing
                             else if (kWord.Equals("sub") || kWord.Equals("subroutine"))
                             {
                                 string locName = (data[mIndex + 1] as GenericNameToken).Name;
-                                data[mIndex] = new DefineSubroutineToken(locName);
-                                stuff.Subroutines.Add(locName, data[mIndex] as DefineSubroutineToken);
+                                data[mIndex] = new DefineSubroutineToken(locName, (data[mIndex + 1] as GenericNameToken).NamespacePrefix);
+                                stuff.Subroutines.Add( data[mIndex] as DefineSubroutineToken);
                                 data.RemoveAt(mIndex + 1);
                                 data.RemoveAt(mIndex + 1);
                                 change = true;
@@ -188,6 +333,8 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
+
+                        
 
                         #region SYSCALL
                         else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
@@ -331,10 +478,11 @@ namespace MAAL.Parsing
 
                         #region VARIABLE NAMES
                         // x
-                        if (cTok is GenericNameToken && (stuff.Variables.ContainsKey((cTok as GenericNameToken).Name)))
+                        if (cTok is GenericNameToken && (stuff.HasVarFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name)) &&
+                            (mIndex < 1 || (!(data[mIndex - 1] is DoubleColonToken) && !(data[mIndex - 1] is NamespaceUseToken))))
                         {
-                            DeclareVarToken tTok = stuff.Variables[(cTok as GenericNameToken).Name];
-                            data[mIndex] = new VarNameToken(tTok.VarName, tTok.VarType);
+                            DeclareVarToken tTok = stuff.GetVarFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name);
+                            data[mIndex] = new VarNameToken(tTok.VarName, tTok.VarType, (cTok as GenericNameToken).NamespacePrefix);
                             change = true;
                             break;
                         }
@@ -344,9 +492,10 @@ namespace MAAL.Parsing
                         // ...
                         //
                         // test
-                        if (cTok is GenericNameToken && (stuff.Locations.ContainsKey((cTok as GenericNameToken).Name)))
+                        if (cTok is GenericNameToken && (stuff.HasLocFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name)) &&
+                            (mIndex < 1 || (!(data[mIndex - 1] is DoubleColonToken) && !(data[mIndex - 1] is NamespaceUseToken))))
                         {
-                            data[mIndex] = new LocationNameToken(stuff.Locations[(cTok as GenericNameToken).Name]);
+                            data[mIndex] = new LocationNameToken(stuff.GetLocFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name));
                             change = true;
                             break;
                         }
@@ -357,13 +506,21 @@ namespace MAAL.Parsing
                         // ret;
                         //
                         // testrout
-                        if (cTok is GenericNameToken && (stuff.Subroutines.ContainsKey((cTok as GenericNameToken).Name)))
+                        if (cTok is GenericNameToken && (stuff.HasSubFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name)) &&
+                            (mIndex < 1 || (!(data[mIndex - 1] is DoubleColonToken) && !(data[mIndex - 1] is NamespaceUseToken))))
                         {
-                            data[mIndex] = new SubroutineNameToken(stuff.Subroutines[(cTok as GenericNameToken).Name]);
+                            data[mIndex] = new SubroutineNameToken(stuff.GetSubFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix,(cTok as GenericNameToken).Name));
                             change = true;
                             break;
                         }
                         #endregion
+
+
+
+
+
+
+
 
 
                         #region JUMP
@@ -457,7 +614,7 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
-                        #region GET ADDRES
+                        #region GET ADDRESS
                         //&test
                         if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.BitAnd) && mIndex + 1 < data.Count && data[mIndex + 1] is VarNameToken)
                         {
@@ -570,8 +727,8 @@ namespace MAAL.Parsing
                             //GlobalStuff.WriteLine();
 
                             ParsedStuff tempParsedStuff = new ParsedStuff();
-                            foreach (var pair in stuff.Variables)
-                                tempParsedStuff.Variables.Add(pair.Key, pair.Value);
+                            foreach (var thingy in stuff.Variables)
+                                tempParsedStuff.Variables.Add(thingy);
                             ParseStringAdvanced(tempList, tempParsedStuff);
                             stuff.Strings.AddRange(tempParsedStuff.Strings);
 
@@ -647,11 +804,9 @@ namespace MAAL.Parsing
                             (data[mIndex + 1] is GenericNameToken) && (data[mIndex + 2] is EndCommandToken))
                         {
                             string varName = (data[mIndex + 1] as GenericNameToken).Name;
-                            DeclareVarToken tok = new DeclareVarToken(
-                                varName,
-                                (data[mIndex] as TypeToken));
+                            DeclareVarToken tok = new DeclareVarToken(varName, (data[mIndex] as TypeToken), (data[mIndex + 1] as GenericNameToken).NamespacePrefix);
 
-                            stuff.Variables.Add(varName, tok);
+                            stuff.Variables.Add(tok);
 
                             data.RemoveAt(mIndex);
                             data.RemoveAt(mIndex);
@@ -670,9 +825,10 @@ namespace MAAL.Parsing
                             string varName = (data[mIndex + 1] as GenericNameToken).Name;
                             DeclareVarToken tok = new DeclareVarToken(
                                 varName,
-                                (data[mIndex] as TypeToken));
+                                (data[mIndex] as TypeToken),
+                                (data[mIndex + 1] as GenericNameToken).NamespacePrefix);
 
-                            stuff.Variables.Add(varName, tok);
+                            stuff.Variables.Add(tok);
 
                             data.RemoveAt(mIndex);
                             change = true;
@@ -991,12 +1147,32 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                     tokens.Add(new EndCommandToken());
                     tempString = "";
                 }
+                else if (tChar == '{')
+                {
+                    if (tempString != "")
+                        tokens.Add(ConvertStringToToken(tempString));
+                    tempString = "";
+                    tokens.Add(new CurlyBracketOpenToken());
+                }
+                else if (tChar == '}')
+                {
+                    if (tempString != "")
+                        tokens.Add(ConvertStringToToken(tempString));
+                    tempString = "";
+                    tokens.Add(new CurlyBracketCloseToken());
+                }
                 else if (tChar == ':')
                 {
                     if (tempString != "")
                         tokens.Add(ConvertStringToToken(tempString));
-                    tokens.Add(new ColonToken());
-                    tempString = "";
+                    tempString = "";                    
+                    if (mIndex + 1 < len && data[mIndex + 1] == ':')
+                    {
+                        tokens.Add(new DoubleColonToken());
+                        mIndex++;
+                    }
+                    else
+                        tokens.Add(new ColonToken());
                 }
                 else if (tChar == '"')
                 {

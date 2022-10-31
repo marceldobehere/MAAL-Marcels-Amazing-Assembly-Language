@@ -6,6 +6,8 @@ namespace MAAL.Parsing
 {
     public class Token
     {
+        public string NamespacePrefix = string.Empty;
+
         public override string ToString()
             => $"<Generic Token>";
     }
@@ -18,6 +20,21 @@ namespace MAAL.Parsing
     {
         public override string ToString()
             => $"<:>";
+    }
+    public class DoubleColonToken : Token
+    {
+        public override string ToString()
+            => $"<::>";
+    }
+    public class CurlyBracketOpenToken : Token
+    {
+        public override string ToString()
+            => "<{>";
+    }
+    public class CurlyBracketCloseToken : Token
+    {
+        public override string ToString()
+            => "<}>";
     }
     public class OperatorToken : Token
     {
@@ -95,7 +112,7 @@ namespace MAAL.Parsing
             "if_jump", "if_sub",
             "#include", "syscall",
             "print", "malloc", "free",
-            "readline"
+            "readline", "namespace"
         };
 
         public string Keyword = "";
@@ -324,20 +341,21 @@ namespace MAAL.Parsing
         public TypeToken VarType;
         public bool UseAddr = false;
 
-        public VarNameToken(string name, TypeToken typeToken)
+        public VarNameToken(string name, TypeToken typeToken, string namespacePref)
         {
             VarName = name;
             VarType = typeToken;
             UseAddr = false;
+            NamespacePrefix = namespacePref;
         }
 
         public override string ToString()
         {
             string res;
             if (UseAddr)
-                res = $"<VAR: \"{VarName}\" (&{VarType})>";
+                res = $"<VAR: \"{NamespacePrefix}{VarName}\" (&{VarType})>";
             else
-                res = $"<VAR: \"{VarName}\" ({VarType})>";
+                res = $"<VAR: \"{NamespacePrefix}{VarName}\" ({VarType})>";
 
             return res;
         }
@@ -372,14 +390,15 @@ namespace MAAL.Parsing
         public string VarName;
         public TypeToken VarType;
 
-        public DeclareVarToken(string varName, TypeToken varType)
+        public DeclareVarToken(string varName, TypeToken varType, string namespacePref)
         {
             VarName = varName;
             VarType = varType;
+            NamespacePrefix = namespacePref;
         }
 
         public override string ToString()
-            => $"<{VarType} \"{VarName}\">";
+            => $"<{VarType} \"{NamespacePrefix}{VarName}\">";
     }
 
     public class DerefToken : Token
@@ -542,25 +561,27 @@ namespace MAAL.Parsing
     {
         public string LocationName;
 
-        public DefineLocationToken(string name)
+        public DefineLocationToken(string name, string namespacePref)
         {
             LocationName = name;
+            NamespacePrefix = namespacePref;
         }
 
         public override string ToString()
-            => $"<DEF LOCATION {LocationName}>";
+            => $"<DEF LOCATION {NamespacePrefix}{LocationName}>";
     }
     public class DefineSubroutineToken : Token
     {
         public string SubroutineName;
 
-        public DefineSubroutineToken(string name)
+        public DefineSubroutineToken(string name, string namespacePref)
         {
             SubroutineName = name;
+            NamespacePrefix = namespacePref;
         }
 
         public override string ToString()
-            => $"<DEF SUB {SubroutineName}>";
+            => $"<DEF SUB {NamespacePrefix}{SubroutineName}>";
     }
 
     public class ExitToken : Token
@@ -599,7 +620,7 @@ namespace MAAL.Parsing
             if (JumpToFixedAddress)
                 return $"<LOCATION {Address}>";
             else
-                return $"<LOCATION {Location.LocationName}>";
+                return $"<LOCATION {Location.NamespacePrefix}{Location.LocationName}>";
         }
     }
     public class SubroutineNameToken : Token
@@ -612,7 +633,7 @@ namespace MAAL.Parsing
         }
 
         public override string ToString()
-            => $"<SUB {Subroutine.SubroutineName}>";
+            => $"<SUB {Subroutine.NamespacePrefix}{Subroutine.SubroutineName}>";
     }
     public class FixedJumpToken : Token
     {
@@ -762,6 +783,22 @@ namespace MAAL.Parsing
         public override string ToString()
         {
             return $"<MALLOC {Size} bytes to {ToMalloc}>";
+        }
+    }
+
+    public class NamespaceUseToken : Token
+    {
+        public NamespaceUseToken(string namespacePref)
+        {
+            NamespacePrefix = namespacePref;
+        }
+
+        public override string ToString()
+        {
+            if (NamespacePrefix.Equals(""))
+                return $"<NAMESPACE GLOBAL>";
+            else
+                return $"<NAMESPACE {NamespacePrefix}>";
         }
     }
 

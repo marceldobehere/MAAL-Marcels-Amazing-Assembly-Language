@@ -150,15 +150,19 @@ namespace MAAL
             GlobalStuff.WriteLine();
             GlobalStuff.WriteLine();
             GlobalStuff.WriteLine($"Variables: (Count: {stuff.Variables.Count})");
-            foreach (var token in stuff.Variables.Values)
+            foreach (var token in stuff.Variables)
                 GlobalStuff.WriteLine($" - {token}");
             GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine($"Namespaces: (Count: {stuff.Namespaces.Count})");
+            foreach (var token in stuff.Namespaces)
+                GlobalStuff.WriteLine($" - \"{token}\"");
+            GlobalStuff.WriteLine();
             GlobalStuff.WriteLine($"Locations: (Count: {stuff.Locations.Count})");
-            foreach (var token in stuff.Locations.Values)
+            foreach (var token in stuff.Locations)
                 GlobalStuff.WriteLine($" - {token}");
             GlobalStuff.WriteLine();
             GlobalStuff.WriteLine($"Subroutines: (Count: {stuff.Subroutines.Count})");
-            foreach (var token in stuff.Subroutines.Values)
+            foreach (var token in stuff.Subroutines)
                 GlobalStuff.WriteLine($" - {token}");
             GlobalStuff.WriteLine();
 

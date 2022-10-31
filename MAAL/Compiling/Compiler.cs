@@ -910,12 +910,12 @@ namespace MAAL.Compiling
 
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
 
-            if (!stuff.Locations.ContainsKey("MAIN"))
+            if (!stuff.HasLocFromNameAndNamespace("", "MAIN"))
                 throw new Exception("NO MAIN LOCATION/ENTRY POINT DECLARED!!!");
 
             almostCompiledCode.Add(new AlmostByte("Jumping to MAIN"));
             almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_FIX]));
-            almostCompiledCode.Add(new AlmostByte(new LocationNameToken(stuff.Locations["MAIN"])));
+            almostCompiledCode.Add(new AlmostByte(new LocationNameToken(stuff.GetLocFromNameAndNamespace("", "MAIN"))));
             //almostCompiledCode.Add(new AlmostByte(0));
 
             // might not need that if I change casting
@@ -925,7 +925,7 @@ namespace MAAL.Compiling
 
             almostCompiledCode.Add(new AlmostByte("VARIABLE DATA:"));
             foreach (var usedVar in stuff.Variables)
-                almostCompiledCode.Add(new AlmostByte(usedVar.Value));
+                almostCompiledCode.Add(new AlmostByte(usedVar));
 
             Dictionary<string, ulong> strLocs = new Dictionary<string, ulong>();
 
@@ -1414,7 +1414,7 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(new byte[8]));
                 }
                 #endregion
-                
+
 
 
 
@@ -1448,17 +1448,17 @@ namespace MAAL.Compiling
             {
                 if (aByte.IsDefineLocation)
                 {
-                    locAddresses.Add(aByte.DefineLocation.LocationName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    locAddresses.Add(aByte.DefineLocation.NamespacePrefix + aByte.DefineLocation.LocationName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
                     //compiledCode.AddRange(aByte.FixedData);
                 }
                 else if (aByte.IsDefineSubroutine)
                 {
-                    subAddresses.Add(aByte.DefineSubroutine.SubroutineName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    subAddresses.Add(aByte.DefineSubroutine.NamespacePrefix + aByte.DefineSubroutine.SubroutineName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
                     //compiledCode.AddRange(aByte.FixedData);
                 }
                 else if (aByte.IsDeclaredVarName)
                 {
-                    varAddresses.Add(aByte.DeclaredVarName.VarName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
+                    varAddresses.Add(aByte.DeclaredVarName.NamespacePrefix + aByte.DeclaredVarName.VarName, GetAddrOfAlmostByte(almostCompiledCode, aByte));
                     //compiledCode.AddRange(aByte.FixedData);
                 }
 
@@ -1491,15 +1491,15 @@ namespace MAAL.Compiling
                 }
                 else if (aByte.IsVarName)
                 {
-                    compiledCode.AddRange(BEC.UInt64ToByteArr(varAddresses[aByte.VarName.VarName]));
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(varAddresses[aByte.VarName.NamespacePrefix + aByte.VarName.VarName]));
                 }
                 else if (aByte.IsLocationName)
                 {
-                    compiledCode.AddRange(BEC.UInt64ToByteArr(locAddresses[aByte.LocationName.Location.LocationName]));
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(locAddresses[aByte.LocationName.Location.NamespacePrefix + aByte.LocationName.Location.LocationName]));
                 }
                 else if (aByte.IsSubroutineName)
                 {
-                    compiledCode.AddRange(BEC.UInt64ToByteArr(subAddresses[aByte.SubroutineName.Subroutine.SubroutineName]));
+                    compiledCode.AddRange(BEC.UInt64ToByteArr(subAddresses[aByte.SubroutineName.Subroutine.NamespacePrefix + aByte.SubroutineName.Subroutine.SubroutineName]));
                 }
                 else if (aByte.IsAlmostByteOffset)
                 {

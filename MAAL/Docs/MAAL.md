@@ -178,7 +178,58 @@ You can directly manipulate the memory by doing.
 
 
 ### Dynamic Memory Stuff
-none yet
+There are some syscalls related to dynamic memory.
+(Mainly malloc and free)
+
+
+### Namespaces
+You can define namespaces like this:
+```
+namespace NAME
+{
+    ...
+    ...
+}
+```
+If you want to refer to Variables/Locations/Subroutines/... inside the namespace you can use \:\:.
+```
+int x;
+
+namespace TEST
+{
+    int x;
+}
+
+
+x = 10;
+TEST::x = 20;
+
+```
+If you want to refer to Variables/etc which are outside the current namespace you can use GLOBAL\:\:.
+```
+int x;
+
+namespace TEST
+{
+    int x;
+
+    sub SET_VARS:
+        x = 5; // x in TEST
+        GLOBAL::x = 10; // global x
+        GLOBAL::TEST::x = 20; // still x in TEST
+        ret;_
+}
+
+x = 100; // global x
+TEST::x = 5; // x in TEST
+
+sub TEST::SET_VARS; 
+// will set the global x to 10 and 
+// the x in TEST to 5 and then to 20.
+```
+
+
+
 
 
 
