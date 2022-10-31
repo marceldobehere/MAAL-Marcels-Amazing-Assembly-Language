@@ -61,7 +61,7 @@ namespace MAAL.Compiling
         {
             NONE,
             CONSOLE,
-            MEMORY
+            MEMORY,
         }
 
         public static Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
@@ -77,6 +77,7 @@ namespace MAAL.Compiling
             PRINT_CHAR,
             PRINT_VAL,
             PRINT_STR,
+            READ_LINE,
         }
 
         public static Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
@@ -85,13 +86,14 @@ namespace MAAL.Compiling
             {SyscallConsoleEnum.PRINT_CHAR, 1 },
             {SyscallConsoleEnum.PRINT_VAL, 2 },
             {SyscallConsoleEnum.PRINT_STR, 3 },
+            {SyscallConsoleEnum.READ_LINE, 4 },
         };
 
         public enum SyscallMemoryEnum
         {
             NONE,
             MALLOC,
-            FREE
+            FREE,
         }
 
         public static Dictionary<SyscallMemoryEnum, byte> SyMeToByte = new Dictionary<SyscallMemoryEnum, byte>()
@@ -1347,6 +1349,26 @@ namespace MAAL.Compiling
                     }
                 }
                 #endregion
+                #region READLINE
+                else if (cTok is ReadLineToken)
+                {
+                    var rTok = cTok as ReadLineToken;
+                    var argType = GetTypeFromExpression(rTok.ToReadInto);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"ADDRESS PROVIDED TO READLINE IS NOT AN ULONG/POINTER! {rTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(rTok.ToReadInto, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR READ LINE"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                    almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.READ_LINE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
 
                 #region FREE
                 else if (cTok is FreeToken)
@@ -1392,6 +1414,8 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(new byte[8]));
                 }
                 #endregion
+                
+
 
 
                 else

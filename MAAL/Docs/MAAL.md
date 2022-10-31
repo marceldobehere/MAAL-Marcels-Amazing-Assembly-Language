@@ -206,6 +206,27 @@ char* test = "Hoi!";
 print test;
 ```
 
+#### Reading a line as input
+You can force the user to input a line and get the input.
+```
+readline (Address of Variable to store the input in);
+```
+
+
+Example:
+```
+char* input;
+
+print "Enter Name: ";
+readline &input;
+
+print "\n\nHello ";
+print input;
+print "!";
+```
+
+
+
 
 #### malloc
 You can allocate some memory by doing:

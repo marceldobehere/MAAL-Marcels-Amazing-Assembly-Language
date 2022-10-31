@@ -94,7 +94,8 @@ namespace MAAL.Parsing
             "ret", "return",
             "if_jump", "if_sub",
             "#include", "syscall",
-            "print", "malloc", "free"
+            "print", "malloc", "free",
+            "readline"
         };
 
         public string Keyword = "";
@@ -730,6 +731,21 @@ namespace MAAL.Parsing
         public override string ToString()
         {
             return $"<FREE {ToFree}>";
+        }
+    }
+
+    public class ReadLineToken : Token
+    {
+        public ExpressionToken ToReadInto;
+
+        public ReadLineToken(ExpressionToken toReadInto)
+        {
+            ToReadInto = toReadInto;
+        }
+
+        public override string ToString()
+        {
+            return $"<READ LINE INTO {ToReadInto}>";
         }
     }
 

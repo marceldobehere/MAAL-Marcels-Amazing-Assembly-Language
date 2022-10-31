@@ -1,35 +1,10 @@
 loc MAIN:
-	char* test; 
+	char* input;
 
-	print "\nTEST 1: ";
-	print (ulong)test;
+	print "Enter Name: ";
+	readline &input;
 
-	malloc 5 &test;
-	print "\nTEST 2: ";
-	print (ulong)test;
-
-	((ulong)test + 0) = 'H';
-	((ulong)test + 1) = 'O';
-	((ulong)test + 2) = 'I';
-	((ulong)test + 3) = '!';
-	((ulong)test + 4) = (char)0;
-
-	print "\nTEST 3: ";
-	print (ulong)test;
-
-	print "\nSTR: \"";
-	print test;
-	print "\"";
-
-	free test;
-
-	malloc 10 &test;
-	print "\nTEST 4: ";
-	print (ulong)test;
-
-	malloc 10 &test;
-	print "\nTEST 4 2: ";
-	print (ulong)test;
-
-
+	print "\n\nHello ";
+	print input;
+	print "!";
 	exit;
