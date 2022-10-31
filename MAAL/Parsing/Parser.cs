@@ -240,9 +240,9 @@ namespace MAAL.Parsing
                         #region NAMESPACE::x
                         if (cTok is NamespaceUseToken && mIndex + 1 < data.Count)
                         {
-                            Console.WriteLine($" - 1: {data[mIndex + 1]}");
+                            //Console.WriteLine($" - 1: {data[mIndex + 1]}");
                             data[mIndex + 1].NamespacePrefix = (cTok as NamespaceUseToken).NamespacePrefix;
-                            Console.WriteLine($" - 2: {data[mIndex + 1]}\n");
+                            //Console.WriteLine($" - 2: {data[mIndex + 1]}\n");
                             data.RemoveAt(mIndex);
                             change = true;
                             break;
