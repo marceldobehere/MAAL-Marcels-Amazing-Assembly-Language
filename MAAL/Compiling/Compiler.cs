@@ -61,12 +61,14 @@ namespace MAAL.Compiling
         {
             NONE,
             CONSOLE,
+            MEMORY
         }
 
         public static Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
         {
             {SyscallEnum.NONE, 0 },
             {SyscallEnum.CONSOLE, 1 },
+            {SyscallEnum.MEMORY, 2 }
         };
 
         public enum SyscallConsoleEnum
@@ -83,6 +85,20 @@ namespace MAAL.Compiling
             {SyscallConsoleEnum.PRINT_CHAR, 1 },
             {SyscallConsoleEnum.PRINT_VAL, 2 },
             {SyscallConsoleEnum.PRINT_STR, 3 },
+        };
+
+        public enum SyscallMemoryEnum
+        {
+            NONE,
+            MALLOC,
+            FREE
+        }
+
+        public static Dictionary<SyscallMemoryEnum, byte> SyMeToByte = new Dictionary<SyscallMemoryEnum, byte>()
+        {
+            {SyscallMemoryEnum.NONE, 0 },
+            {SyscallMemoryEnum.MALLOC, 1 },
+            {SyscallMemoryEnum.FREE, 2 },
         };
 
         #region OP AND VARTYPE STUFF
@@ -501,7 +517,7 @@ namespace MAAL.Compiling
             }
             if (tok.IsVariable)
             {
-                if (allowCharPointer && !tok.Variable.UseAddr && tok.Variable.VarType.BaseType.Equals("char") && 
+                if (allowCharPointer && !tok.Variable.UseAddr && tok.Variable.VarType.BaseType.Equals("char") &&
                     tok.Variable.VarType.PointerCount == 1)
                     return BasicValueToken.BasicValueTypeEnum.CHAR_POINTER;
 
@@ -735,7 +751,7 @@ namespace MAAL.Compiling
                 almostCompiledCode.Add(resAddr);
 
                 //throw new Exception($"BRO HOW TO DO DEREFS? {dType} <- {tok.Deref.ToDeref} | {oType} <- {tok}");
-                
+
                 return;
             }
 
@@ -801,7 +817,7 @@ namespace MAAL.Compiling
                 AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.OPERATION_FIX]);
 
                 //int sizeExprLeft = GetTypeFromExpression(tok);
-                CompileExpression(tok.Left, almostCompiledCode, strLocs, new AlmostByte(cmdByte,3, exprSizeLeft));
+                CompileExpression(tok.Left, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, exprSizeLeft));
                 //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
 
                 almostCompiledCode.Add(new AlmostByte($"Calculation of {tok.Operator} {tok.Left} into {resAddr}"));
@@ -839,13 +855,13 @@ namespace MAAL.Compiling
 
                 if (exprTypeLeft != strongerType)
                 {
-                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize), 
+                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize),
                         exprTypeLeft, new AlmostByte(cmdByte, 3 + 0, allowedSize), strongerType);
                     //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeLeft} => {strongerType})  ({tok.Left})");
                 }
                 if (exprTypeRight != strongerType)
                 {
-                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize), 
+                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize),
                         exprTypeRight, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize), strongerType);
                     //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
                 }
@@ -1332,6 +1348,50 @@ namespace MAAL.Compiling
                 }
                 #endregion
 
+                #region FREE
+                else if (cTok is FreeToken)
+                {
+                    var mTok = cTok as FreeToken;
+                    var argType = GetTypeFromExpression(mTok.ToFree);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"ADDRESS PROVIDED TO FREE IS NOT AN ULONG/POINTER! {mTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(mTok.ToFree, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR FREE"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.MEMORY]));
+                    almostCompiledCode.Add(new AlmostByte(SyMeToByte[SyscallMemoryEnum.FREE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region MALLOC
+                else if (cTok is MallocToken)
+                {
+                    var mTok = cTok as MallocToken;
+                    var argType1 = GetTypeFromExpression(mTok.Size);
+                    var argType2 = GetTypeFromExpression(mTok.ToMalloc);
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"SIZE PROVIDED TO MALLOC IS NOT AN INT! {mTok.Size} {mTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"ADDRESS PROVIDED TO MALLOC IS NOT AN ULONG/POINTER! {mTok.ToMalloc} {mTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(mTok.Size, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 4));
+                    CompileExpression(mTok.ToMalloc, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 7, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR MALLOC"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.MEMORY]));
+                    almostCompiledCode.Add(new AlmostByte(SyMeToByte[SyscallMemoryEnum.MALLOC]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
 
 
                 else
