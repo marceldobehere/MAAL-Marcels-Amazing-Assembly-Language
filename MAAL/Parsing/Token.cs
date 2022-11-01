@@ -115,7 +115,7 @@ namespace MAAL.Parsing
             "#include", "syscall",
             "print", "malloc", "free",
             "readline", "namespace",
-            "while"
+            "while", "if"
         };
 
         public string Keyword = "";

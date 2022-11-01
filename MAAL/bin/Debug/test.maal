@@ -1,20 +1,27 @@
 loc MAIN:
-	int x = 0;
-	while (x < 100)
-	{
-		x++;
-	}
+	int x;
 
-	print "X1: ";
-	print x;
-
-	while (x > 0)
-	{
-		x--;
-	}
-
-	print "\nX2: ";
-	print x;
-
+	x = 5;
+	sub PRINT;
+	x = 10;
+	sub PRINT;
+	x = 1;
+	sub PRINT;
 
 	exit;
+
+
+sub PRINT:
+	if (x == 5)
+	{
+		print "FIVE\n";
+	}
+	if (x == 10)
+	{
+		print "TEN\n";
+	}
+	if ((x != 5) && (x != 10))
+	{
+		print "NONE\n";
+	}
+	ret;

@@ -1076,6 +1076,47 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
+                        #region IF
+                        // if (x) {}
+                        else if (cTok is KeywordToken && (cTok as KeywordToken).Keyword.Equals("if") &&
+                            mIndex + 3 < data.Count && CouldBeExpessionToken(data[mIndex + 1]) &&
+                            data[mIndex + 2] is CurlyBracketOpenToken)
+                        {
+                            int sIndex = mIndex + 2;
+                            int eIndex = -1;
+                            int layer = 1;
+                            for (int i = sIndex + 1; layer > 0 && i < data.Count; i++)
+                            {
+                                if (data[i] is CurlyBracketOpenToken)
+                                    layer++;
+                                if (data[i] is CurlyBracketCloseToken)
+                                    layer--;
+                                if (layer == 0)
+                                    eIndex = i;
+                            }
+                            if (layer != 0)
+                                throw new Exception($"CURLY BRACKET WAS NOT CLOSED! {cTok}");
+                            string basePref = cTok.NamespacePrefix;
+
+                            string baseLabelId = $"GENERATED_LABEL_IF_{GenIdCounter++}_";
+
+                            string labelEnd = baseLabelId + "END";
+
+                            var endLoc = new DefineLocationToken(labelEnd, basePref);
+                            data[eIndex] = endLoc;
+
+
+                            data[mIndex] = new ConditionalJumpToken(new ExpressionToken(
+                                new OperatorToken(OperatorToken.OperatorEnum.Not), ConvToExpressionToken(data[mIndex + 1])),
+                                new LocationNameToken(endLoc));
+                            //data[sIndex - 1] = loopLoc;
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
 
 
 

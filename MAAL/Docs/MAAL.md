@@ -121,6 +121,40 @@ jump TEST;
 
 
 ### Conditionals
+
+
+#### if
+Executes code if a condition is met.
+```
+int x = 5;
+if (x == 10)
+{
+    print "TEN";
+}
+if (x == 5)
+{
+    print "FIVE";
+}
+
+// will print FIVE.
+
+```
+
+
+#### while
+Repeats code while a condition is met.
+```
+int x = 0;
+while (x < 10)
+{
+    x++;
+}
+print x; // will print 10.
+```
+
+
+
+#### if_jump
 Jumps somewhere, if a condition is met.
 
 Example:
