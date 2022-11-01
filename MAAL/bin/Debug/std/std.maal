@@ -1,0 +1,7 @@
+namespace std
+{
+	#include "str.maal"
+
+
+
+}

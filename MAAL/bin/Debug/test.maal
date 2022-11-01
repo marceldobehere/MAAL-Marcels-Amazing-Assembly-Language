@@ -1,48 +1,20 @@
 loc MAIN:
-	// "local" x
-	int x;
+	int x = 0;
+	while (x < 100)
+	{
+		x++;
+	}
 
-	// This sets the local x to 10
-	x = 10;
-	// This sets the x in the namespace TEST to 20
-	TEST::x = 20;
-	
-	// Prints the Variables
-	sub PRINT_VARS;
-
-	// Sets the variables from inside the TEST namespace
-	sub TEST::SET_X;
-	print "CALLING TEST::SET_X...\n";
-
-	// Prints the changed Variables
-	sub PRINT_VARS;
-
-	// Done
-	exit;
-
-
-sub PRINT_VARS:
-	print "VARS:\n";
-	print "X:      ";
+	print "X1: ";
 	print x;
-	print "\n";
 
-	print "TEST:X: ";
-	print TEST::x;
-	print "\n\n";
+	while (x > 0)
+	{
+		x--;
+	}
 
-	ret;
+	print "\nX2: ";
+	print x;
 
 
-
-namespace TEST
-{
-	int x;
-
-	sub SET_X:
-		x = 50;
-		GLOBAL::x = 100;
-		ret;
-	
-	// You can also have nested namespaces
-}
+	exit;

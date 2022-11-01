@@ -1,0 +1,17 @@
+namespace str
+{
+	char* Str = (ulong)0;
+	
+	
+	
+	
+	int StrLen = 0;
+	sub GetStrLen:
+		StrLen = 0;
+		char* t = Str;
+		while (*((char*)(t+StrLen)) != 0) // t[StrLen] != 0
+		{
+			StrLen++;
+		}
+		ret;
+}

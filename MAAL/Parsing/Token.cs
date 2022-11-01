@@ -103,6 +103,8 @@ namespace MAAL.Parsing
 
     public class KeywordToken : Token
     {
+        public string RelFilePath = "";
+
         public static List<string> KeywordList = new List<string>()
         {
             "exit",
@@ -112,7 +114,8 @@ namespace MAAL.Parsing
             "if_jump", "if_sub",
             "#include", "syscall",
             "print", "malloc", "free",
-            "readline", "namespace"
+            "readline", "namespace",
+            "while"
         };
 
         public string Keyword = "";

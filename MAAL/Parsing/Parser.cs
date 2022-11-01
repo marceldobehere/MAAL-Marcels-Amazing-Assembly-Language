@@ -8,6 +8,8 @@ namespace MAAL.Parsing
 {
     public partial class Parser
     {
+        public static int GenIdCounter = 0;
+
         public class ParsedStuff
         {
             public List<DeclareVarToken> Variables = new List<DeclareVarToken>();
@@ -184,8 +186,6 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
-
-
                         #region NAMESPACE::
                         else if (cTok is GenericNameToken && mIndex + 1 < data.Count &&
                             data[mIndex + 1] is DoubleColonToken)
@@ -325,7 +325,30 @@ namespace MAAL.Parsing
                             data.RemoveAt(mIndex);
                             data.RemoveAt(mIndex);
 
-                            List<Token> tempList = ParseStringBasic(new StreamReader(tempFilePath).ReadToEnd());
+                            string nPath = (cTok as KeywordToken).RelFilePath;
+                            if (nPath.Equals(""))
+                                nPath = ".";
+                            nPath += $"/{tempFilePath}";
+
+
+                            //Console.WriteLine($"OLD:   {(cTok as KeywordToken).RelFilePath}");
+                            //Console.WriteLine($"FILE:  {tempFilePath}");
+                            //Console.WriteLine($"nPATH: {nPath}");
+                            if (!File.Exists(nPath))
+                                throw new Exception($"FILE AT \"{nPath}\" DOES NOT EXIST!");
+                            string newBasePath = Directory.GetParent(nPath).FullName;
+                            //Console.WriteLine($"ROOT:  {newBasePath}");
+
+                            //Console.WriteLine();
+
+                            List<Token> tempList = ParseStringBasic(new StreamReader(nPath).ReadToEnd());
+                            foreach (var t in tempList)
+                            {
+                                t.NamespacePrefix = cTok.NamespacePrefix;
+                                if (t is KeywordToken)
+                                    (t as KeywordToken).RelFilePath = newBasePath;
+                            }
+
 
                             data.InsertRange(mIndex, tempList);
 
@@ -514,12 +537,6 @@ namespace MAAL.Parsing
                             break;
                         }
                         #endregion
-
-
-
-
-
-
 
 
 
@@ -1009,6 +1026,52 @@ namespace MAAL.Parsing
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
+                        #region WHILE
+                        // while (x) {}
+                        else if (cTok is KeywordToken && (cTok as KeywordToken).Keyword.Equals("while") &&
+                            mIndex + 3 < data.Count && CouldBeExpessionToken(data[mIndex + 1]) &&
+                            data[mIndex + 2] is CurlyBracketOpenToken)
+                        {
+                            int sIndex = mIndex + 2;
+                            int eIndex = -1;
+                            int layer = 1;
+                            for (int i = sIndex + 1; layer > 0 && i < data.Count; i++)
+                            {
+                                if (data[i] is CurlyBracketOpenToken)
+                                    layer++;
+                                if (data[i] is CurlyBracketCloseToken)
+                                    layer--;
+                                if (layer == 0)
+                                    eIndex = i;
+                            }
+                            if (layer != 0)
+                                throw new Exception($"CURLY BRACKET WAS NOT CLOSED! {cTok}");
+                            string basePref = cTok.NamespacePrefix;
+
+                            string baseLabelId = $"GENERATED_LABEL_WHILE_{GenIdCounter++}_";
+
+                            string labelEnd = baseLabelId + "END";
+                            string labelLoop = baseLabelId + "LOOP";
+
+
+                            var endLoc = new DefineLocationToken(labelEnd, basePref);
+                            var loopLoc = new DefineLocationToken(labelLoop, basePref);
+                            data.Insert(eIndex + 1, endLoc);
+                            data[eIndex] = new FixedJumpToken(new LocationNameToken(loopLoc));
+
+
+                            data[sIndex] = new ConditionalJumpToken(new ExpressionToken(
+                                new OperatorToken(OperatorToken.OperatorEnum.Not), ConvToExpressionToken(data[mIndex + 1])),
+                                new LocationNameToken(endLoc));
+                            data[sIndex - 1] = loopLoc;
+                            data.RemoveAt(mIndex);
+
                             change = true;
                             break;
                         }

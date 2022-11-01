@@ -1,0 +1,20 @@
+#include "std/std.maal"
+
+loc MAIN:
+	char* t = "Hoi!";
+	
+	// String Lenght
+	std::str::Str = t; // set string in the std str namespace to "Hoi!"
+	sub std::str::GetStrLen;    // call the str len subroutine
+	int len = std::str::StrLen; // copy the lenght into len
+
+
+	print "STR: \""; // print str
+	print t;
+	print "\"\n";
+	
+	print "LEN: "; // print len
+	print len;
+	print "\n";
+	
+	exit;
