@@ -180,7 +180,7 @@ namespace MAAL.Compiling
 
             // Normal And Bitwise Operators will return the HIGHER TYPE
             if (op == OperatorToken.OperatorEnum.Plus || op == OperatorToken.OperatorEnum.Minus ||
-                op == OperatorToken.OperatorEnum.Minus || op == OperatorToken.OperatorEnum.Star ||
+                op == OperatorToken.OperatorEnum.Divide || op == OperatorToken.OperatorEnum.Star ||
                 op == OperatorToken.OperatorEnum.Mod ||
 
                 op == OperatorToken.OperatorEnum.BitAnd || op == OperatorToken.OperatorEnum.BitOr
