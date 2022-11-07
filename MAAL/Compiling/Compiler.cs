@@ -833,6 +833,9 @@ namespace MAAL.Compiling
                 return;
             }
 
+
+
+
             {
                 var exprTypeLeft = GetTypeFromExpression(tok.Left);
                 var exprTypeRight = GetTypeFromExpression(tok.Right);
@@ -848,33 +851,71 @@ namespace MAAL.Compiling
                         throw new Exception($"CANT PUT {resSize} BYTES INTO {resAddr.AlmostByteDataSize} BYTES! {tok} {resAddr}");
 
                 AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.OPERATION_FIX]);
+                byte[] dataLeft = new byte[allowedSize];
+                byte[] dataRight = new byte[allowedSize];
 
-                //int sizeExprLeft = GetTypeFromExpression(tok);
-                CompileExpression(tok.Left, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3 + 0, allowedSize));
-                //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr, DaTyToSize[exprTypeLeft]);
-                CompileExpression(tok.Right, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize));
-                //CopyXBytesFromTo(almostCompiledCode, resAddr, lAddr + 8, DaTyToSize[exprTypeLeft]);
 
-                if (exprTypeLeft != strongerType)
+
+                if (tok.Left.IsConstValue)
                 {
-                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize),
-                        exprTypeLeft, new AlmostByte(cmdByte, 3 + 0, allowedSize), strongerType);
-                    //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeLeft} => {strongerType})  ({tok.Left})");
+                    if (exprTypeLeft != strongerType)
+                        if (!ParserHelpers.TryCast(tok.Left, 
+                            new TypeToken(TypeToken.TypeList[TypeToken.TypeEnumList.IndexOf(strongerType)]), 
+                            tok.Left.ConstValue))
+                            throw new Exception($"CASTING TO {strongerType} FAILED! {tok.Left}");
+
+                    byte[] varData = BasicValueToArr(tok.Left.ConstValue, strLocs);
+                    for (int i = 0; i < varData.Length; i++)
+                        dataLeft[i] = varData[i];
                 }
-                if (exprTypeRight != strongerType)
+                else
                 {
-                    CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize),
-                        exprTypeRight, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize), strongerType);
-                    //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
+                    CompileExpression(tok.Left, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3 + 0, allowedSize));
+                    if (exprTypeLeft != strongerType)
+                    {
+                        CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + 0, allowedSize),
+                            exprTypeLeft, new AlmostByte(cmdByte, 3 + 0, allowedSize), strongerType);
+                        //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeLeft} => {strongerType})  ({tok.Left})");
+                    }
                 }
+
+
+                if (tok.Right.IsConstValue)
+                {
+                    if (exprTypeRight != strongerType)
+                        if (!ParserHelpers.TryCast(tok.Right,
+                            new TypeToken(TypeToken.TypeList[TypeToken.TypeEnumList.IndexOf(strongerType)]),
+                            tok.Right.ConstValue))
+                            throw new Exception($"CASTING TO {strongerType} FAILED! {tok.Right}");
+
+                    byte[] varData = BasicValueToArr(tok.Right.ConstValue, strLocs);
+                    for (int i = 0; i < varData.Length; i++)
+                        dataRight[i] = varData[i];
+                }
+                else
+                {
+                    CompileExpression(tok.Right, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize));
+                    if (exprTypeRight != strongerType)
+                    {
+                        CastXToY(almostCompiledCode, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize),
+                            exprTypeRight, new AlmostByte(cmdByte, 3 + allowedSize, allowedSize), strongerType);
+                        //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
+                    }
+                }
+                
+
+
+
+
+
 
                 almostCompiledCode.Add(new AlmostByte($"Calculation of {tok.Left} {tok.Operator} {tok.Right} into {resAddr}"));
                 almostCompiledCode.Add(cmdByte);
                 almostCompiledCode.Add(new AlmostByte(OpToByte[tok.Operator.Operator]));
                 almostCompiledCode.Add(new AlmostByte(DaTyToByte[strongerType]));
 
-                almostCompiledCode.Add(new AlmostByte(new byte[allowedSize]));
-                almostCompiledCode.Add(new AlmostByte(new byte[allowedSize]));
+                almostCompiledCode.Add(new AlmostByte(dataLeft));
+                almostCompiledCode.Add(new AlmostByte(dataRight));
                 almostCompiledCode.Add(resAddr);
             }
 
@@ -911,7 +952,13 @@ namespace MAAL.Compiling
             List<AlmostByte> almostCompiledCode = new List<AlmostByte>();
 
             if (!stuff.HasLocFromNameAndNamespace("", "MAIN"))
-                throw new Exception("NO MAIN LOCATION/ENTRY POINT DECLARED!!!");
+            {
+                DefineLocationToken tok = new DefineLocationToken("MAIN","");
+
+                stuff.parsedTokens.Insert(0, tok);
+                stuff.Locations.Add(tok);
+                //throw new Exception("NO MAIN LOCATION/ENTRY POINT DECLARED!!!");
+            }
 
             almostCompiledCode.Add(new AlmostByte("Jumping to MAIN"));
             almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.JUMP_FIX]));

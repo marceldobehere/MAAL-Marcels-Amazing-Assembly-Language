@@ -1,27 +1,10 @@
-loc MAIN:
-	int x;
-
-	x = 5;
-	sub PRINT;
-	x = 10;
-	sub PRINT;
-	x = 1;
-	sub PRINT;
-
-	exit;
-
-
-sub PRINT:
-	if (x == 5)
-	{
-		print "FIVE\n";
-	}
-	if (x == 10)
-	{
-		print "TEN\n";
-	}
-	if ((x != 5) && (x != 10))
-	{
-		print "NONE\n";
-	}
-	ret;
+int x = 0;
+print "Start!";
+while (x < 10000000)
+{
+	x++;
+}
+print "\nx: ";
+print x;
+	
+print "\nEnd.";
