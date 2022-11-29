@@ -6,3 +6,11 @@ E:\C SHARP\MAAL\MAAL\obj\Debug\MAAL.csproj.SuggestedBindingRedirects.cache
 E:\C SHARP\MAAL\MAAL\obj\Debug\MAAL.csproj.CoreCompileInputs.cache
 E:\C SHARP\MAAL\MAAL\obj\Debug\MAAL.exe
 E:\C SHARP\MAAL\MAAL\obj\Debug\MAAL.pdb
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\bin\Debug\MAAL.exe.config
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\bin\Debug\MAAL.exe
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\bin\Debug\MAAL.pdb
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\obj\Debug\MAAL.csproj.AssemblyReference.cache
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\obj\Debug\MAAL.csproj.CoreCompileInputs.cache
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\obj\Debug\MAAL.exe
+C:\Users\MarcelTest\Source\Repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\obj\Debug\MAAL.pdb
+C:\Users\MarcelTest\source\repos\MAAL-Marcels-Amazing-Assembly-Language\MAAL\obj\Debug\MAAL.csproj.SuggestedBindingRedirects.cache

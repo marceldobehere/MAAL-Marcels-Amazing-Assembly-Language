@@ -115,7 +115,7 @@ namespace MAAL.Parsing
             "#include", "syscall",
             "print", "malloc", "free",
             "readline", "namespace",
-            "while", "if"
+            "while", "if", "color", "FG", "BG"
         };
 
         public string Keyword = "";
@@ -770,6 +770,23 @@ namespace MAAL.Parsing
         public override string ToString()
         {
             return $"<READ LINE INTO {ToReadInto}>";
+        }
+    }
+
+    public class SetColorToken : Token
+    {
+        public bool IsForeground;
+        public ExpressionToken ColorVal;
+
+        public SetColorToken(ExpressionToken colorVal, bool setForeground)
+        {
+            ColorVal = colorVal;
+            IsForeground = setForeground;
+        }
+
+        public override string ToString()
+        {
+            return $"<COLOR {ColorVal} {(IsForeground?"FG":"BG")}>";
         }
     }
 

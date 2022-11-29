@@ -78,6 +78,9 @@ namespace MAAL.Compiling
             PRINT_VAL,
             PRINT_STR,
             READ_LINE,
+            SET_FG_COL,
+            SET_BG_COL,
+            CLS
         }
 
         public static Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
@@ -87,6 +90,9 @@ namespace MAAL.Compiling
             {SyscallConsoleEnum.PRINT_VAL, 2 },
             {SyscallConsoleEnum.PRINT_STR, 3 },
             {SyscallConsoleEnum.READ_LINE, 4 },
+            {SyscallConsoleEnum.SET_FG_COL, 5 },
+            {SyscallConsoleEnum.SET_BG_COL, 6 },
+            {SyscallConsoleEnum.CLS, 7 },
         };
 
         public enum SyscallMemoryEnum
@@ -859,8 +865,8 @@ namespace MAAL.Compiling
                 if (tok.Left.IsConstValue)
                 {
                     if (exprTypeLeft != strongerType)
-                        if (!ParserHelpers.TryCast(tok.Left, 
-                            new TypeToken(TypeToken.TypeList[TypeToken.TypeEnumList.IndexOf(strongerType)]), 
+                        if (!ParserHelpers.TryCast(tok.Left,
+                            new TypeToken(TypeToken.TypeList[TypeToken.TypeEnumList.IndexOf(strongerType)]),
                             tok.Left.ConstValue))
                             throw new Exception($"CASTING TO {strongerType} FAILED! {tok.Left}");
 
@@ -902,7 +908,7 @@ namespace MAAL.Compiling
                         //throw new Exception($"CASTING IS NOT SUPPORTED IN COMPILETIME YET! ({exprTypeRight} => {strongerType})  ({tok.Right})");
                     }
                 }
-                
+
 
 
 
@@ -953,7 +959,7 @@ namespace MAAL.Compiling
 
             if (!stuff.HasLocFromNameAndNamespace("", "MAIN"))
             {
-                DefineLocationToken tok = new DefineLocationToken("MAIN","");
+                DefineLocationToken tok = new DefineLocationToken("MAIN", "");
 
                 stuff.parsedTokens.Insert(0, tok);
                 stuff.Locations.Add(tok);
@@ -1462,6 +1468,33 @@ namespace MAAL.Compiling
                 }
                 #endregion
 
+                #region SET COL
+                else if (cTok is SetColorToken)
+                {
+                    SetColorToken pTok = cTok as SetColorToken;
+                    var exprType = GetTypeFromExpression(pTok.ColorVal);
+                    var exprTypeSize = DaTyToSize[exprType];
+                    if (exprTypeSize != 4)
+                        throw new Exception($"CANNOT WRITE {exprTypeSize} BYTES INTO {4} BYTES! ({cTok})");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(pTok.ColorVal, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 4));
+
+                    almostCompiledCode.Add(new AlmostByte($"SETTING COL {pTok.ColorVal} TO {pTok.ColorVal}"));
+                    almostCompiledCode.Add(cmdByte);
+
+                    {
+                        SyscallConsoleEnum cEnum = SyscallConsoleEnum.SET_FG_COL;
+                        if (!pTok.IsForeground)
+                            cEnum = SyscallConsoleEnum.SET_BG_COL;
+                        almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[cEnum] }));
+                    }
+
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+
+                }
+                #endregion
 
 
 

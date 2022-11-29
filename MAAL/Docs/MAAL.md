@@ -310,6 +310,16 @@ print input;
 print "!";
 ```
 
+#### Changing the text colour
+You can set the Foreground (FG) or the Background (BG) colour using the color command.
+It will take FG/BG and the color as an 32 bit integer. (Feel free to write it in decimal or hex)
+The Colour Format is 0xAARRGGBB;
+```
+color FG 0xFF00FF00; // set foreground to green
+```
+
+#### Clearing the Console Screen
+You can clear the console using the ? command.
 
 
 

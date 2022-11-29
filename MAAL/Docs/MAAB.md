@@ -226,6 +226,27 @@ The first byte of the syscall is 0x01.
 [Address of Pointer (8 Bytes)]
 ```
 
+##### Setting the foreground colour
+```
+[50]
+[0x01.05] // Sycall for Console and set foreground
+[32 bit color value in AARRGGBB format (4 Bytes)]
+```
+
+##### Setting the background colour
+```
+[50]
+[0x01.06] // Sycall for Console and set background
+[32 bit color value in AARRGGBB format (4 Bytes)]
+```
+
+##### Clearing the Console
+```
+[50]
+[0x01.07] // Sycall for Console and Cls
+```
+
+
 
 #### Memory
 There are some syscalls connected to dynamic memory.
@@ -261,6 +282,9 @@ This is the table
 |0x01      |0x02     |258         |Print a value to the console|
 |0x01      |0x03     |259         |Print a string to the console|
 |0x01      |0x04     |260         |Read a string from the console|
+|0x01      |0x05     |261         |Set Foreground Console Colour|
+|0x01      |0x06     |262         |Set Background Console Colour|
+|0x01      |0x07     |263         |Clear Console|
 |0x02      |0x01     |513         |Malloc     |
 |0x02      |0x02     |514         |Free       |
 

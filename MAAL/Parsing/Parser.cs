@@ -357,7 +357,25 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
-                        
+                        #region COLOR
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("color") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            data[mIndex + 1] is KeywordToken &&
+                            ((data[mIndex + 1] as KeywordToken).Keyword.Equals("FG") || (data[mIndex + 1] as KeywordToken).Keyword.Equals("BG")) &&
+                            CouldBeExpessionToken(data[mIndex + 2]))
+                        {
+                            data[mIndex] = new SetColorToken(ConvToExpressionToken(data[mIndex + 2]), (data[mIndex + 1] as KeywordToken).Keyword.Equals("FG"));
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 2]), stuff);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
 
                         #region SYSCALL
                         else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
@@ -1209,6 +1227,19 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
 
             if (KeywordToken.KeywordList.Contains(str))
                 return new KeywordToken(str);
+
+            if (str.Length > 2 && str.Length % 2 == 0 && str[0] == '0' && str[1] == 'x')
+            {
+                string str2 = str.Substring(2);
+                if (str2.Length == 2 && byte.TryParse(str2, NumberStyles.HexNumber, null, out byte val8)) // ubyte
+                    return new BasicValueToken(val8);
+                else if (str2.Length == 4 && ushort.TryParse(str2, NumberStyles.HexNumber, null, out ushort val16)) // ushort
+                    return new BasicValueToken(val16);
+                else if (str2.Length == 8 && uint.TryParse(str2, NumberStyles.HexNumber, null, out uint val32)) // uint
+                    return new BasicValueToken(val32);
+                else if (str2.Length == 16 && ulong.TryParse(str2, NumberStyles.HexNumber, null, out ulong val64)) // ulong
+                    return new BasicValueToken(val64);
+            }
 
             if (!str.Contains(".") && int.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out int vI))
                 return new BasicValueToken(vI);
