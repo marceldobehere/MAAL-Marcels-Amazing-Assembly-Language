@@ -180,7 +180,7 @@ namespace MAAL
                     token is DefineSubroutineToken || token is ExitToken || token is ReturnToken ||
                     token is ConditionalJumpToken || token is FixedJumpToken || token is SyscallToken || 
                     token is PrintToken || token is MallocToken || token is FreeToken || token is ReadLineToken ||
-                    token is SetColorToken)
+                    token is SetColorToken || token is ClsToken)
                     GlobalStuff.WriteLine();
             }
             GlobalStuff.WriteLine();

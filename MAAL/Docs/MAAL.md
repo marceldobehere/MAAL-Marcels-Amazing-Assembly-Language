@@ -319,8 +319,10 @@ color FG 0xFF00FF00; // set foreground to green
 ```
 
 #### Clearing the Console Screen
-You can clear the console using the ? command.
-
+You can clear the console using the cls command.
+```
+cls;
+```
 
 
 #### malloc

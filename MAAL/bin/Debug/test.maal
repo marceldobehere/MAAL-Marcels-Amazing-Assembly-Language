@@ -2,5 +2,16 @@ print "Hello, ";
 
 color FG 0xFFFFFF00; // set foreground to orange
 
-print "world!";
+print "world!\n";
 
+color BG 0xFF80F000;
+color FG 0xFF0000F0;
+
+print "Test!\n\n";
+
+color BG 0xFF000000;
+color FG 0xFF0000FF;
+
+cls;
+
+print "Hoi :)";

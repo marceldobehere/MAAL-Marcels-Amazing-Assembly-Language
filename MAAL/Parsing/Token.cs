@@ -115,7 +115,8 @@ namespace MAAL.Parsing
             "#include", "syscall",
             "print", "malloc", "free",
             "readline", "namespace",
-            "while", "if", "color", "FG", "BG"
+            "while", "if", "color", 
+            "FG", "BG", "cls"
         };
 
         public string Keyword = "";
@@ -787,6 +788,15 @@ namespace MAAL.Parsing
         public override string ToString()
         {
             return $"<COLOR {ColorVal} {(IsForeground?"FG":"BG")}>";
+        }
+    }
+
+    public class ClsToken : Token
+    {
+
+        public override string ToString()
+        {
+            return $"<CLS>";
         }
     }
 

@@ -1495,7 +1495,14 @@ namespace MAAL.Compiling
 
                 }
                 #endregion
-
+                #region CLS
+                else if (cTok is ClsToken)
+                {
+                    almostCompiledCode.Add(new AlmostByte("CLS"));
+                    almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[SyscallConsoleEnum.CLS] }));
+                }
+                #endregion
 
 
                 else

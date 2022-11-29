@@ -238,7 +238,7 @@ namespace MAAL.Parsing
                         }
                         #endregion
                         #region NAMESPACE::x
-                        if (cTok is NamespaceUseToken && mIndex + 1 < data.Count)
+                        else if (cTok is NamespaceUseToken && mIndex + 1 < data.Count)
                         {
                             //Console.WriteLine($" - 1: {data[mIndex + 1]}");
                             data[mIndex + 1].NamespacePrefix = (cTok as NamespaceUseToken).NamespacePrefix;
@@ -262,7 +262,7 @@ namespace MAAL.Parsing
 
                         #region DEFINE LOCATION AND SUB
                         // loc MAIN:
-                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                        if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             data[mIndex + 1] is GenericNameToken && data[mIndex + 2] is ColonToken)
                         {
                             string kWord = (cTok as KeywordToken).Keyword;
@@ -316,7 +316,7 @@ namespace MAAL.Parsing
                         #endregion
 
                         #region #INCLUDE
-                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                        if (cTok is KeywordToken && mIndex + 1 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("#include") &&
                             data[mIndex + 1] is BasicValueToken &&
                             (data[mIndex + 1] as BasicValueToken).ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
@@ -357,6 +357,18 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        #region CLS
+                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("cls") &&
+                        data[mIndex + 1] is EndCommandToken)
+                        {
+                            data[mIndex] = new ClsToken();
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
                         #region COLOR
                         else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("color") &&
