@@ -389,43 +389,7 @@ namespace MAAL.Parsing
                         #endregion
 
 
-                        #region SYSCALL
-                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
-                            (cTok as KeywordToken).Keyword.Equals("syscall"))
-                        {
-                            bool syscallReady = true;
-                            int argumentCount = 0;
-                            while (mIndex + argumentCount + 1 < data.Count &&
-                                !(data[mIndex + argumentCount + 1] is EndCommandToken))
-                            {
-                                if (!CouldBeExpessionToken(data[mIndex + argumentCount + 1]))
-                                {
-                                    syscallReady = false;
-                                    break;
-                                }
-                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + argumentCount + 1]), stuff);
-
-                                argumentCount++;
-                            }
-
-                            //GlobalStuff.WriteLine($"SYSCALL: ARGS: {argumentCount}, READY: {syscallReady}, {cTok}");
-
-                            if (syscallReady && argumentCount > 0 &&
-                                mIndex + argumentCount + 1 < data.Count)
-                            {
-                                List<ExpressionToken> args = new List<ExpressionToken>();
-                                for (int i = 0; i < argumentCount; i++)
-                                    args.Add(ConvToExpressionToken(data[mIndex + 1 + i]));
-
-                                data[mIndex] = new SyscallToken(args);
-                                for (int i = 0; i < argumentCount + 1; i++)
-                                    data.RemoveAt(mIndex + 1);
-
-                                change = true;
-                                break;
-                            }
-                        }
-                        #endregion
+                        
                         #region PRINT
                         else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("print") &&
@@ -841,6 +805,44 @@ namespace MAAL.Parsing
                             data.RemoveAt(mIndex + 1);
                             change = true;
                             break;
+                        }
+                        #endregion
+
+                        #region SYSCALL
+                        else if (cTok is KeywordToken && mIndex + 1 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("syscall"))
+                        {
+                            bool syscallReady = true;
+                            int argumentCount = 0;
+                            while (mIndex + argumentCount + 1 < data.Count &&
+                                !(data[mIndex + argumentCount + 1] is EndCommandToken))
+                            {
+                                if (!CouldBeExpessionToken(data[mIndex + argumentCount + 1]))
+                                {
+                                    syscallReady = false;
+                                    break;
+                                }
+                                AddStringIfPossible(ConvToExpressionToken(data[mIndex + argumentCount + 1]), stuff);
+
+                                argumentCount++;
+                            }
+
+                            //GlobalStuff.WriteLine($"SYSCALL: ARGS: {argumentCount}, READY: {syscallReady}, {cTok}");
+
+                            if (syscallReady && argumentCount > 0 &&
+                                mIndex + argumentCount + 1 < data.Count)
+                            {
+                                List<ExpressionToken> args = new List<ExpressionToken>();
+                                for (int i = 0; i < argumentCount; i++)
+                                    args.Add(ConvToExpressionToken(data[mIndex + 1 + i]));
+
+                                data[mIndex] = new SyscallToken(args);
+                                for (int i = 0; i < argumentCount + 1; i++)
+                                    data.RemoveAt(mIndex + 1);
+
+                                change = true;
+                                break;
+                            }
                         }
                         #endregion
 

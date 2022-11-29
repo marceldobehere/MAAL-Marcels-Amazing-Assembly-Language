@@ -1411,15 +1411,26 @@ namespace MAAL.Compiling
                     if (argType != BasicValueToken.BasicValueTypeEnum.ULONG)
                         throw new Exception($"ADDRESS PROVIDED TO READLINE IS NOT AN ULONG/POINTER! {rTok}");
 
-                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+                    if (rTok.ToReadInto.IsConstValue)
+                    {
+                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR READ LINE"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
+                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.READ_LINE]));
+                        almostCompiledCode.Add(new AlmostByte(BasicValueToArr(rTok.ToReadInto.ConstValue, strLocs)));
+                    }
+                    else
+                    {
+                        AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
 
-                    CompileExpression(rTok.ToReadInto, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                        CompileExpression(rTok.ToReadInto, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
 
-                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR READ LINE"));
-                    almostCompiledCode.Add(cmdByte);
-                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
-                    almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.READ_LINE]));
-                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                        almostCompiledCode.Add(new AlmostByte("SYSCALL FOR READ LINE"));
+                        almostCompiledCode.Add(cmdByte);
+                        almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                        almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.READ_LINE]));
+                        almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    }
                 }
                 #endregion
 
@@ -1477,21 +1488,38 @@ namespace MAAL.Compiling
                     if (exprTypeSize != 4)
                         throw new Exception($"CANNOT WRITE {exprTypeSize} BYTES INTO {4} BYTES! ({cTok})");
 
-                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
-
-                    CompileExpression(pTok.ColorVal, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 4));
-
-                    almostCompiledCode.Add(new AlmostByte($"SETTING COL {pTok.ColorVal} TO {pTok.ColorVal}"));
-                    almostCompiledCode.Add(cmdByte);
-
+                    if (pTok.ColorVal.IsConstValue)
                     {
-                        SyscallConsoleEnum cEnum = SyscallConsoleEnum.SET_FG_COL;
-                        if (!pTok.IsForeground)
-                            cEnum = SyscallConsoleEnum.SET_BG_COL;
-                        almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[cEnum] }));
-                    }
+                        almostCompiledCode.Add(new AlmostByte($"SETTING COL {pTok.ColorVal} TO {pTok.ColorVal}"));
+                        almostCompiledCode.Add(new AlmostByte(IToByte[InstructionEnum.SYSCALL]));
 
-                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                        {
+                            SyscallConsoleEnum cEnum = SyscallConsoleEnum.SET_FG_COL;
+                            if (!pTok.IsForeground)
+                                cEnum = SyscallConsoleEnum.SET_BG_COL;
+                            almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[cEnum] }));
+                        }
+
+                        almostCompiledCode.Add(new AlmostByte(BasicValueToArr(pTok.ColorVal.ConstValue, strLocs)));
+                    }
+                    else
+                    {
+                        AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                        CompileExpression(pTok.ColorVal, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 4));
+
+                        almostCompiledCode.Add(new AlmostByte($"SETTING COL {pTok.ColorVal} TO {pTok.ColorVal}"));
+                        almostCompiledCode.Add(cmdByte);
+
+                        {
+                            SyscallConsoleEnum cEnum = SyscallConsoleEnum.SET_FG_COL;
+                            if (!pTok.IsForeground)
+                                cEnum = SyscallConsoleEnum.SET_BG_COL;
+                            almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[cEnum] }));
+                        }
+
+                        almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    }
 
                 }
                 #endregion
