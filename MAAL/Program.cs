@@ -180,7 +180,12 @@ namespace MAAL
                     token is DefineSubroutineToken || token is ExitToken || token is ReturnToken ||
                     token is ConditionalJumpToken || token is FixedJumpToken || token is SyscallToken || 
                     token is PrintToken || token is MallocToken || token is FreeToken || token is ReadLineToken ||
-                    token is SetColorToken || token is ClsToken)
+                    token is SetColorToken || token is ClsToken || token is SleepToken || token is CreateWindowToken ||
+                    token is DeleteWindowToken || token is SetWindowAttrToken || token is GetWindowAttrToken ||
+                    token is CreateComponentToken || token is DeleteComponentToken ||
+                    token is SetBaseComponentAttrToken || token is GetBaseComponentAttrToken ||
+                    token is SetSpecificComponentAttrToken || token is GetSpecificComponentAttrToken ||
+                    token is GetWindowActiveScreenToken || token is SetWindowActiveScreenToken)
                     GlobalStuff.WriteLine();
             }
             GlobalStuff.WriteLine();

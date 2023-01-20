@@ -437,6 +437,296 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        #region SLEEP
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("sleep") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new SleepToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
+                        #region CREATE WINDOW
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("createWindow") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new CreateWindowToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region DELETE WINDOW
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("deleteWindow") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new DeleteWindowToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region SET WINDOW ATTR
+                        else if (cTok is KeywordToken && mIndex + 4 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("setWindowAttr") &&
+                            data[mIndex + 4] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]))
+                        {
+                            data[mIndex] = new SetWindowAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET WINDOW ATTR
+                        else if (cTok is KeywordToken && mIndex + 4 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getWindowAttr") &&
+                            data[mIndex + 4] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]))
+                        {
+                            data[mIndex] = new GetWindowAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region CREATE COMP (NO PARENT)
+                        else if (cTok is KeywordToken && mIndex + 4 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("createComponentWithId") &&
+                            data[mIndex + 4] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]))
+                        {
+                            data[mIndex] = new CreateComponentToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(new BasicValueToken(-1)));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region CREATE COMP (WITH PARENT)
+                        else if (cTok is KeywordToken && mIndex + 5 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("createComponentWithId") &&
+                            data[mIndex + 5] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]) &&
+                            CouldBeExpessionToken(data[mIndex + 4]))
+                        {
+                            data[mIndex] = new CreateComponentToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(data[mIndex + 4]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region DELETE COMP
+                        else if (cTok is KeywordToken && mIndex + 4 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("deleteComponentWithId") &&
+                            data[mIndex + 4] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]))
+                        {
+                            data[mIndex] = new DeleteComponentToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
+                        #region SET BASE COMP ATTR
+                        else if (cTok is KeywordToken && mIndex + 5 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("setBaseComponentAttr") &&
+                            data[mIndex + 5] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]) &&
+                            CouldBeExpessionToken(data[mIndex + 4]))
+                        {
+                            data[mIndex] = new SetBaseComponentAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(data[mIndex + 4]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET BASE COMP ATTR
+                        else if (cTok is KeywordToken && mIndex + 5 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getBaseComponentAttr") &&
+                            data[mIndex + 5] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]) &&
+                            CouldBeExpessionToken(data[mIndex + 4]))
+                        {
+                            data[mIndex] = new GetBaseComponentAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(data[mIndex + 4]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region SET SPEC COMP ATTR
+                        else if (cTok is KeywordToken && mIndex + 5 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("setSpecificComponentAttr") &&
+                            data[mIndex + 5] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]) &&
+                            CouldBeExpessionToken(data[mIndex + 4]))
+                        {
+                            data[mIndex] = new SetSpecificComponentAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(data[mIndex + 4]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET SPEC COMP ATTR
+                        else if (cTok is KeywordToken && mIndex + 5 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getSpecificComponentAttr") &&
+                            data[mIndex + 5] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]) &&
+                            CouldBeExpessionToken(data[mIndex + 3]) &&
+                            CouldBeExpessionToken(data[mIndex + 4]))
+                        {
+                            data[mIndex] = new GetSpecificComponentAttrToken(
+                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(data[mIndex + 3]),
+                                ConvToExpressionToken(data[mIndex + 4]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region SET WINDOW SCREEN
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("windowSetActiveScreen") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new SetWindowActiveScreenToken(ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET WINDOW SCREEN
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("windowGetActiveScreen") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new GetWindowActiveScreenToken(ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(data[mIndex + 2]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+
                         #region READLINE
                         else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("readline") &&

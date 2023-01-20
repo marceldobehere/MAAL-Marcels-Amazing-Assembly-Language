@@ -2,16 +2,77 @@ print "Hello, ";
 
 color FG 0xFFFFFF00; // set foreground to orange
 
+sleep 3000;
+
 print "world!\n";
 
 color BG 0xFF80F000;
 color FG 0xFF0000F0;
 
+sleep 1000;
+
 print "Test!\n\n";
 
 color BG 0xFF000000;
-color FG 0xFF0000FF;
+color FG 0xFF0FFFFF;
 
-cls;
 
-print "Hoi :)";
+
+createWindow 123;
+deleteWindow 123;
+
+setWindowAttr 123 60 "Hello, Title!";
+setWindowAttr 123 20 500;
+
+int tempSize;
+
+// Gets Size X
+getWindowAttr 123 20 &tempSize;
+print "Size X: ";
+print tempSize;
+print "\n";
+
+// Gets Size Y
+getWindowAttr 123 21 &tempSize;
+print "Size Y: ";
+print tempSize;
+print "\n";
+
+// WindowID, ComponentID, ComponentType, [ParentID]
+createComponentWithId 123 567 3;
+createComponentWithId 123 890 2 123;
+deleteComponentWithId 123 567 true;
+
+// Set Scaled X s
+setBaseComponentAttr 123 567 22 0.5;
+// Set Size X Fixed to false
+setBaseComponentAttr 123 567 24 false;
+double tempDoubleSize;
+getBaseComponentAttr 123 567 22 &tempDoubleSize; 
+print "Scaled Size X: ";
+print tempDoubleSize;
+print "\n";
+
+setSpecificComponentAttr 123 567 10 0xFF00FF00; // Should be green
+getSpecificComponentAttr 123 567 10 &tempSize;
+
+// WindowID, ScreenID
+windowSetActiveScreen 123 0;
+// WindowID, address of var
+long currentWindowID;
+windowGetActiveScreen 123 &currentWindowID;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -116,7 +116,14 @@ namespace MAAL.Parsing
             "print", "malloc", "free",
             "readline", "namespace",
             "while", "if", "color", 
-            "FG", "BG", "cls"
+            "FG", "BG", "cls",
+            "sleep",
+            "createWindow", "deleteWindow",
+            "setWindowAttr", "getWindowAttr",
+            "createComponentWithId", "deleteComponentWithId",
+            "setBaseComponentAttr", "getBaseComponentAttr",
+            "setSpecificComponentAttr", "getSpecificComponentAttr",
+            "windowSetActiveScreen", "windowGetActiveScreen"
         };
 
         public string Keyword = "";
@@ -336,7 +343,219 @@ namespace MAAL.Parsing
         public override string ToString()
            => $"<Name: \"{Name}\">";
     }
+    public class SleepToken : Token
+    {
+        public ExpressionToken Amount;
 
+        public SleepToken(ExpressionToken amt)
+            => Amount = amt;
+
+        public override string ToString()
+           => $"<Sleep for {Amount} ms>";
+    }
+    public class CreateWindowToken : Token
+    {
+        public ExpressionToken WindowID;
+
+        public CreateWindowToken(ExpressionToken id)
+            => WindowID = id;
+
+        public override string ToString()
+           => $"<Create Window with ID {WindowID}>";
+    }
+    public class DeleteWindowToken : Token
+    {
+        public ExpressionToken WindowID;
+
+        public DeleteWindowToken(ExpressionToken id)
+            => WindowID = id;
+
+        public override string ToString()
+           => $"<Delete Window with ID {WindowID}>";
+    }
+
+    public class SetWindowAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken AttrType;
+        public ExpressionToken Value;
+
+        public SetWindowAttrToken(ExpressionToken winID, ExpressionToken attrType, ExpressionToken val)
+        {
+            WindowID = winID;
+            AttrType = attrType;
+            Value = val;
+        }
+
+        public override string ToString()
+           => $"<Set Attr {AttrType} of Window {WindowID} to {Value}>";
+    }
+
+    public class GetWindowAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken AttrType;
+        public ExpressionToken WriteTo;
+
+        public GetWindowAttrToken(ExpressionToken winID, ExpressionToken attrType, ExpressionToken to)
+        {
+            WindowID = winID;
+            AttrType = attrType;
+            WriteTo = to;
+        }
+
+        public override string ToString()
+           => $"<Get Attr {AttrType} of Window {WindowID} into {WriteTo}>";
+    }
+
+
+    public class SetWindowActiveScreenToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken ScreenID;
+
+        public SetWindowActiveScreenToken(ExpressionToken winID, ExpressionToken scrID)
+        {
+            WindowID = winID;
+            ScreenID = scrID;
+        }
+
+        public override string ToString()
+           => $"<Set Active Screen of Window {WindowID} to {ScreenID}>";
+    }
+
+    public class GetWindowActiveScreenToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken WriteTo;
+
+        public GetWindowActiveScreenToken(ExpressionToken winID, ExpressionToken to)
+        {
+            WindowID = winID;
+            WriteTo = to;
+        }
+
+        public override string ToString()
+           => $"<Get Active Screen of Window {WindowID} into {WriteTo}>";
+    }
+
+
+
+
+
+    public class CreateComponentToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken CompType;
+        public ExpressionToken ParentID;
+
+        public CreateComponentToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken compType, ExpressionToken parentID)
+        {
+            WindowID = winID;
+            CompID = compID;
+            CompType = compType;
+            ParentID = parentID;
+        }
+
+        public override string ToString()
+           => $"<Create Comp {CompType} with ID {CompID} with parent {ParentID} in Window {WindowID}>";
+    }
+
+    public class DeleteComponentToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken DeleteChildren;
+
+        public DeleteComponentToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken deleteChildren)
+        {
+            WindowID = winID;
+            CompID = compID;
+            DeleteChildren = deleteChildren;
+        }
+
+        public override string ToString()
+           => $"<Delete Comp {CompID} in Window {WindowID}, Delete Children: {DeleteChildren}>";
+    }
+
+
+    public class SetBaseComponentAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken AttrType;
+        public ExpressionToken Value;
+
+        public SetBaseComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken val)
+        {
+            WindowID = winID;
+            CompID = compID;
+            AttrType = attrType;
+            Value = val;
+        }
+
+        public override string ToString()
+           => $"<Set Specific Attr {AttrType} of Component {CompID} in Window {WindowID} to {Value}>";
+    }
+
+    public class GetBaseComponentAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken AttrType;
+        public ExpressionToken Into;
+
+        public GetBaseComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken var)
+        {
+            WindowID = winID;
+            CompID = compID;
+            AttrType = attrType;
+            Into = var;
+        }
+
+        public override string ToString()
+           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {Into}>";
+    }
+
+
+    public class SetSpecificComponentAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken AttrType;
+        public ExpressionToken Value;
+
+        public SetSpecificComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken val)
+        {
+            WindowID = winID;
+            CompID = compID;
+            AttrType = attrType;
+            Value = val;
+        }
+
+        public override string ToString()
+           => $"<Set Specific Attr {AttrType} of Component {CompID} in Window {WindowID} to {Value}>";
+    }
+
+    public class GetSpecificComponentAttrToken : Token
+    {
+        public ExpressionToken WindowID;
+        public ExpressionToken CompID;
+        public ExpressionToken AttrType;
+        public ExpressionToken Into;
+
+        public GetSpecificComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken var)
+        {
+            WindowID = winID;
+            CompID = compID;
+            AttrType = attrType;
+            Into = var;
+        }
+
+        public override string ToString()
+           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {Into}>";
+    }
 
 
     public class VarNameToken : Token
@@ -740,7 +959,10 @@ namespace MAAL.Parsing
 
         public override string ToString()
         {
-            return $"<PRINT {Argument}>";
+            if (Argument.IsConstValue && Argument.ConstValue.ValueType == BasicValueToken.BasicValueTypeEnum.CHAR_POINTER)
+                return $"<PRINT {Argument.ConstValue.Value_CharPointer.Replace("\n", "\\n")}>";
+            else
+                return $"<PRINT {Argument}>";
         }
     }
 
