@@ -1288,11 +1288,13 @@ namespace MAAL.Parsing
                             else
                                 cOp = OperatorToken.OperatorEnum.Minus;
 
+                            
+
                             tok = new SetVarToken((data[mIndex - 1] as VarNameToken),
                                 new ExpressionToken(
                                     new ExpressionToken(data[mIndex - 1] as VarNameToken),
                                     new OperatorToken(cOp),
-                                    new ExpressionToken(new BasicValueToken(1))
+                                    new ExpressionToken(new CastToken(new ExpressionToken(new BasicValueToken(1)), (data[mIndex - 1] as VarNameToken).VarType))
                                     )
                                 );
 
