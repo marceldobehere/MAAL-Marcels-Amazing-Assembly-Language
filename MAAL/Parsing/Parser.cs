@@ -1547,8 +1547,10 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                     return new BasicValueToken(val64);
             }
 
-            if (str.Length > 2 && str[str.Length - 1] == 'd' && double.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out double vD))
+            if (str.Length > 1 && str[str.Length - 1] == 'd' && double.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out double vD))
                 return new BasicValueToken(vD);
+            if (str.Length > 1 && str[str.Length - 1] == 'f' && float.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out float vF2))
+                return new BasicValueToken(vF2);
             if (!str.Contains(".") && int.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out int vI))
                 return new BasicValueToken(vI);
             if (!str.Contains(".") && long.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out long vL))

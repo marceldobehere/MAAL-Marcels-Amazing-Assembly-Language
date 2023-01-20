@@ -47,7 +47,7 @@ deleteComponentWithId 123 567 true;
 setBaseComponentAttr 123 567 22 0.5d;
 // Set Size X Fixed to false
 setBaseComponentAttr 123 567 24 false;
-double tempDoubleSize;
+double tempDoubleSize = 5f;
 getBaseComponentAttr 123 567 22 &tempDoubleSize; 
 print "Scaled Size X: ";
 print tempDoubleSize;
