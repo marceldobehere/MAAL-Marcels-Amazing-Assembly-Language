@@ -44,7 +44,7 @@ createComponentWithId 123 890 2 123;
 deleteComponentWithId 123 567 true;
 
 // Set Scaled X s
-setBaseComponentAttr 123 567 22 0.5;
+setBaseComponentAttr 123 567 22 0.5d;
 // Set Size X Fixed to false
 setBaseComponentAttr 123 567 24 false;
 double tempDoubleSize;
