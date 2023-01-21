@@ -156,7 +156,7 @@ namespace MAAL.Compiling
             {SyscallGuiEnum.CREATE, 1 },
             {SyscallGuiEnum.DELETE, 2 },
             {SyscallGuiEnum.SET_BASE_ATTR, 3 },
-            {SyscallGuiEnum.GET_SPEC_ATTR, 4 },
+            {SyscallGuiEnum.GET_BASE_ATTR, 4 },
             {SyscallGuiEnum.SET_SPEC_ATTR, 5 },
             {SyscallGuiEnum.GET_SPEC_ATTR, 6 },
         };
@@ -1584,6 +1584,28 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(new byte[2] { SyToByte[SyscallEnum.CONSOLE], SyCoToByte[SyscallConsoleEnum.CLS] }));
                 }
                 #endregion
+
+                #region SLEEP
+                else if (cTok is SleepToken)
+                {
+                    var sTok = cTok as SleepToken;
+                    var argType = GetTypeFromExpression(sTok.Duration);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO SLEEP IS NOT AN INT! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.Duration, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 4));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SLEEP"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.CONSOLE]));
+                    almostCompiledCode.Add(new AlmostByte(SyCoToByte[SyscallConsoleEnum.SLEEP]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                }
+                #endregion
+
 
 
                 else

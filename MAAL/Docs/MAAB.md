@@ -246,6 +246,13 @@ The first byte of the syscall is 0x01.
 [0x01.07] // Sycall for Console and Cls
 ```
 
+##### Sleep
+```
+[50]
+[0x01.08] // Sycall for Console and Sleep
+[Duration in MS (4 Bytes)]
+```
+
 
 
 #### Memory
@@ -273,6 +280,9 @@ This is will alloc some bytes.
 
 
 
+
+
+
 #### Syscall Table
 This is the table
 
@@ -285,8 +295,10 @@ This is the table
 |0x01      |0x05     |261         |Set Foreground Console Colour|
 |0x01      |0x06     |262         |Set Background Console Colour|
 |0x01      |0x07     |263         |Clear Console|
+|0x01      |0x08     |264         |Sleep|
 |0x02      |0x01     |513         |Malloc     |
 |0x02      |0x02     |514         |Free       |
+
 
 
 
