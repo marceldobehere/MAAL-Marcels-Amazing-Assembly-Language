@@ -386,7 +386,7 @@ Gets a Base Attribute of a Component with an ID in a window into an address. The
 Sets a Specific Attribute of a Component with an ID in a window to a value. The Specific Component Attribute Types can be seen starting from here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#box-component).
 ```
 [50]
-[0x04.03] // Sycall for GUI and set spec comp attr
+[0x04.05] // Sycall for GUI and set spec comp attr
 [Window ID (8 Bytes)]
 [Component ID (8 Bytes)]
 [Base Attr Type (4 Bytes)]
@@ -398,7 +398,7 @@ Sets a Specific Attribute of a Component with an ID in a window to a value. The 
 Gets a Specific Attribute of a Component with an ID in a window into an address. The Specific Component Attribute Types can be seen starting from here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#box-component).
 ```
 [50]
-[0x04.04] // Sycall for GUI and get spec comp attr
+[0x04.06] // Sycall for GUI and get spec comp attr
 [Window ID (8 Bytes)]
 [Component ID (8 Bytes)]
 [Base Attr Type (4 Bytes)]
