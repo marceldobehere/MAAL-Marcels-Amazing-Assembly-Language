@@ -14,15 +14,21 @@ sleep 1000;
 print "Test!\n\n";
 
 color BG 0xFF000000;
-color FG 0xFF0FFFFF;
+color FG 0xFFFFFFFF;
 
 
 
 createWindow 123;
-deleteWindow 123;
+
+
+createWindow 1000;
+sleep 6000;
+deleteWindow 1000;
+
+
 
 setWindowAttr 123 60 "Hello, Title!";
-setWindowAttr 123 20 500;
+setWindowAttr 123 20 400;
 
 int tempSize;
 
@@ -38,23 +44,41 @@ print "Size Y: ";
 print tempSize;
 print "\n";
 
+
 // WindowID, ComponentID, ComponentType, [ParentID]
-createComponentWithId 123 567 3;
+createComponentWithId 123 567 2;
+createComponentWithId 123 5678 3;
 createComponentWithId 123 890 2 123;
-deleteComponentWithId 123 567 true;
+
+// WindowID, ComponentID, DeleteChildren
+deleteComponentWithId 123 5678 true;
+
+
+
+
 
 // Set Scaled X s
 setBaseComponentAttr 123 567 22 0.5d;
 // Set Size X Fixed to false
 setBaseComponentAttr 123 567 24 false;
-double tempDoubleSize = 5f;
+double tempDoubleSize = 5d;
 getBaseComponentAttr 123 567 22 &tempDoubleSize; 
 print "Scaled Size X: ";
 print tempDoubleSize;
 print "\n";
 
+
+
 setSpecificComponentAttr 123 567 10 0xFF00FF00; // Should be green
-getSpecificComponentAttr 123 567 10 &tempSize;
+uint tempCol = 0;
+getSpecificComponentAttr 123 567 10 &tempCol;
+
+print "COL: ";
+print tempCol;
+print "\n";
+
+
+/* FOR LATER
 
 // WindowID, ScreenID
 windowSetActiveScreen 123 0;
@@ -62,16 +86,7 @@ windowSetActiveScreen 123 0;
 long currentWindowID;
 windowGetActiveScreen 123 &currentWindowID;
 
-
-
-
-
-
-
-
-
-
-
+*/
 
 
 

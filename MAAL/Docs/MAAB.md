@@ -278,6 +278,134 @@ This is will alloc some bytes.
 ```
 
 
+#### Window API
+There are some syscalls connected to the MaslOS Window API.
+The first byte of the syscall is 0x03.
+
+
+##### Create Window
+```
+[50]
+[0x03.01] // Sycall for Window and Create Window
+[Window ID (8 Bytes)]
+```
+
+##### Delete Window
+```
+[50]
+[0x03.02] // Sycall for Window and Delete Window
+[Window ID (8 Bytes)]
+```
+
+##### Set Window Attribute
+Sets the attribute of a window.
+You can check out the [Window Attribute Table here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
+```
+[50]
+[0x03.03] // Sycall for Window and Set Window Attribute
+[Window ID (8 Bytes)]
+[Attribute Number (4 Bytes)]
+[Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
+```
+
+##### Get Window Attribute
+Gets the attribute of a window into a memory location.
+You can check out the [Window Attribute Table here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
+```
+[50]
+[0x03.04] // Sycall for Window and Set Window Attribute
+[Window ID (8 Bytes)]
+[Attribute Number (4 Bytes)]
+[Adress of result (8 Bytes)] // The size of the data being written to the address will vary depending on the attribute type.
+```
+
+
+
+##### Set Window Active Screen
+Sets the attribute of a window.
+You can check out the [Window Attribute Table here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
+```
+[50]
+[0x03.03] // Sycall for Window and Set Window Attribute
+[Window ID (8 Bytes)]
+[Attribute Number (4 Bytes)]
+[Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
+```
+
+
+
+#### GUI API
+There are some syscalls connected to the MaslOS Window GUI API.
+The first byte of the syscall is 0x04.
+
+##### Create Component
+Creates a Component with an ID in a window with a type. The types can be seen [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#component-type-table).
+```
+[50]
+[0x04.01] // Sycall for GUI and Create Component
+[Window ID (8 Bytes)]
+[Component ID (8 Bytes)]
+[Component Type (4 Bytes)]
+```
+
+##### Delete Component
+```
+[50]
+[0x04.02] // Sycall for GUI and Delete Component
+[Window ID (8 Bytes)]
+[Component ID (8 Bytes)]
+[Delete Children (1 Bytes)]
+```
+
+##### Set Base Component Attribute
+Sets a Base Attribute of a Component with an ID in a window to a value. The Base Component Attribute Types can be seen here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#base-component-attributes).
+```
+[50]
+[0x04.03] // Sycall for GUI and set base comp attr
+[Component ID (8 Bytes)]
+[Base Attr Type (4 Bytes)]
+[Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
+```
+
+
+##### Get Base Component Attribute
+Gets a Base Attribute of a Component with an ID in a window into an address. The Base Component Attribute Types can be seen here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#base-component-attributes).
+```
+[50]
+[0x04.04] // Sycall for GUI and get base comp attr
+[Window ID (8 Bytes)]
+[Component ID (8 Bytes)]
+[Base Attr Type (4 Bytes)]
+[Adress of result (8 Bytes)] // The size of the data being written to the address will vary depending on the attribute type.
+```
+
+
+
+##### Set Specific Component Attribute
+Sets a Specific Attribute of a Component with an ID in a window to a value. The Specific Component Attribute Types can be seen starting from here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#box-component).
+```
+[50]
+[0x04.03] // Sycall for GUI and set spec comp attr
+[Window ID (8 Bytes)]
+[Component ID (8 Bytes)]
+[Base Attr Type (4 Bytes)]
+[Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
+```
+
+
+##### Get Specific Component Attribute
+Gets a Specific Attribute of a Component with an ID in a window into an address. The Specific Component Attribute Types can be seen starting from here [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#box-component).
+```
+[50]
+[0x04.04] // Sycall for GUI and get spec comp attr
+[Window ID (8 Bytes)]
+[Component ID (8 Bytes)]
+[Base Attr Type (4 Bytes)]
+[Adress of result (8 Bytes)] // The size of the data being written to the address will vary depending on the attribute type.
+```
+
+
+
 
 
 
@@ -298,6 +426,18 @@ This is the table
 |0x01      |0x08     |264         |Sleep|
 |0x02      |0x01     |513         |Malloc     |
 |0x02      |0x02     |514         |Free       |
+|0x03      |0x01     |769         |Create Window     |
+|0x03      |0x02     |770         |Delete Window     |
+|0x03      |0x03     |771         |Set Window Attr|
+|0x03      |0x04     |772         |Get Window Attr|
+|0x03      |0x05     |771         |Set Window Scr|
+|0x03      |0x06     |772         |Get Window Scr|
+|0x04      |0x01     |1025        |Create Comp     |
+|0x04      |0x02     |1026        |Delete Comp     |
+|0x04      |0x03     |1027        |Set Base Comp Attr|
+|0x04      |0x04     |1028        |Get Base Comp Attr|
+|0x04      |0x05     |1028        |Set Spec Comp Attr|
+|0x04      |0x06     |1029        |Get Spec Comp Attr|
 
 
 

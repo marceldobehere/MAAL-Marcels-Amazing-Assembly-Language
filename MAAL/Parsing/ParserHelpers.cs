@@ -579,7 +579,15 @@ namespace MAAL.Parsing
                     var val = tok.Cast.ToCast.ConstValue;
                     if (!tok.Cast.CastType.ToPureString().Equals(BasicValueToken.TypeEnumToString[val.ValueType]))
                         change |= TryCast(tok, tok.Cast.CastType, val);
+                    else
+                    {
+                        tok.IsConstValue = true;
+                        tok.ConstValue = tok.Cast.ToCast.ConstValue;
+
+                        return true;
+                    }
                 }
+
 
 
                 return change;

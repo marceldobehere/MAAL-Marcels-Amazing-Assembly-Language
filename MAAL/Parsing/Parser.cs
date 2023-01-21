@@ -96,7 +96,7 @@ namespace MAAL.Parsing
         #endregion
 
         #region Expression Stuff
-        private static ExpressionToken ConvToExpressionToken(Token tok)
+        public static ExpressionToken ConvToExpressionToken(Token tok)
         {
             if (tok is BasicValueToken)
                 return new ExpressionToken(tok as BasicValueToken);
@@ -498,7 +498,7 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]))
                         {
                             CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
-
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 3]), stuff);
                             data[mIndex] = new SetWindowAttrToken(
                                 ConvToExpressionToken(castTok),
                                 ConvToExpressionToken(data[mIndex + 2]),
@@ -629,6 +629,7 @@ namespace MAAL.Parsing
                         {
                             CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
                             CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 4]), stuff);
 
                             data[mIndex] = new SetBaseComponentAttrToken(
                                 ConvToExpressionToken(castTok1),
@@ -684,6 +685,7 @@ namespace MAAL.Parsing
                         {
                             CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
                             CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+                            AddStringIfPossible(ConvToExpressionToken(data[mIndex + 4]), stuff);
 
                             data[mIndex] = new SetSpecificComponentAttrToken(
                                 ConvToExpressionToken(castTok1),
@@ -734,10 +736,12 @@ namespace MAAL.Parsing
                             data[mIndex + 3] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
-                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
 
-                            data[mIndex] = new SetWindowActiveScreenToken(ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(castTok));
+                            data[mIndex] = new SetWindowActiveScreenToken(
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);

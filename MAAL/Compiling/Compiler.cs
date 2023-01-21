@@ -1606,6 +1606,367 @@ namespace MAAL.Compiling
                 }
                 #endregion
 
+                #region CREATE WINDOW
+                else if (cTok is CreateWindowToken)
+                {
+                    var sTok = cTok as CreateWindowToken;
+                    var argType = GetTypeFromExpression(sTok.WindowID);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE WINDOW IS NOT A LONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR CREATE WIN"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.CREATE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region DELETE WINDOW
+                else if (cTok is DeleteWindowToken)
+                {
+                    var sTok = cTok as DeleteWindowToken;
+                    var argType = GetTypeFromExpression(sTok.WindowID);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO DELETE WINDOW IS NOT A LONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR DELETE WIN"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.DELETE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                 
+                #region SET WINDOW ATTR
+                else if (cTok is SetWindowAttrToken)
+                {
+                    var sTok = cTok as SetWindowAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.AttrType);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET WINDOW ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO SET WINDOW ATTR IS NOT A INT! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 4));
+                    CompileExpression(sTok.Value, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 15, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SET WINDOW ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.SET_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET WINDOW ATTR
+                else if (cTok is GetWindowAttrToken)
+                {
+                    var sTok = cTok as GetWindowAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.AttrType);
+                    var argType3 = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET WINDOW ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO GET WINDOW ATTR IS NOT A INT! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET WINDOW ATTR IS NOT A ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 4));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 15, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET WINDOW ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.GET_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
+
+                #region SET WINDOW SCR
+                else if (cTok is SetWindowActiveScreenToken)
+                {
+                    var sTok = cTok as SetWindowActiveScreenToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.ScreenID);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET WINDOW SCR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET WINDOW SCR IS NOT A LONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.ScreenID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SET WINDOW SCR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.SET_ACTIVE_SCR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET WINDOW SCR
+                else if (cTok is GetWindowActiveScreenToken)
+                {
+                    var sTok = cTok as GetWindowActiveScreenToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET WINDOW SCR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET WINDOW SCR IS NOT AN ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 15, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET WINDOW SCR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.WINDOW]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.GET_ACTIVE_SCR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
+
+                #region CREATE COMP
+                else if (cTok is CreateComponentToken)
+                {
+                    var sTok = cTok as CreateComponentToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.CompType);
+                    
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A INT! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.CompType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR CREATE COMP"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.CREATE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                }
+                #endregion
+                #region DELETE COMP
+                else if (cTok is DeleteComponentToken)
+                {
+                    var sTok = cTok as DeleteComponentToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.DeleteChildren);
+
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.BOOL)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A BOOL! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.DeleteChildren, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 1));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR DELETE COMP"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyWiToByte[SyscallWindowEnum.DELETE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[1]));
+                }
+                #endregion
+
+
+                #region SET BASE COMP ATTR
+                else if (cTok is SetBaseComponentAttrToken)
+                {
+                    var sTok = cTok as SetBaseComponentAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.AttrType);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET BASE COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET BASE COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO SET BASE COMP ATTR IS NOT A INT! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+                    CompileExpression(sTok.Value, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SET BASE COMP ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyGuiToByte[SyscallGuiEnum.SET_BASE_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET BASE COMP ATTR
+                else if (cTok is GetBaseComponentAttrToken)
+                {
+                    var sTok = cTok as GetBaseComponentAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.AttrType);
+                    var argType4 = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET BASE COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET BASE COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO GET BASE COMP ATTR IS NOT A INT! {sTok}");
+                    if (argType4 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET BASE COMP ATTR IS NOT A ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET BASE COMP ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyGuiToByte[SyscallGuiEnum.GET_BASE_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
+
+                #region SET SPEC COMP ATTR
+                else if (cTok is SetSpecificComponentAttrToken)
+                {
+                    var sTok = cTok as SetSpecificComponentAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.AttrType);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET SPEC COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO SET SPEC COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO SET SPEC COMP ATTR IS NOT A INT! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+                    CompileExpression(sTok.Value, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR SET SPEC COMP ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyGuiToByte[SyscallGuiEnum.SET_SPEC_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET SPEC COMP ATTR
+                else if (cTok is GetSpecificComponentAttrToken)
+                {
+                    var sTok = cTok as GetSpecificComponentAttrToken;
+                    var argType1 = GetTypeFromExpression(sTok.WindowID);
+                    var argType2 = GetTypeFromExpression(sTok.CompID);
+                    var argType3 = GetTypeFromExpression(sTok.AttrType);
+                    var argType4 = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET SPEC COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO GET SPEC COMP ATTR IS NOT A LONG! {sTok}");
+                    if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
+                        throw new Exception($"VALUE PROVIDED TO GET SPEC COMP ATTR IS NOT A INT! {sTok}");
+                    if (argType4 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET SPEC COMP ATTR IS NOT A ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+                    CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
+                    CompileExpression(sTok.AttrType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
+
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET SPEC COMP ATTR"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.GUI]));
+                    almostCompiledCode.Add(new AlmostByte(SyGuiToByte[SyscallGuiEnum.GET_SPEC_ATTR]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
 
 
                 else
