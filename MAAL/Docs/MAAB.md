@@ -362,6 +362,7 @@ Sets a Base Attribute of a Component with an ID in a window to a value. The Base
 ```
 [50]
 [0x04.03] // Sycall for GUI and set base comp attr
+[Window ID (8 Bytes)]
 [Component ID (8 Bytes)]
 [Base Attr Type (4 Bytes)]
 [Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
