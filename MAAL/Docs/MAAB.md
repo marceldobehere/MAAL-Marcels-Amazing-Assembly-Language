@@ -346,6 +346,7 @@ Creates a Component with an ID in a window with a type. The types can be seen [h
 [Window ID (8 Bytes)]
 [Component ID (8 Bytes)]
 [Component Type (4 Bytes)]
+[Parent ID (8 Bytes)] // use -1 if theres no parent
 ```
 
 ##### Delete Component

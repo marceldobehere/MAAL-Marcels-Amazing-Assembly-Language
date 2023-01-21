@@ -1769,7 +1769,8 @@ namespace MAAL.Compiling
                     var argType1 = GetTypeFromExpression(sTok.WindowID);
                     var argType2 = GetTypeFromExpression(sTok.CompID);
                     var argType3 = GetTypeFromExpression(sTok.CompType);
-                    
+                    var argType4 = GetTypeFromExpression(sTok.ParentID);
+
 
                     if (argType1 != BasicValueToken.BasicValueTypeEnum.LONG)
                         throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
@@ -1777,12 +1778,15 @@ namespace MAAL.Compiling
                         throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
                     if (argType3 != BasicValueToken.BasicValueTypeEnum.INT)
                         throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A INT! {sTok}");
+                    if (argType4 != BasicValueToken.BasicValueTypeEnum.LONG)
+                        throw new Exception($"VALUE PROVIDED TO CREATE COMP IS NOT A LONG! {sTok}");
 
                     AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
 
                     CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
                     CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
                     CompileExpression(sTok.CompType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
+                    CompileExpression(sTok.CompType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
 
                     almostCompiledCode.Add(new AlmostByte("SYSCALL FOR CREATE COMP"));
                     almostCompiledCode.Add(cmdByte);
@@ -1791,6 +1795,7 @@ namespace MAAL.Compiling
                     almostCompiledCode.Add(new AlmostByte(new byte[8]));
                     almostCompiledCode.Add(new AlmostByte(new byte[8]));
                     almostCompiledCode.Add(new AlmostByte(new byte[4]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
                 }
                 #endregion
                 #region DELETE COMP
