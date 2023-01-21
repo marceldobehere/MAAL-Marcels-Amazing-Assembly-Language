@@ -62,13 +62,17 @@ namespace MAAL.Compiling
             NONE,
             CONSOLE,
             MEMORY,
+            WINDOW,
+            GUI,
         }
 
         public static Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
         {
             {SyscallEnum.NONE, 0 },
             {SyscallEnum.CONSOLE, 1 },
-            {SyscallEnum.MEMORY, 2 }
+            {SyscallEnum.MEMORY, 2 },
+            {SyscallEnum.WINDOW, 3 },
+            {SyscallEnum.GUI, 4 }
         };
 
         public enum SyscallConsoleEnum
@@ -80,7 +84,8 @@ namespace MAAL.Compiling
             READ_LINE,
             SET_FG_COL,
             SET_BG_COL,
-            CLS
+            CLS,
+            SLEEP,
         }
 
         public static Dictionary<SyscallConsoleEnum, byte> SyCoToByte = new Dictionary<SyscallConsoleEnum, byte>()
@@ -93,6 +98,7 @@ namespace MAAL.Compiling
             {SyscallConsoleEnum.SET_FG_COL, 5 },
             {SyscallConsoleEnum.SET_BG_COL, 6 },
             {SyscallConsoleEnum.CLS, 7 },
+            {SyscallConsoleEnum.SLEEP, 8 },
         };
 
         public enum SyscallMemoryEnum
@@ -108,6 +114,53 @@ namespace MAAL.Compiling
             {SyscallMemoryEnum.MALLOC, 1 },
             {SyscallMemoryEnum.FREE, 2 },
         };
+
+
+        public enum SyscallWindowEnum
+        {
+            NONE,
+            CREATE,
+            DELETE,
+            SET_ATTR,
+            GET_ATTR,
+            SET_ACTIVE_SCR,
+            GET_ACTIVE_SCR,
+        }
+
+        public static Dictionary<SyscallWindowEnum, byte> SyWiToByte = new Dictionary<SyscallWindowEnum, byte>()
+        {
+            {SyscallWindowEnum.NONE, 0 },
+            {SyscallWindowEnum.CREATE, 1 },
+            {SyscallWindowEnum.DELETE, 2 },
+            {SyscallWindowEnum.SET_ATTR, 3 },
+            {SyscallWindowEnum.GET_ATTR, 4 },
+            {SyscallWindowEnum.SET_ACTIVE_SCR, 5 },
+            {SyscallWindowEnum.GET_ACTIVE_SCR, 6 },
+        };
+
+        public enum SyscallGuiEnum
+        {
+            NONE,
+            CREATE,
+            DELETE,
+            SET_BASE_ATTR,
+            GET_BASE_ATTR,
+            SET_SPEC_ATTR,
+            GET_SPEC_ATTR,
+
+        }
+
+        public static Dictionary<SyscallGuiEnum, byte> SyGuiToByte = new Dictionary<SyscallGuiEnum, byte>()
+        {
+            {SyscallGuiEnum.NONE, 0 },
+            {SyscallGuiEnum.CREATE, 1 },
+            {SyscallGuiEnum.DELETE, 2 },
+            {SyscallGuiEnum.SET_BASE_ATTR, 3 },
+            {SyscallGuiEnum.GET_SPEC_ATTR, 4 },
+            {SyscallGuiEnum.SET_SPEC_ATTR, 5 },
+            {SyscallGuiEnum.GET_SPEC_ATTR, 6 },
+        };
+
 
         #region OP AND VARTYPE STUFF
         public static Dictionary<OperatorToken.OperatorEnum, byte> OpToByte = new Dictionary<OperatorToken.OperatorEnum, byte>()

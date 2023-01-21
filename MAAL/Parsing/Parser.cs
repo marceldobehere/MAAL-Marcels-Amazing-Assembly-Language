@@ -106,6 +106,8 @@ namespace MAAL.Parsing
                 return new ExpressionToken(tok as DerefToken);
             else if (tok is ExpressionToken)
                 return (tok as ExpressionToken);
+            else if (tok is CastToken)
+                return new ExpressionToken(tok as CastToken);
             else
                 return null;
         }
@@ -175,7 +177,7 @@ namespace MAAL.Parsing
 
                             for (int tI = mIndex + 3; tI < cCloseIndex; tI++)
                                 data[tI].NamespacePrefix += namespaceName;
-                            stuff.Namespaces.Add(namespacePref+namespaceName);
+                            stuff.Namespaces.Add(namespacePref + namespaceName);
 
                             data.RemoveAt(cCloseIndex);
                             data.RemoveAt(mIndex + 2);
@@ -281,7 +283,7 @@ namespace MAAL.Parsing
                             {
                                 string locName = (data[mIndex + 1] as GenericNameToken).Name;
                                 data[mIndex] = new DefineSubroutineToken(locName, (data[mIndex + 1] as GenericNameToken).NamespacePrefix);
-                                stuff.Subroutines.Add( data[mIndex] as DefineSubroutineToken);
+                                stuff.Subroutines.Add(data[mIndex] as DefineSubroutineToken);
                                 data.RemoveAt(mIndex + 1);
                                 data.RemoveAt(mIndex + 1);
                                 change = true;
@@ -389,7 +391,7 @@ namespace MAAL.Parsing
                         #endregion
 
 
-                        
+
                         #region PRINT
                         else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
                             (cTok as KeywordToken).Keyword.Equals("print") &&
@@ -459,7 +461,10 @@ namespace MAAL.Parsing
                             data[mIndex + 2] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
-                            data[mIndex] = new CreateWindowToken(ConvToExpressionToken(data[mIndex + 1]));
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
+                            data[mIndex] = new CreateWindowToken(ConvToExpressionToken(castTok));
+
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
 
@@ -473,7 +478,9 @@ namespace MAAL.Parsing
                             data[mIndex + 2] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
-                            data[mIndex] = new DeleteWindowToken(ConvToExpressionToken(data[mIndex + 1]));
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
+                            data[mIndex] = new DeleteWindowToken(ConvToExpressionToken(castTok));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
 
@@ -490,8 +497,10 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 2]) &&
                             CouldBeExpessionToken(data[mIndex + 3]))
                         {
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
                             data[mIndex] = new SetWindowAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(castTok),
                                 ConvToExpressionToken(data[mIndex + 2]),
                                 ConvToExpressionToken(data[mIndex + 3]));
                             data.RemoveAt(mIndex + 1);
@@ -511,8 +520,10 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 2]) &&
                             CouldBeExpessionToken(data[mIndex + 3]))
                         {
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
                             data[mIndex] = new GetWindowAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
+                                ConvToExpressionToken(castTok),
                                 ConvToExpressionToken(data[mIndex + 2]),
                                 ConvToExpressionToken(data[mIndex + 3]));
                             data.RemoveAt(mIndex + 1);
@@ -533,11 +544,15 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 2]) &&
                             CouldBeExpessionToken(data[mIndex + 3]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+
+
                             data[mIndex] = new CreateComponentToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
-                                ConvToExpressionToken(new BasicValueToken(-1)));
+                                ConvToExpressionToken(new BasicValueToken((long)-1)));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -556,11 +571,15 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]) &&
                             CouldBeExpessionToken(data[mIndex + 4]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+                            CastToken castTok3 = new CastToken(ConvToExpressionToken(data[mIndex + 4]), new TypeToken("long"));
+
                             data[mIndex] = new CreateComponentToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
-                                ConvToExpressionToken(data[mIndex + 4]));
+                                ConvToExpressionToken(castTok3));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -580,10 +599,14 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 2]) &&
                             CouldBeExpessionToken(data[mIndex + 3]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+                            CastToken castTok3 = new CastToken(ConvToExpressionToken(data[mIndex + 3]), new TypeToken("bool"));
+                            
                             data[mIndex] = new DeleteComponentToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
-                                ConvToExpressionToken(data[mIndex + 3]));
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
+                                ConvToExpressionToken(castTok3));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -604,9 +627,12 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]) &&
                             CouldBeExpessionToken(data[mIndex + 4]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+
                             data[mIndex] = new SetBaseComponentAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
                                 ConvToExpressionToken(data[mIndex + 4]));
                             data.RemoveAt(mIndex + 1);
@@ -628,9 +654,12 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]) &&
                             CouldBeExpessionToken(data[mIndex + 4]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+
                             data[mIndex] = new GetBaseComponentAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
                                 ConvToExpressionToken(data[mIndex + 4]));
                             data.RemoveAt(mIndex + 1);
@@ -653,9 +682,12 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]) &&
                             CouldBeExpessionToken(data[mIndex + 4]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+
                             data[mIndex] = new SetSpecificComponentAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
                                 ConvToExpressionToken(data[mIndex + 4]));
                             data.RemoveAt(mIndex + 1);
@@ -677,9 +709,12 @@ namespace MAAL.Parsing
                             CouldBeExpessionToken(data[mIndex + 3]) &&
                             CouldBeExpessionToken(data[mIndex + 4]))
                         {
+                            CastToken castTok1 = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+                            CastToken castTok2 = new CastToken(ConvToExpressionToken(data[mIndex + 2]), new TypeToken("long"));
+
                             data[mIndex] = new GetSpecificComponentAttrToken(
-                                ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]),
+                                ConvToExpressionToken(castTok1),
+                                ConvToExpressionToken(castTok2),
                                 ConvToExpressionToken(data[mIndex + 3]),
                                 ConvToExpressionToken(data[mIndex + 4]));
                             data.RemoveAt(mIndex + 1);
@@ -699,8 +734,10 @@ namespace MAAL.Parsing
                             data[mIndex + 3] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
                             data[mIndex] = new SetWindowActiveScreenToken(ConvToExpressionToken(data[mIndex + 1]),
-                                ConvToExpressionToken(data[mIndex + 2]));
+                                ConvToExpressionToken(castTok));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -715,7 +752,9 @@ namespace MAAL.Parsing
                             data[mIndex + 3] is EndCommandToken &&
                             CouldBeExpessionToken(data[mIndex + 1]))
                         {
-                            data[mIndex] = new GetWindowActiveScreenToken(ConvToExpressionToken(data[mIndex + 1]),
+                            CastToken castTok = new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("long"));
+
+                            data[mIndex] = new GetWindowActiveScreenToken(ConvToExpressionToken(castTok),
                                 ConvToExpressionToken(data[mIndex + 2]));
                             data.RemoveAt(mIndex + 1);
                             data.RemoveAt(mIndex + 1);
@@ -816,7 +855,7 @@ namespace MAAL.Parsing
                         if (cTok is GenericNameToken && (stuff.HasSubFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name)) &&
                             (mIndex < 1 || (!(data[mIndex - 1] is DoubleColonToken) && !(data[mIndex - 1] is NamespaceUseToken))))
                         {
-                            data[mIndex] = new SubroutineNameToken(stuff.GetSubFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix,(cTok as GenericNameToken).Name));
+                            data[mIndex] = new SubroutineNameToken(stuff.GetSubFromNameAndNamespace((cTok as GenericNameToken).NamespacePrefix, (cTok as GenericNameToken).Name));
                             change = true;
                             break;
                         }
@@ -904,9 +943,9 @@ namespace MAAL.Parsing
 
                         #region DEREF EXPR
                         //*test
-                        if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) && 
+                        if (cTok is OperatorToken && ((cTok as OperatorToken).Operator == OperatorToken.OperatorEnum.Star) &&
                             mIndex + 1 < data.Count &&
-                            CouldBeExpessionToken(data[mIndex + 1]) && 
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
                             (mIndex == 0 || !CouldBeExpessionToken(data[mIndex - 1])))
                         {
                             data[mIndex] = new DerefToken(ConvToExpressionToken(data[mIndex + 1]));
@@ -1288,7 +1327,7 @@ namespace MAAL.Parsing
                             else
                                 cOp = OperatorToken.OperatorEnum.Minus;
 
-                            
+
 
                             tok = new SetVarToken((data[mIndex - 1] as VarNameToken),
                                 new ExpressionToken(
@@ -1475,6 +1514,127 @@ namespace MAAL.Parsing
                         change = true;
                         break;
                     }
+                    if (cTok is SleepToken && ParserHelpers.TryOptimizeExpressionToken((cTok as SleepToken).Duration))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is CreateWindowToken && ParserHelpers.TryOptimizeExpressionToken((cTok as CreateWindowToken).WindowID))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is DeleteWindowToken && ParserHelpers.TryOptimizeExpressionToken((cTok as DeleteWindowToken).WindowID))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is CreateComponentToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as CreateComponentToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as CreateComponentToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as CreateComponentToken).ParentID)))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is DeleteComponentToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as DeleteComponentToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as DeleteComponentToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as DeleteComponentToken).DeleteChildren)))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is SetWindowAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetWindowAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetWindowAttrToken).Value) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetWindowAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is GetWindowAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetWindowAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetWindowAttrToken).WriteTo) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetWindowAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is SetWindowActiveScreenToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetWindowActiveScreenToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetWindowActiveScreenToken).ScreenID)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is GetWindowActiveScreenToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetWindowActiveScreenToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetWindowActiveScreenToken).WriteTo) 
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+
+
+
+
+
+                    if (cTok is SetBaseComponentAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetBaseComponentAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetBaseComponentAttrToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetBaseComponentAttrToken).Value) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetBaseComponentAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is GetBaseComponentAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetBaseComponentAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetBaseComponentAttrToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetBaseComponentAttrToken).WriteTo) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetBaseComponentAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    if (cTok is SetSpecificComponentAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetSpecificComponentAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetSpecificComponentAttrToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetSpecificComponentAttrToken).Value) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as SetSpecificComponentAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+                    if (cTok is GetSpecificComponentAttrToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetSpecificComponentAttrToken).WindowID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetSpecificComponentAttrToken).CompID) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetSpecificComponentAttrToken).WriteTo) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetSpecificComponentAttrToken).AttrType)
+                        ))
+                    {
+                        change = true;
+                        break;
+                    }
+
+
+
+
+
                     if (cTok is CastToken && ParserHelpers.TryOptimizeExpressionToken((cTok as CastToken).ToCast))
                     {
                         change = true;
@@ -1610,7 +1770,7 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                 {
                     if (tempString != "")
                         tokens.Add(ConvertStringToToken(tempString));
-                    tempString = "";                    
+                    tempString = "";
                     if (mIndex + 1 < len && data[mIndex + 1] == ':')
                     {
                         tokens.Add(new DoubleColonToken());

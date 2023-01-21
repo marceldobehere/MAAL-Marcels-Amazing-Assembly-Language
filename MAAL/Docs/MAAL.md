@@ -351,6 +351,17 @@ free data; // will free the data again
 ```
 
 
+#### sleep
+You can sleep for a specific amount of time (in ms).
+
+Example:
+```
+print "Hello, ";
+sleep 2000; // This will sleep for 2 seconds
+print "World!";
+```
+
+
 
 
 

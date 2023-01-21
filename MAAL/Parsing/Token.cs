@@ -345,13 +345,13 @@ namespace MAAL.Parsing
     }
     public class SleepToken : Token
     {
-        public ExpressionToken Amount;
+        public ExpressionToken Duration;
 
         public SleepToken(ExpressionToken amt)
-            => Amount = amt;
+            => Duration = amt;
 
         public override string ToString()
-           => $"<Sleep for {Amount} ms>";
+           => $"<Sleep for {Duration} ms>";
     }
     public class CreateWindowToken : Token
     {
@@ -504,18 +504,18 @@ namespace MAAL.Parsing
         public ExpressionToken WindowID;
         public ExpressionToken CompID;
         public ExpressionToken AttrType;
-        public ExpressionToken Into;
+        public ExpressionToken WriteTo;
 
         public GetBaseComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken var)
         {
             WindowID = winID;
             CompID = compID;
             AttrType = attrType;
-            Into = var;
+            WriteTo = var;
         }
 
         public override string ToString()
-           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {Into}>";
+           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {WriteTo}>";
     }
 
 
@@ -543,18 +543,18 @@ namespace MAAL.Parsing
         public ExpressionToken WindowID;
         public ExpressionToken CompID;
         public ExpressionToken AttrType;
-        public ExpressionToken Into;
+        public ExpressionToken WriteTo;
 
         public GetSpecificComponentAttrToken(ExpressionToken winID, ExpressionToken compID, ExpressionToken attrType, ExpressionToken var)
         {
             WindowID = winID;
             CompID = compID;
             AttrType = attrType;
-            Into = var;
+            WriteTo = var;
         }
 
         public override string ToString()
-           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {Into}>";
+           => $"<Get Specific Attr {AttrType} of Component {CompID} in Window {WindowID} into {WriteTo}>";
     }
 
 
