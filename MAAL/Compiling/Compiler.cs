@@ -1786,7 +1786,7 @@ namespace MAAL.Compiling
                     CompileExpression(sTok.WindowID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
                     CompileExpression(sTok.CompID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 11, 8));
                     CompileExpression(sTok.CompType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 19, 4));
-                    CompileExpression(sTok.CompType, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
+                    CompileExpression(sTok.ParentID, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 23, 8));
 
                     almostCompiledCode.Add(new AlmostByte("SYSCALL FOR CREATE COMP"));
                     almostCompiledCode.Add(cmdByte);
