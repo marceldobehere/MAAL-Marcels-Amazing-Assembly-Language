@@ -1,112 +1,124 @@
-print "Hello, ";
-
-color FG 0xFFFFFF00; // set foreground to orange
-
-sleep 1000;
-
-print "world!\n";
-
-color BG 0xFF80F000;
-color FG 0xFF0000F0;
-
-sleep 500;
-
-print "Test!\n\n";
-
-color BG 0xFF000000;
-color FG 0xFFFFFFFF;
-
-
-
 createWindow 123;
 
 
-createWindow 1000;
-sleep 2000;
-deleteWindow 1000;
+setWindowAttr 123 60 "Test Alert!";
+
+setWindowAttr 123 20 200; // width  200px
+setWindowAttr 123 21 200; // height 200px
+
+setWindowAttr 123 40 0xFF550000; // default border color dark red
+setWindowAttr 123 41 0xFFFF0000; // selected border color red
+
+setWindowAttr 123 54 false; // cant resize window
+
+
+// screen component has default id of 1234
+setSpecificComponentAttr 123 1234 11 0xFFBBBBBB; // set bg of screen component
 
 
 
-setWindowAttr 123 60 "Hello, Title!";
-
-sleep 1000;
-
-setWindowAttr 123 20 400;
-
-sleep 1000;
-
-int tempSize;
-
-// Gets Size X
-getWindowAttr 123 20 &tempSize;
-print "Size X: ";
-print tempSize;
-print "\n";
-
-// Gets Size Y
-getWindowAttr 123 21 &tempSize;
-print "Size Y: ";
-print tempSize;
-print "\n";
-
-sleep 1000;
+createComponentWithId 123 100 4; // Text
 
 
-// WindowID, ComponentID, ComponentType, [ParentID]
-createComponentWithId 123 567 2;
-createComponentWithId 123 5678 3;
+long text1ID;
+createComponentWithId 123 110 5; // Hi Button
+getSpecificComponentAttr 123 110 42 &text1ID; // get Id of text from button
+setBaseComponentAttr 123 text1ID 40 200; // set Id of text to 200
+text1ID = (long)200;
 
-sleep 1000;
 
-createComponentWithId 123 890 2 123;
-
-sleep 1000;
-
-// WindowID, ComponentID, DeleteChildren
-deleteComponentWithId 123 5678 true;
+long text2ID;
+createComponentWithId 123 120 5; // No Button
+getSpecificComponentAttr 123 120 42 &text2ID; // get Id of text from button
+setBaseComponentAttr 123 text2ID 40 210; // set Id of text to 210
+text2ID = (long)210;
 
 
 
-sleep 1000;
 
-// Set Scaled X s
-setBaseComponentAttr 123 567 22 0.5d;
-// Set Size X Fixed to false
-setBaseComponentAttr 123 567 24 false;
+// Text
 
+setBaseComponentAttr 123 100 10 0; // x 0
+setBaseComponentAttr 123 100 11 0; // y 0
 
-sleep 1000;
+setBaseComponentAttr 123 100 24 true; // x fixed
+setBaseComponentAttr 123 100 25 true; // y fixed
 
-double tempDoubleSize = 5d;
-getBaseComponentAttr 123 567 22 &tempDoubleSize; 
-print "Scaled Size X: ";
-print tempDoubleSize;
-print "\n";
+setBaseComponentAttr 123 100 20 200; // width  200px
+setBaseComponentAttr 123 100 21 150; // height 150px
 
-sleep 1000;
-
-
-setSpecificComponentAttr 123 567 10 0xFF00FF00; // Should be green
-uint tempCol = 0;
-getSpecificComponentAttr 123 567 10 &tempCol;
-
-print "COL: ";
-print tempCol;
-print "\n";
-
-sleep 1000;
+setSpecificComponentAttr 123 100 20 "\n\n\nHELLO!"; // text
+setSpecificComponentAttr 123 100 10 0xFF000000; // text black
+setSpecificComponentAttr 123 100 11 0x00000000; // bg transparent
+setSpecificComponentAttr 123 100 30 true; // center text
+setSpecificComponentAttr 123 100 31 true; // use fixed size
 
 
-/* FOR LATER
 
-// WindowID, ScreenID
-windowSetActiveScreen 123 0;
-// WindowID, address of var
-long currentWindowID;
-windowGetActiveScreen 123 &currentWindowID;
+// Hi Button
 
-*/
+setBaseComponentAttr 123 110 10 25; // x 25
+setBaseComponentAttr 123 110 11 165; // y 165
 
-sleep 1000;
+setBaseComponentAttr 123 110 24 true; // x fixed
+setBaseComponentAttr 123 110 25 true; // y fixed
+
+setBaseComponentAttr 123 110 20 50; // width  50px
+setBaseComponentAttr 123 110 21 30; // height 25px
+
+
+setSpecificComponentAttr 123 text1ID 20 "Hi";
+
+setSpecificComponentAttr 123 110 21 0xFF005500; // hover color dark green
+setSpecificComponentAttr 123 110 22 0xFF00FF00; // hover color green
+
+
+
+
+// No Button
+
+setBaseComponentAttr 123 120 10 125; // x 125
+setBaseComponentAttr 123 120 11 165; // y 165
+
+
+setBaseComponentAttr 123 120 24 true; // x fixed
+setBaseComponentAttr 123 120 25 true; // y fixed
+
+
+
+setBaseComponentAttr 123 120 20 50; // width  50px
+setBaseComponentAttr 123 120 21 30; // height 25px
+
+setSpecificComponentAttr 123 text2ID 20 "No";
+
+setSpecificComponentAttr 123 120 21 0xFF550000; // hover color dark red
+setSpecificComponentAttr 123 120 22 0xFFFF0000; // hover color red
+
+
+bool doExit = false; // cant use exit since thats a reserved keyword lol
+
+while (!doExit)
+{
+	int stat = 0;
+	getSpecificComponentAttr 123 110 50 &stat;
+	if (stat == 2)
+	{
+		print "YESS :)\n";
+		sleep 1000;
+		doExit = true;
+	}
+	if (stat == 0)
+	{
+		getSpecificComponentAttr 123 120 50 &stat;
+		if (stat == 2)
+		{
+			print "NOOO :(\n";
+			sleep 1000;
+			doExit = true;
+		}
+	}
+
+}
+
 
 

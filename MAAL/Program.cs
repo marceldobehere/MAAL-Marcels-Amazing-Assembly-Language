@@ -67,7 +67,7 @@ namespace MAAL
         static void Main(string[] args)
         {
             bool catchErr = true;
-            catchErr = false;
+            //catchErr = false;
             GlobalStuff.ShowText = false;
             GlobalStuff.ShowTimeStats = false;
 
