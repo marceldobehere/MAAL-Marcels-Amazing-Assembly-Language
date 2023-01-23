@@ -14,65 +14,73 @@ print "\n";
 
 
 bool doExit = false; // cant use exit since thats a reserved keyword lol
-print "\nPress A.";
+print "\nPress S to show mouse info and H to hide mouse info.\n";
+print "Press ESC to stop program.\n";
+print "\nPress Enter to start.\n";
 print "\n";
+
+char* bruh;
+readline &bruh;
+
+bool lP = false;
+bool pressed = false;
 while (!doExit)
 {
-	bool pressed = false;
-	bool oldPressed = false;
-	getKeyboardState 0x1E &pressed;
-	if (!pressed)
-	{
-		if (!oldPressed)
-		{
-			oldPressed = true;
-			cls;
-			print "A Not Pressed!\n";
-		}
-	}
+	getKeyboardState 0x1F &pressed; // S
 	if (pressed)
 	{
-		if (oldPressed)
-		{
-			oldPressed = false;
-
-			cls;
-			print "A Pressed!\n";
-			int tM;
-
-			getMouseState 3 &tM;
-			print "Mouse X: ";
-			print tM;
-			print "\n";
-
-			getMouseState 4 &tM;
-			print "Mouse Y: ";
-			print tM;
-			print "\n";
-
-			bool tC;
-
-			print "\n";
-
-			getMouseState 1 &tC;
-			print "Click 1: ";
-			print tC;
-			print "\n";
-
-			getMouseState 2 &tC;
-			print "Click 2: ";
-			print tC;
-			print "\n";
-
-			getMouseState 3 &tC;
-			print "Click 3: ";
-			print tC;
-			print "\n";
-
-
-			print "\n";
-		}
+		lP = true;
 	}
+	getKeyboardState 0x23 &pressed; // H
+	if (pressed)
+	{
+		lP = false;
+	}
+	
+	cls;
+	if (!lP)
+	{
+		print "OFF!\n";
+	}
+	if (lP)
+	{
+		print "ON!\n";
+		int tM;
+
+		getMouseState 3 &tM;
+		print "Mouse X: ";
+		print tM;
+		print "\n";
+
+		getMouseState 4 &tM;
+		print "Mouse Y: ";
+		print tM;
+		print "\n";
+
+		bool tC;
+
+		print "\n";
+
+		getMouseState 0 &tC;
+		print "Click 1: ";
+		print tC;
+		print "\n";
+
+		getMouseState 1 &tC;
+		print "Click 2: ";
+		print tC;
+		print "\n";
+
+		getMouseState 2 &tC;
+		print "Click 3: ";
+		print tC;
+		print "\n";
+
+
+		print "\n";
+	}
+	sleep 10;
+
 	pressed = false;
 	getKeyboardState 0x01 &pressed;
 	if (pressed)
