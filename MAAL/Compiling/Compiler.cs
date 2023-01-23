@@ -2149,29 +2149,29 @@ namespace MAAL.Compiling
 
 
 
-            Console.WriteLine();
-            GlobalStuff.WriteLine("<MINI OPTIMIZATION>");
-            for (int i = 0; i < almostCompiledCode.Count; i++)
-            {
-                if (almostCompiledCode[i].IsAlmostByteOffset && (i - 3) >= 0 && almostCompiledCode[i - 2].IsFixedData && almostCompiledCode[i - 2].FixedData[0] == 2 && almostCompiledCode[i - 3].IsComment)
-                {
-                    GlobalStuff.WriteLine($"\tTOKEN {almostCompiledCode[i]}\n\t");
-                    GlobalStuff.WriteLine($"\t> DATA: {almostCompiledCode[i + 1]}");
+            //Console.WriteLine();
+            //GlobalStuff.WriteLine("<MINI OPTIMIZATION>");
+            //for (int i = 0; i < almostCompiledCode.Count; i++)
+            //{
+            //    if (almostCompiledCode[i].IsAlmostByteOffset && (i - 3) >= 0 && almostCompiledCode[i - 2].IsFixedData && almostCompiledCode[i - 2].FixedData[0] == 2 && almostCompiledCode[i - 3].IsComment)
+            //    {
+            //        GlobalStuff.WriteLine($"\tTOKEN {almostCompiledCode[i]}\n\t");
+            //        GlobalStuff.WriteLine($"\t> DATA: {almostCompiledCode[i + 1]}");
 
-                    int magicIndex = GetIndexOfAlmostByte(almostCompiledCode, almostCompiledCode[i]);
-                    almostCompiledCode[magicIndex] = almostCompiledCode[i + 1];
+            //        int magicIndex = GetIndexOfAlmostByte(almostCompiledCode, almostCompiledCode[i]);
+            //        almostCompiledCode[magicIndex] = almostCompiledCode[i + 1];
 
-                    almostCompiledCode[i - 3].Comment = "(Optimized) " + almostCompiledCode[i - 3].Comment;
-                    almostCompiledCode.RemoveRange(i - 2, 4);
+            //        almostCompiledCode[i - 3].Comment = "(Optimized) " + almostCompiledCode[i - 3].Comment;
+            //        almostCompiledCode.RemoveRange(i - 2, 4);
                     
-                    GlobalStuff.WriteLine();
+            //        GlobalStuff.WriteLine();
 
-                    i -= 3;
-                }
+            //        i -= 3;
+            //    }
 
-            }
-            GlobalStuff.WriteLine("</MINI OPTIMIZATION>");
-            Console.WriteLine();
+            //}
+            //GlobalStuff.WriteLine("</MINI OPTIMIZATION>");
+            //Console.WriteLine();
 
 
 
