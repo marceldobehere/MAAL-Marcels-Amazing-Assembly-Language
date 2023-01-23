@@ -1,0 +1,18 @@
+ulong randomUlong;
+getRandomUlong &randomUlong;
+double randomDouble;
+getRandomDouble &randomDouble;
+
+print "RND 1:   ";
+print randomUlong;
+print "\n"; 
+
+print "RND 1.5: ";
+print (int)randomUlong;
+print "\n"; 
+
+print "RND 2:   ";
+print randomDouble;
+print "\n";
+
+

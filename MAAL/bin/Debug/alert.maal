@@ -1,0 +1,126 @@
+long winID;
+
+ulong randomUlong;
+getRandomUlong &randomUlong;
+winID = (long)randomUlong; // get random window id
+
+createWindow winID;
+
+setWindowAttr winID 60 "Test Alert!";
+
+setWindowAttr winID 20 200; // width  200px
+setWindowAttr winID 21 200; // height 200px
+
+setWindowAttr winID 40 0xFF550000; // default border color dark red
+setWindowAttr winID 41 0xFFFF0000; // selected border color red
+
+setWindowAttr winID 54 false; // cant resize window
+
+
+// screen component has default id of 1234
+setSpecificComponentAttr winID 1234 11 0xFFBBBBBB; // set bg of screen component
+
+
+
+createComponentWithId winID 100 4; // Text
+
+
+long text1ID;
+createComponentWithId winID 110 5; // Hi Button
+getSpecificComponentAttr winID 110 42 &text1ID; // get Id of text from button
+setBaseComponentAttr winID text1ID 40 200; // set Id of text to 200
+text1ID = 200l;
+
+
+long text2ID;
+createComponentWithId winID 120 5; // No Button
+getSpecificComponentAttr winID 120 42 &text2ID; // get Id of text from button
+setBaseComponentAttr winID text2ID 40 210; // set Id of text to 210
+text2ID = 210l;
+
+
+
+
+// Text
+
+setBaseComponentAttr winID 100 10 0; // x 0
+setBaseComponentAttr winID 100 11 0; // y 0
+
+setBaseComponentAttr winID 100 24 true; // x fixed
+setBaseComponentAttr winID 100 25 true; // y fixed
+
+setBaseComponentAttr winID 100 20 200; // width  200px
+setBaseComponentAttr winID 100 21 150; // height 150px
+
+setSpecificComponentAttr winID 100 20 "\n\n\nHELLO!"; // text
+setSpecificComponentAttr winID 100 10 0xFF000000; // text black
+setSpecificComponentAttr winID 100 11 0x00000000; // bg transparent
+setSpecificComponentAttr winID 100 30 true; // center text
+setSpecificComponentAttr winID 100 31 true; // use fixed size
+
+
+
+// Hi Button
+
+setBaseComponentAttr winID 110 10 25; // x 25
+setBaseComponentAttr winID 110 11 165; // y 165
+
+setBaseComponentAttr winID 110 24 true; // x fixed
+setBaseComponentAttr winID 110 25 true; // y fixed
+
+setBaseComponentAttr winID 110 20 50; // width  50px
+setBaseComponentAttr winID 110 21 30; // height 25px
+
+
+setSpecificComponentAttr winID text1ID 20 "Hi";
+
+setSpecificComponentAttr winID 110 21 0xFF005500; // hover color dark green
+setSpecificComponentAttr winID 110 22 0xFF00FF00; // hover color green
+
+
+
+
+// No Button
+
+setBaseComponentAttr winID 120 10 125; // x 125
+setBaseComponentAttr winID 120 11 165; // y 165
+
+
+setBaseComponentAttr winID 120 24 true; // x fixed
+setBaseComponentAttr winID 120 25 true; // y fixed
+
+
+
+setBaseComponentAttr winID 120 20 50; // width  50px
+setBaseComponentAttr winID 120 21 30; // height 25px
+
+setSpecificComponentAttr winID text2ID 20 "No";
+
+setSpecificComponentAttr winID 120 21 0xFF550000; // hover color dark red
+setSpecificComponentAttr winID 120 22 0xFFFF0000; // hover color red
+
+
+bool doExit = false; // cant use exit since thats a reserved keyword lol
+
+while (!doExit)
+{
+	int stat = 0;
+	getSpecificComponentAttr winID 110 50 &stat;
+	if (stat == 2)
+	{
+		print "YESS :)\n";
+		sleep 1000;
+		doExit = true;
+	}
+	if (stat == 0)
+	{
+		getSpecificComponentAttr winID 120 50 &stat;
+		if (stat == 2)
+		{
+			print "NOOO :(\n";
+			sleep 1000;
+			doExit = true;
+		}
+	}
+
+}

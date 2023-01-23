@@ -1028,6 +1028,8 @@ namespace MAAL.Compiling
         public static int GetIndexOfAlmostByte(List<AlmostByte>  almostCompiledCode, AlmostByte almostByte)
         {
             int indx = almostCompiledCode.IndexOf(almostByte.AlmostByteOffsetOrigin);
+            if (indx == -1)
+                throw new Exception($"Codeblock {almostByte} not found!");
             int still = almostByte.AlmostByteOffset;
             while (still > 0)
             {
@@ -2109,18 +2111,52 @@ namespace MAAL.Compiling
                 }
             }
 
-            //GlobalStuff.WriteLine("\n\nAlmost Bytes:");
-            //foreach (var almostByte in almostCompiledCode)
-            //{
-            //    GlobalStuff.ForegroundColor = ConsoleColor.White;
-            //    if (almostByte.IsComment)
-            //    {
-            //        GlobalStuff.WriteLine();
-            //        GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
-            //    }
-            //    GlobalStuff.WriteLine($" - {almostByte}");
-            //}
-            //GlobalStuff.WriteLine();
+            GlobalStuff.WriteLine("\n\nAlmost Bytes:");
+            foreach (var almostByte in almostCompiledCode)
+            {
+                GlobalStuff.ForegroundColor = ConsoleColor.White;
+                if (almostByte.IsComment)
+                {
+                    GlobalStuff.WriteLine();
+                    GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
+                }
+                GlobalStuff.WriteLine($" - {almostByte}");
+            }
+            GlobalStuff.WriteLine();
+
+
+            Console.WriteLine();
+            GlobalStuff.WriteLine("<MINI OPTIMIZATION>");
+            for (int i = 0; i < almostCompiledCode.Count; i++)
+            {
+                if (almostCompiledCode[i].IsAlmostByteOffset && (i - 3) >= 0 && almostCompiledCode[i - 2].IsFixedData && almostCompiledCode[i - 2].FixedData[0] == 2 && almostCompiledCode[i - 3].IsComment)
+                {
+                    GlobalStuff.WriteLine($"\tTOKEN {almostCompiledCode[i]}\n\t");
+
+                    int magicIndex = GetIndexOfAlmostByte(almostCompiledCode, almostCompiledCode[i]);
+
+                    if (almostCompiledCode[magicIndex].Size == almostCompiledCode[i - 1].FixedData[0] && almostCompiledCode[i + 1].Size == almostCompiledCode[i - 1].FixedData[0])
+                    {
+                        GlobalStuff.WriteLine($"\t > REPLACING {almostCompiledCode[magicIndex]} WITH {almostCompiledCode[i + 1]}");
+                        almostCompiledCode[magicIndex] = almostCompiledCode[i + 1];
+
+                        almostCompiledCode[i - 3].Comment = "(Optimized) " + almostCompiledCode[i - 3].Comment;
+                        almostCompiledCode.RemoveRange(i - 2, 4);
+
+                        i -= 3;
+                    }
+                    else
+                        GlobalStuff.WriteLine($"\t> Size discrepancy! {almostCompiledCode[magicIndex].Size} IS NOT {almostCompiledCode[i - 1].FixedData[0]} OR {almostCompiledCode[i + 1].Size}");
+
+                    GlobalStuff.WriteLine();
+
+
+                }
+
+            }
+            GlobalStuff.WriteLine("</MINI OPTIMIZATION>");
+            Console.WriteLine();
+
 
             Dictionary<string, ulong> varAddresses = new Dictionary<string, ulong>();
             Dictionary<string, ulong> locAddresses = new Dictionary<string, ulong>();
@@ -2148,30 +2184,6 @@ namespace MAAL.Compiling
             }
 
 
-
-            //Console.WriteLine();
-            //GlobalStuff.WriteLine("<MINI OPTIMIZATION>");
-            //for (int i = 0; i < almostCompiledCode.Count; i++)
-            //{
-            //    if (almostCompiledCode[i].IsAlmostByteOffset && (i - 3) >= 0 && almostCompiledCode[i - 2].IsFixedData && almostCompiledCode[i - 2].FixedData[0] == 2 && almostCompiledCode[i - 3].IsComment)
-            //    {
-            //        GlobalStuff.WriteLine($"\tTOKEN {almostCompiledCode[i]}\n\t");
-            //        GlobalStuff.WriteLine($"\t> DATA: {almostCompiledCode[i + 1]}");
-
-            //        int magicIndex = GetIndexOfAlmostByte(almostCompiledCode, almostCompiledCode[i]);
-            //        almostCompiledCode[magicIndex] = almostCompiledCode[i + 1];
-
-            //        almostCompiledCode[i - 3].Comment = "(Optimized) " + almostCompiledCode[i - 3].Comment;
-            //        almostCompiledCode.RemoveRange(i - 2, 4);
-                    
-            //        GlobalStuff.WriteLine();
-
-            //        i -= 3;
-            //    }
-
-            //}
-            //GlobalStuff.WriteLine("</MINI OPTIMIZATION>");
-            //Console.WriteLine();
 
 
 
