@@ -1,5 +1,90 @@
-createWindow 123;
+ulong randomUlong;
+getRandomUlong &randomUlong;
+double randomDouble;
+getRandomDouble &randomDouble;
 
+print "RND 1: ";
+print randomUlong;
+print "\n"; 
+
+print "RND 2: ";
+print randomDouble;
+print "\n";
+
+
+
+bool doExit = false; // cant use exit since thats a reserved keyword lol
+print "\nPress A.";
+print "\n";
+while (!doExit)
+{
+	bool pressed = false;
+	bool oldPressed = false;
+	getKeyboardState 0x1E &pressed;
+	if (!pressed)
+	{
+		if (!oldPressed)
+		{
+			oldPressed = true;
+			cls;
+			print "A Not Pressed!\n";
+		}
+	}
+	if (pressed)
+	{
+		if (oldPressed)
+		{
+			oldPressed = false;
+
+			cls;
+			print "A Pressed!\n";
+			int tM;
+
+			getMouseState 3 &tM;
+			print "Mouse X: ";
+			print tM;
+			print "\n";
+
+			getMouseState 4 &tM;
+			print "Mouse Y: ";
+			print tM;
+			print "\n";
+
+			bool tC;
+
+			print "\n";
+
+			getMouseState 1 &tC;
+			print "Click 1: ";
+			print tC;
+			print "\n";
+
+			getMouseState 2 &tC;
+			print "Click 2: ";
+			print tC;
+			print "\n";
+
+			getMouseState 3 &tC;
+			print "Click 3: ";
+			print tC;
+			print "\n";
+
+
+			print "\n";
+		}
+	}
+	pressed = false;
+	getKeyboardState 0x01 &pressed;
+	if (pressed)
+	{
+		doExit = true;
+	}
+}
+
+
+
+/*
+createWindow 123;
 
 setWindowAttr 123 60 "Test Alert!";
 
@@ -24,14 +109,14 @@ long text1ID;
 createComponentWithId 123 110 5; // Hi Button
 getSpecificComponentAttr 123 110 42 &text1ID; // get Id of text from button
 setBaseComponentAttr 123 text1ID 40 200; // set Id of text to 200
-text1ID = (long)200;
+text1ID = 200l;
 
 
 long text2ID;
 createComponentWithId 123 120 5; // No Button
 getSpecificComponentAttr 123 120 42 &text2ID; // get Id of text from button
 setBaseComponentAttr 123 text2ID 40 210; // set Id of text to 210
-text2ID = (long)210;
+text2ID = 210l;
 
 
 
@@ -120,5 +205,4 @@ while (!doExit)
 
 }
 
-
-
+*/

@@ -454,6 +454,70 @@ namespace MAAL.Parsing
                         }
                         #endregion
 
+                        #region GET RND ULONG
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getRandomUlong") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new GetRandomUlongToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET RND Double
+                        else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getRandomDouble") &&
+                            data[mIndex + 2] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]))
+                        {
+                            data[mIndex] = new GetRandomDoubleToken(ConvToExpressionToken(data[mIndex + 1]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
+                        #region GET KEY STATE
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getKeyboardState") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]))
+                        {
+                            var c1 = ConvToExpressionToken(new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("char")));
+                            data[mIndex] = new GetKeyboardStateToken(c1, ConvToExpressionToken(data[mIndex + 2]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+                        #region GET MOUSE STATE
+                        else if (cTok is KeywordToken && mIndex + 3 < data.Count &&
+                            (cTok as KeywordToken).Keyword.Equals("getMouseState") &&
+                            data[mIndex + 3] is EndCommandToken &&
+                            CouldBeExpessionToken(data[mIndex + 1]) &&
+                            CouldBeExpessionToken(data[mIndex + 2]))
+                        {
+                            var c1 = ConvToExpressionToken(new CastToken(ConvToExpressionToken(data[mIndex + 1]), new TypeToken("char")));
+                            data[mIndex] = new GetMouseStateToken(c1, ConvToExpressionToken(data[mIndex + 2]));
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+                            data.RemoveAt(mIndex + 1);
+
+                            change = true;
+                            break;
+                        }
+                        #endregion
+
 
                         #region CREATE WINDOW
                         else if (cTok is KeywordToken && mIndex + 2 < data.Count &&
@@ -1589,8 +1653,21 @@ namespace MAAL.Parsing
                         break;
                     }
 
+                    if (cTok is GetMouseStateToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetMouseStateToken).State) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetMouseStateToken).WriteTo)))
+                    {
+                        change = true;
+                        break;
+                    }
 
-
+                    if (cTok is GetKeyboardStateToken && (
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetKeyboardStateToken).Scancode) ||
+                        ParserHelpers.TryOptimizeExpressionToken((cTok as GetKeyboardStateToken).WriteTo)))
+                    {
+                        change = true;
+                        break;
+                    }
 
 
                     if (cTok is SetBaseComponentAttrToken && (
@@ -1715,6 +1792,43 @@ ParserHelpers.TryOptimizeExpressionToken((cTok as LocationNameToken).Address))
                 return new BasicValueToken(vD);
             if (str.Length > 1 && str[str.Length - 1] == 'f' && float.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out float vF2))
                 return new BasicValueToken(vF2);
+            if (str.Length > 1 && str[str.Length - 1] == 'c' && int.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out int vC2))
+                return new BasicValueToken((char)vC2);
+
+
+            if (str.Length > 2 && str[str.Length - 2] == 'u' && str[str.Length - 1] == 'i' &&
+                uint.TryParse(str.Substring(0, str.Length - 2), NumberStyles.Integer, CultureInfo.InvariantCulture,
+                out uint vUI2))
+                return new BasicValueToken(vUI2);
+
+            if (str.Length > 2 && str[str.Length - 2] == 'u' && str[str.Length - 1] == 's' &&
+                ushort.TryParse(str.Substring(0, str.Length - 2), NumberStyles.Integer, CultureInfo.InvariantCulture,
+                out ushort vUS2))
+                return new BasicValueToken(vUS2);
+
+            if (str.Length > 2 && str[str.Length - 2] == 'u' && str[str.Length - 1] == 'l' &&
+                ulong.TryParse(str.Substring(0, str.Length - 2), NumberStyles.Integer, CultureInfo.InvariantCulture,
+                out ulong vUL2))
+                return new BasicValueToken(vUL2);
+
+
+
+            if (str.Length > 1 && str[str.Length - 1] == 'i' && 
+                int.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Integer, CultureInfo.InvariantCulture, 
+                out int vI2))
+                return new BasicValueToken(vI2);
+            if (str.Length > 1 && str[str.Length - 1] == 's' &&
+                short.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Integer, CultureInfo.InvariantCulture,
+                out short vS2))
+                return new BasicValueToken(vS2);
+
+            if (str.Length > 1 && str[str.Length - 1] == 'l' &&
+                long.TryParse(str.Substring(0, str.Length - 1), NumberStyles.Integer, CultureInfo.InvariantCulture,
+                out long vL2))
+                return new BasicValueToken(vL2);
+
+
+
             if (!str.Contains(".") && int.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out int vI))
                 return new BasicValueToken(vI);
             if (!str.Contains(".") && long.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out long vL))

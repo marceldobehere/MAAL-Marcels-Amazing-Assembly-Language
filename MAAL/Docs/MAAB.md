@@ -406,9 +406,47 @@ Gets a Specific Attribute of a Component with an ID in a window into an address.
 [Adress of result (8 Bytes)] // The size of the data being written to the address will vary depending on the attribute type.
 ```
 
+##### Get Keyboard state
+Gets the state of a key given a scancode. Scancodes can be found [here](https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1).
+```
+[50]
+[0x04.07] // Sycall for GUI and get spec comp attr
+[Scancode (1 Byte)]
+```
+
+
+##### Get Mouse state
+Gets the state of the mouse.
+```
+[50]
+[0x04.08] // Sycall for GUI and get spec comp attr
+[Attribute (1 Byte)] 
+// 0 is left-click, 1 is right-click, 2 is middle-click (Result is a bool)
+// 3 is mouse-x-position, 4 is mouse-y-position (Result is an int)
+[Address of result (8 Bytes)]
+```
 
 
 
+
+#### Other
+Here are some other, more random syscalls.
+
+##### Get Random Ulong
+Generates a random unsigned 64-bit value and saves it into the address.
+```
+[50]
+[0x05.01] // Sycall for Other and random ulong
+[Var address (8 Bytes)]
+```
+
+##### Get Random Double
+Generates a random unsigned 64-bit double and saves it into the address.
+```
+[50]
+[0x05.02] // Sycall for Other and random double
+[Var address (8 Bytes)]
+```
 
 
 
@@ -440,6 +478,10 @@ This is the table
 |0x04      |0x04     |1028        |Get Base Comp Attr|
 |0x04      |0x05     |1028        |Set Spec Comp Attr|
 |0x04      |0x06     |1029        |Get Spec Comp Attr|
+|0x04      |0x07     |1030        |Get Keyboard State|
+|0x04      |0x08     |1031        |Get Mouse State|
+|0x05      |0x01     |1281        |Get random ulong|
+|0x05      |0x02     |1282        |Get random double|
 
 
 

@@ -185,7 +185,9 @@ namespace MAAL
                     token is CreateComponentToken || token is DeleteComponentToken ||
                     token is SetBaseComponentAttrToken || token is GetBaseComponentAttrToken ||
                     token is SetSpecificComponentAttrToken || token is GetSpecificComponentAttrToken ||
-                    token is GetWindowActiveScreenToken || token is SetWindowActiveScreenToken)
+                    token is GetWindowActiveScreenToken || token is SetWindowActiveScreenToken ||
+                    token is GetRandomUlongToken || token is GetRandomDoubleToken ||
+                    token is GetKeyboardStateToken || token is GetMouseStateToken)
                     GlobalStuff.WriteLine();
             }
             GlobalStuff.WriteLine();

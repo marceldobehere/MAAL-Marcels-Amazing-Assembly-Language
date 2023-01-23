@@ -123,7 +123,9 @@ namespace MAAL.Parsing
             "createComponentWithId", "deleteComponentWithId",
             "setBaseComponentAttr", "getBaseComponentAttr",
             "setSpecificComponentAttr", "getSpecificComponentAttr",
-            "windowSetActiveScreen", "windowGetActiveScreen"
+            "windowSetActiveScreen", "windowGetActiveScreen",
+            "getRandomUlong", "getRandomDouble",
+            "getKeyboardState", "getMouseState"
         };
 
         public string Keyword = "";
@@ -1038,6 +1040,36 @@ namespace MAAL.Parsing
         }
     }
 
+    public class GetRandomUlongToken : Token
+    {
+        public ExpressionToken WriteTo;
+
+        public GetRandomUlongToken(ExpressionToken to)
+        {
+            WriteTo = to;
+        }
+
+        public override string ToString()
+        {
+            return $"<Get random ulong into {WriteTo}>";
+        }
+    }
+
+    public class GetRandomDoubleToken : Token
+    {
+        public ExpressionToken WriteTo;
+
+        public GetRandomDoubleToken(ExpressionToken to)
+        {
+            WriteTo = to;
+        }
+
+        public override string ToString()
+        {
+            return $"<Get random double into {WriteTo}>";
+        }
+    }
+
     public class NamespaceUseToken : Token
     {
         public NamespaceUseToken(string namespacePref)
@@ -1054,11 +1086,38 @@ namespace MAAL.Parsing
         }
     }
 
-}
 
-// 12
-// ==
-//  4 * 4 = 16
-//  6 * 2 = 12
-//  2 * 1 =  2
-//       = 30
+    public class GetKeyboardStateToken : Token
+    {
+        public ExpressionToken Scancode, WriteTo;
+
+        public GetKeyboardStateToken(ExpressionToken scan, ExpressionToken to)
+        {
+            Scancode = scan;
+            WriteTo = to;
+        }
+
+        public override string ToString()
+        {
+            return $"<Get Keyboard state of scancode {Scancode} into {WriteTo}>";
+        }
+    }
+
+    public class GetMouseStateToken : Token
+    {
+        public ExpressionToken State, WriteTo;
+
+        public GetMouseStateToken(ExpressionToken state, ExpressionToken to)
+        {
+            State = state;
+            WriteTo = to;
+        }
+
+        public override string ToString()
+        {
+            return $"<Get Mouse state {State} into {WriteTo}>";
+        }
+    }
+
+
+}

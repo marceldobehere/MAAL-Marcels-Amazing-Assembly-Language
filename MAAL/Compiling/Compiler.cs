@@ -64,6 +64,7 @@ namespace MAAL.Compiling
             MEMORY,
             WINDOW,
             GUI,
+            OTHER
         }
 
         public static Dictionary<SyscallEnum, byte> SyToByte = new Dictionary<SyscallEnum, byte>()
@@ -72,7 +73,8 @@ namespace MAAL.Compiling
             {SyscallEnum.CONSOLE, 1 },
             {SyscallEnum.MEMORY, 2 },
             {SyscallEnum.WINDOW, 3 },
-            {SyscallEnum.GUI, 4 }
+            {SyscallEnum.GUI, 4 },
+            {SyscallEnum.OTHER, 5 }
         };
 
         public enum SyscallConsoleEnum
@@ -160,6 +162,26 @@ namespace MAAL.Compiling
             {SyscallGuiEnum.SET_SPEC_ATTR, 5 },
             {SyscallGuiEnum.GET_SPEC_ATTR, 6 },
         };
+
+        public enum SyscallOtherEnum
+        {
+            NONE,
+            GET_RANDOM_ULONG,
+            GET_RANDOM_DOUBLE,
+            GET_KB_STATE,
+            GET_MOUSE_STATE,
+
+        }
+
+        public static Dictionary<SyscallOtherEnum, byte> SyOtToByte = new Dictionary<SyscallOtherEnum, byte>()
+        {
+            {SyscallOtherEnum.NONE, 0 },
+            {SyscallOtherEnum.GET_RANDOM_ULONG, 1 },
+            {SyscallOtherEnum.GET_RANDOM_DOUBLE, 2 },
+            {SyscallOtherEnum.GET_KB_STATE, 3 },
+            {SyscallOtherEnum.GET_MOUSE_STATE, 4 },
+        };
+
 
 
         #region OP AND VARTYPE STUFF
@@ -1003,6 +1025,18 @@ namespace MAAL.Compiling
             throw new Exception($"ADDR OF {toSearchFor} NOT FOUND!");
         }
 
+        public static int GetIndexOfAlmostByte(List<AlmostByte>  almostCompiledCode, AlmostByte almostByte)
+        {
+            int indx = almostCompiledCode.IndexOf(almostByte.AlmostByteOffsetOrigin);
+            int still = almostByte.AlmostByteOffset;
+            while (still > 0)
+            {
+                indx++;
+                still -= almostCompiledCode[indx].Size;
+            }
+            
+            return indx;
+        }
 
         public static List<byte> Compile(Parser.ParsedStuff stuff)
         {
@@ -1973,6 +2007,98 @@ namespace MAAL.Compiling
                 #endregion
 
 
+                #region GET RND ULONG
+                else if (cTok is GetRandomUlongToken)
+                {
+                    var sTok = cTok as GetRandomUlongToken;
+                    var argType = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET RANDOM ULONG IS NOT AN ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET RANDOM ULONG"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.OTHER]));
+                    almostCompiledCode.Add(new AlmostByte(SyOtToByte[SyscallOtherEnum.GET_RANDOM_ULONG]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET RND DOUBLE
+                else if (cTok is GetRandomDoubleToken)
+                {
+                    var sTok = cTok as GetRandomDoubleToken;
+                    var argType = GetTypeFromExpression(sTok.WriteTo);
+
+                    if (argType != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET RANDOM DOUBLE IS NOT AN ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET RANDOM DOUBLE"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.OTHER]));
+                    almostCompiledCode.Add(new AlmostByte(SyOtToByte[SyscallOtherEnum.GET_RANDOM_DOUBLE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
+                #region GET KB STATE
+                else if (cTok is GetKeyboardStateToken)
+                {
+                    var sTok = cTok as GetKeyboardStateToken;
+                    var argType2 = GetTypeFromExpression(sTok.WriteTo);
+                    var argType1 = GetTypeFromExpression(sTok.Scancode);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.CHAR)
+                        throw new Exception($"VALUE PROVIDED TO GET KB STATE IS NOT A CHAR! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET KB STATE IS NOT AN ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.Scancode, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 1));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 4, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET KB STATE"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.OTHER]));
+                    almostCompiledCode.Add(new AlmostByte(SyOtToByte[SyscallOtherEnum.GET_KB_STATE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[1]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+                #region GET MOUSE STATE
+                else if (cTok is GetMouseStateToken)
+                {
+                    var sTok = cTok as GetMouseStateToken;
+                    var argType2 = GetTypeFromExpression(sTok.WriteTo);
+                    var argType1 = GetTypeFromExpression(sTok.State);
+
+                    if (argType1 != BasicValueToken.BasicValueTypeEnum.CHAR)
+                        throw new Exception($"VALUE PROVIDED TO GET MOUSE STATE IS NOT A CHAR! {sTok}");
+                    if (argType2 != BasicValueToken.BasicValueTypeEnum.ULONG)
+                        throw new Exception($"VALUE PROVIDED TO GET MOUSE STATE IS NOT AN ULONG! {sTok}");
+
+                    AlmostByte cmdByte = new AlmostByte(IToByte[InstructionEnum.SYSCALL]);
+
+                    CompileExpression(sTok.State, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 3, 1));
+                    CompileExpression(sTok.WriteTo, almostCompiledCode, strLocs, new AlmostByte(cmdByte, 4, 8));
+
+                    almostCompiledCode.Add(new AlmostByte("SYSCALL FOR GET MOUSE STATE"));
+                    almostCompiledCode.Add(cmdByte);
+                    almostCompiledCode.Add(new AlmostByte(SyToByte[SyscallEnum.OTHER]));
+                    almostCompiledCode.Add(new AlmostByte(SyOtToByte[SyscallOtherEnum.GET_MOUSE_STATE]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[1]));
+                    almostCompiledCode.Add(new AlmostByte(new byte[8]));
+                }
+                #endregion
+
 
                 else
                 {
@@ -1983,18 +2109,18 @@ namespace MAAL.Compiling
                 }
             }
 
-            GlobalStuff.WriteLine("\n\nAlmost Bytes:");
-            foreach (var almostByte in almostCompiledCode)
-            {
-                GlobalStuff.ForegroundColor = ConsoleColor.White;
-                if (almostByte.IsComment)
-                {
-                    GlobalStuff.WriteLine();
-                    GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
-                }
-                GlobalStuff.WriteLine($" - {almostByte}");
-            }
-            GlobalStuff.WriteLine();
+            //GlobalStuff.WriteLine("\n\nAlmost Bytes:");
+            //foreach (var almostByte in almostCompiledCode)
+            //{
+            //    GlobalStuff.ForegroundColor = ConsoleColor.White;
+            //    if (almostByte.IsComment)
+            //    {
+            //        GlobalStuff.WriteLine();
+            //        GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
+            //    }
+            //    GlobalStuff.WriteLine($" - {almostByte}");
+            //}
+            //GlobalStuff.WriteLine();
 
             Dictionary<string, ulong> varAddresses = new Dictionary<string, ulong>();
             Dictionary<string, ulong> locAddresses = new Dictionary<string, ulong>();
@@ -2020,6 +2146,47 @@ namespace MAAL.Compiling
 
 
             }
+
+
+
+            Console.WriteLine();
+            GlobalStuff.WriteLine("<MINI OPTIMIZATION>");
+            for (int i = 0; i < almostCompiledCode.Count; i++)
+            {
+                if (almostCompiledCode[i].IsAlmostByteOffset && (i - 3) >= 0 && almostCompiledCode[i - 2].IsFixedData && almostCompiledCode[i - 2].FixedData[0] == 2 && almostCompiledCode[i - 3].IsComment)
+                {
+                    GlobalStuff.WriteLine($"\tTOKEN {almostCompiledCode[i]}\n\t");
+                    GlobalStuff.WriteLine($"\t> DATA: {almostCompiledCode[i + 1]}");
+
+                    int magicIndex = GetIndexOfAlmostByte(almostCompiledCode, almostCompiledCode[i]);
+                    almostCompiledCode[magicIndex] = almostCompiledCode[i + 1];
+
+                    almostCompiledCode[i - 3].Comment = "(Optimized) " + almostCompiledCode[i - 3].Comment;
+                    almostCompiledCode.RemoveRange(i - 2, 4);
+                    
+                    GlobalStuff.WriteLine();
+
+                    i -= 3;
+                }
+
+            }
+            GlobalStuff.WriteLine("</MINI OPTIMIZATION>");
+            Console.WriteLine();
+
+
+
+            GlobalStuff.WriteLine("\n\nAlmost Bytes:");
+            foreach (var almostByte in almostCompiledCode)
+            {
+                GlobalStuff.ForegroundColor = ConsoleColor.White;
+                if (almostByte.IsComment)
+                {
+                    GlobalStuff.WriteLine();
+                    GlobalStuff.ForegroundColor = ConsoleColor.Cyan;
+                }
+                GlobalStuff.WriteLine($" - {almostByte}");
+            }
+            GlobalStuff.WriteLine();
 
 
 
@@ -2077,6 +2244,16 @@ namespace MAAL.Compiling
 
 
             compiledCode.Add(IToByte[InstructionEnum.EXIT]);
+
+
+
+
+
+
+
+
+
+
 
             return compiledCode;
         }
