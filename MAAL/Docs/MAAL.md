@@ -265,6 +265,154 @@ sub TEST::SET_VARS;
 
 
 
+### MaslOS Window API
+you can work with the Window API of MaslOS.
+Some quick infos.
+
+Windows have IDs and attributes, which can be read and set.
+
+There are several commands to interact with the Window API.
+Also the Window and GUI Api don't work in the CPP-Interpreter. (Atleast not for now)
+
+#### Creating a Window
+You can create a window with a given Id by using
+```
+createWindow winID;
+```
+
+I would suggest using random IDs instead of fixed ones like this:
+```
+long winID;
+ulong randomUlong;
+
+getRandomUlong &randomUlong; // get random value into ulong
+winID = (long)randomUlong; // get random window id
+
+createWindow winID;
+```
+
+#### Deleting a Window
+You can delete a window given it's ID like this:
+```
+deleteWindow winID;
+```
+
+#### Setting A Window Attribute
+You can set an Attribute of a Window by using the Window ID and the Attribute index and the value.
+```
+setWindowAttr winID 60 "This is a Title!"; // set title
+setWindowAttr winID 20 200;                // set width to 200px
+```
+If you are wondering where to get the numbers from, you can look at the Window Attribute table [here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
+
+
+#### Getting A Window Attribute
+You can get an Attribute of a Window by using the Window ID and the Attribute index.
+```
+uint tempSize;
+getWindowAttr 123 20 &tempSize; // Gets window width
+print "Winddow Size X: ";
+print tempSize;
+print "\n";
+```
+
+
+
+
+
+
+
+
+
+
+### MaslOS Window GUI API
+you can work with the Window GUI API of MaslOS.
+The most important tool will be [the GUI Component/Attribute table](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table).
+
+
+#### Create a Component
+You can create a component in a gui window like this:
+```
+createComponentWithId winID componentID componentType; // Creates a Button
+```
+The component type table can be found [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#component-type-table).
+
+
+#### Delete a Component
+You can delete a component in a gui window like this:
+```
+deleteComponentWithId winID componentID deleteChildren;
+```
+
+#### Set the base component attribute of a Component
+Todo: Document lmfao.
+-> Also optimize casting from type to the same type lol.
+
+Example:
+```
+setBaseComponentAttr winID 110 10 25; // x 25
+```
+
+#### Get the base component attribute of a Component
+A
+
+Change this to use the fixed position to make it more simple.
+Add explanation for scaled vs fixed size.
+
+Example:
+```
+double tempDoubleSize = 5d;
+getBaseComponentAttr 123 567 22 &tempDoubleSize; 
+print "Scaled Size X: ";
+print tempDoubleSize;
+print "\n";
+```
+
+#### Set the specific component attribute of a Component
+A
+
+Example:
+```
+setSpecificComponentAttr winID text1ID 20 "Hi";
+```
+
+#### Get the specific component attribute of a Component
+A
+
+Example:
+```
+getSpecificComponentAttr winID 110 42 &text1ID; // get Id of text from button
+```
+
+
+
+
+
+
+
+
+#### Setting The Active Screen of a Window (do not use rn pls)
+You can set the active screen component of a gui window.
+```
+windowSetActiveScreen winID screenComponentID; // sets the active screen component
+```
+
+
+#### Getting The Active Screen of a Window
+You can get the active screen component index of a gui window.
+```
+long screenComponentID;
+windowGetActiveScreen winID &screenComponentID; // gets the active screen component id
+```
+
+
+
+
+
+
+
+
+
 
 
 ### Syscalls
@@ -359,6 +507,64 @@ Example:
 print "Hello, ";
 sleep 2000; // This will sleep for 2 seconds
 print "World!";
+```
+
+#### random ulong
+You can get a random ulong.
+
+Example:
+```
+ulong randomUlong;
+getRandomUlong &randomUlong; // This will set the content of randomUlong to a random ulong.
+```
+
+#### random double
+You can also get random doubles.
+
+Example:
+```
+double randomDouble;
+getRandomDouble &randomDouble; // This will set the content of randomDouble to a random double.
+```
+
+#### getting the keyboard state
+You can get the keyboard state by using the getKeyboardState function:
+It takes the scancode which you can find [here](https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1).
+```
+bool pressed;
+getKeyboardState 0x1F &pressed; // Will set pressed to true, if the S key has been pressed.
+```
+
+
+#### getting the mouse state
+You can get the mouse state by using the getMouseState function:
+It takes the mouse argument and either sets the result var to an int or bool.
+
+Here is the argument table:
+
+| Mouse State Index | Description      | Output Type |
+|-------------------|------------------|-------------|
+| 0                 | Button 1 pressed (left) | bool        |
+| 1                 | Button 2 pressed (right) | bool        |
+| 2                 | Button 3 pressed (middle) | bool        |
+| 3                 | Mouse X          | int         |
+| 4                 | Mouse Y          | int         |
+
+```
+getMouseState index resultAddress;
+```
+
+
+
+Example:
+```
+bool pressed;
+getMouseState 0 &pressed; // Will set pressed to true, if the left mouse button is pressed.
+```
+
+```
+int mouseX;
+getMouseState 3 &mouseX; // Will set mouseX to the Mouse X-Position.
 ```
 
 

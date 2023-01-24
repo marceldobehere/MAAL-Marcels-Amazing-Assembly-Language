@@ -65,6 +65,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="bin\Debug\MAAL.exe.config" />
+    <None Include="bin\Debug\maalbrot.maal" />
+    <None Include="bin\Debug\mouse.maal" />
     <None Include="bin\Debug\old\old test 2.maal" />
     <None Include="bin\Debug\old\old test 3.maal" />
     <None Include="bin\Debug\old\old test 4.maal" />
@@ -75,9 +77,8 @@
     <None Include="bin\Debug\old\old test 9.maal" />
     <None Include="bin\Debug\old\old test.maal" />
     <None Include="bin\Debug\old\test include.maal" />
-    <None Include="bin\Debug\mouse.maal" />
     <None Include="bin\Debug\rnd.maal" />
-    <None Include="bin\Debug\alert.maal" />
+    <None Include="bin\Debug\test include.maal" />
     <None Include="bin\Debug\test.maal" />
     <None Include="Docs\MAAB.md" />
     <None Include="Docs\MAAL.md" />
@@ -101,6 +102,7 @@
   <ItemGroup>
     <Content Include="bin\Debug\MAAB CPP Interpreter.exe" />
     <Content Include="bin\Debug\MAAL.exe" />
+    <Content Include="bin\Debug\MAAL.pdb" />
     <Content Include="Examples\MAAB\_MAAB %28INTERPRETER%29.exe" />
     <Content Include="Examples\MAAL\_MAAB %28INTERPRETER%29.exe" />
     <Content Include="Examples\MAAL\_MAAL %28COMPILER%29.exe" />

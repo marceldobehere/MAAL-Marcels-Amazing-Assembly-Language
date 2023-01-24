@@ -17,8 +17,10 @@ setWindowAttr winID 41 0xFFFF0000; // selected border color red
 setWindowAttr winID 54 false; // cant resize window
 
 
-// screen component has default id of 1234
-setSpecificComponentAttr winID 1234 11 0xFFBBBBBB; // set bg of screen component
+
+long scrID;
+windowGetActiveScreen winID &scrID;
+setSpecificComponentAttr winID scrID 11 0xFFBBBBBB; // set bg of screen component
 
 
 
