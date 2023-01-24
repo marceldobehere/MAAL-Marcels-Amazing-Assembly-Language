@@ -344,47 +344,64 @@ You can delete a component in a gui window like this:
 deleteComponentWithId winID componentID deleteChildren;
 ```
 
-#### Set the base component attribute of a Component
-Todo: Document lmfao.
--> Also optimize casting from type to the same type lol.
 
-Example:
+
+
+#### Set the base component attribute of a Component
+You can set the base attribute of any component.
+Every component has the same base attributes but unique specific attributes.
+You can see the Base Component Atttribute Table [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#base-component-attributes).
+
+
 ```
-setBaseComponentAttr winID 110 10 25; // x 25
+setBaseComponentAttr winID componentID baseAttributeID value;
+```
+
+Example with the width
+```
+setBaseComponentAttr winID componentID 20 500; set fixed width 500px
 ```
 
 #### Get the base component attribute of a Component
-A
 
-Change this to use the fixed position to make it more simple.
-Add explanation for scaled vs fixed size.
+You can get the base attribute of any component.
 
 Example:
 ```
-double tempDoubleSize = 5d;
-getBaseComponentAttr 123 567 22 &tempDoubleSize; 
-print "Scaled Size X: ";
-print tempDoubleSize;
+int tempWidth = 5d;
+getBaseComponentAttr winID componentID 20 &tempWidth; 
+print "Size X: ";
+print tempWidth;
 print "\n";
 ```
 
 #### Set the specific component attribute of a Component
-A
+You can set the specific component attributes of  a component.
+Each component type has their own specific attribute set:
+You can find the unique sets in the tables [here](https://github.com/marceldobehere/MaslOS/wiki/Gui-Component-Attribute-Table#tables).
+
+Base
+```
+setSpecificComponentAttr winID componentID specificAttributeID value;
+```
 
 Example:
 ```
-setSpecificComponentAttr winID text1ID 20 "Hi";
+specificAttributeID
+setSpecificComponentAttr winID componentID 20 "Hi";
 ```
 
 #### Get the specific component attribute of a Component
-A
+You can also get the specific component attributes.
 
+Base
+```
+getSpecificComponentAttr winID componentID specificAttributeID addressOfResult;
+```
 Example:
 ```
-getSpecificComponentAttr winID 110 42 &text1ID; // get Id of text from button
+getSpecificComponentAttr winID componentID 42 &text1ID; // get Id of text from button
 ```
-
-
 
 
 
@@ -408,7 +425,40 @@ windowGetActiveScreen winID &screenComponentID; // gets the active screen compon
 
 
 
+### Other GUI Infos
 
+#### Scaled vs Fixed Size
+As you might have been able to see a component has a fixed and a scaled size.
+
+You can set the Is...Fixed attribute to true if you want to use pixels.
+You can set it to False if you want to use a percentage of the parent component.
+
+So for Example
+```
+setBaseComponentAttr winID compID 24 true; // x fixed
+setBaseComponentAttr winID compID 25 true; // y fixed
+
+setBaseComponentAttr winID compID 20 50; // width  50px
+setBaseComponentAttr winID compID 21 30; // height 25px
+
+// This will set the component to have a fixed size of 50x25px
+```
+
+OR
+
+```
+setBaseComponentAttr winID compID 24 true; // x fixed
+setBaseComponentAttr winID compID 25 false; // y fixed
+
+setBaseComponentAttr winID compID 20 50; // width  50px
+setBaseComponentAttr winID compID 23 0.5d; // height 40% of parent
+
+// This will set the component to have a size where the width is 50px and the height is 40% of the parent height.
+```
+
+#### TODO
+Todo: Document lmfao.
+-> Also optimize casting from type to the same type lol.
 
 
 
