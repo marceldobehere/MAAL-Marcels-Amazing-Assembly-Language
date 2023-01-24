@@ -457,8 +457,8 @@ setBaseComponentAttr winID compID 23 0.5d; // height 40% of parent
 ```
 
 #### TODO
-Todo: Document lmfao.
--> Also optimize casting from type to the same type lol.
+
+Optimize casting from type to the same type lol.
 
 
 
