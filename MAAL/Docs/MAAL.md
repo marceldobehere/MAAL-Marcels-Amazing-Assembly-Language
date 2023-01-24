@@ -9,7 +9,6 @@ Here are the Docs to MAAL (Marcels Amazing Assembly Language)
 *   USHORT
 *	LONG
 *	ULONG
-*	BYTE
 *	CHAR
 *	FLOAT
 *	DOUBLE
@@ -77,6 +76,23 @@ Example
 ```
 bool x = (1 != (3 – 1 * 2)); // should be false
 ```
+
+### Value suffixes
+Since implicit type casting is not really a thing in MAAL, you can use the value suffixes to tell the compiler the datatype of the value without casting it.
+Here is a short table covering all suffixes:
+
+| Datatype | Suffix | Example |
+|----------|--------|---------|
+| INT      | i      | 5i      |
+| UINT     | ui     | 2ui     |
+| SHORT    | s      | 28s     |
+| USHORT   | us     | 256us   |
+| LONG     | l      | 125l    |
+| ULONG    | ul     | 12345ul |
+| CHAR     | c      | 65c     |
+| FLOAT    | f      | 10f     |
+| DOUBLE   | d      | 2.4d    |
+
 
 
 ### Labels / Locations
@@ -455,12 +471,6 @@ setBaseComponentAttr winID compID 23 0.5d; // height 40% of parent
 
 // This will set the component to have a size where the width is 50px and the height is 40% of the parent height.
 ```
-
-#### TODO
-
-Optimize casting from type to the same type lol.
-
-
 
 
 
