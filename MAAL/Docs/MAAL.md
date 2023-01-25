@@ -584,7 +584,7 @@ You can also get random doubles.
 Example:
 ```
 double randomDouble;
-getRandomDouble &randomDouble; // This will set the content of randomDouble to a random double.
+getRandomDouble &randomDouble; // This will set the content of randomDouble to a random double from 0 to 1.
 ```
 
 #### getting the keyboard state

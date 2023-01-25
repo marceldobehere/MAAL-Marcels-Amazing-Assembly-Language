@@ -1,6 +1,3 @@
-char* b;
-
-
 long winID;
 
 ulong randomUlong;
@@ -13,8 +10,8 @@ createWindow winID;
 
 setWindowAttr winID 60 "PONG";
 
-setWindowAttr winID 20 200; // width  200px
-setWindowAttr winID 21 100; // height 100px
+setWindowAttr winID 20 400; // width  200px
+setWindowAttr winID 21 200; // height 100px
 
 setWindowAttr winID 40 0xFF550000; // default border color dark red
 setWindowAttr winID 41 0xFFFF0000; // selected border color red
@@ -26,93 +23,239 @@ setWindowAttr winID 54 false; // cant resize window
 long scrID;
 windowGetActiveScreen winID &scrID;
 
-print "BRO 3\n";
-readline &b;
 
 setSpecificComponentAttr winID scrID 11 0xFF000000; // set bg of screen component
 
 
-print "BRO 4\n";
-readline &b;
+
 
 
 long text1ID;
-createComponentWithId winID 110 5; // Hi Button
+createComponentWithId winID 110 5; // Play Button
 getSpecificComponentAttr winID 110 42 &text1ID; // get Id of text from button
 setBaseComponentAttr winID text1ID 40 200; // set Id of text to 200
 text1ID = 200l;
 
-print "BRO 5\n";
-readline &b;
 
-// Hi Button
-
-setBaseComponentAttr winID 110 10 75; // x 25
-setBaseComponentAttr winID 110 11 90; // y 165
+setBaseComponentAttr winID 110 10 175; // x
+setBaseComponentAttr winID 110 11 90; // y
 
 setBaseComponentAttr winID 110 24 true; // x fixed
 setBaseComponentAttr winID 110 25 true; // y fixed
 
-setBaseComponentAttr winID 110 20 50; // width  50px
-setBaseComponentAttr winID 110 21 20; // height 25px
-
+setBaseComponentAttr winID 110 20 50; // width
+setBaseComponentAttr winID 110 21 20; // height
 
 setSpecificComponentAttr winID text1ID 20 "Play";
 
 //setSpecificComponentAttr winID 110 21 0xFF005500; // hover color dark green
 //setSpecificComponentAttr winID 110 22 0xFF00FF00; // hover color green
 
+long text2ID = 201l;
+createComponentWithId winID text2ID 4; // Text
 
-print "BRO 6\n";
-readline &b;
+setSpecificComponentAttr winID text2ID 20 "P O N G";
+setSpecificComponentAttr winID text2ID 30 true; // center
+setSpecificComponentAttr winID text2ID 31 true; // center
+setSpecificComponentAttr winID text2ID 10 0xFFFFFFFF; // text col
+setSpecificComponentAttr winID text2ID 11 0x00000000; // bg col
 
-/*
+setBaseComponentAttr winID text2ID 10 150; // x 
+setBaseComponentAttr winID text2ID 11 40; // y
 
-int winX;
-int winY;
+setBaseComponentAttr winID text2ID 24 true; // x fixed
+setBaseComponentAttr winID text2ID 25 true; // y fixed
 
-int mX;
-int mY;
-
-int compX;
-int compY;
-
-int w = 25;
-int h = 12;
+setBaseComponentAttr winID text2ID 20 100; // width
+setBaseComponentAttr winID text2ID 21 20; // height
 
 
 
-bool doExit = false; // cant use exit since thats a reserved keyword lol
-	
-int test = 0;
-int test1 = 0;
 
+
+bool doExit;
+int stat;
+
+
+doExit = false;
 while (!doExit)
 {
-	getWindowAttr winID 10 &winX; // get win x
-	getWindowAttr winID 11 &winY; // get win y
-
-	getMouseState 3 &mX;
-	getMouseState 4 &mY;
-
-	test = (test + 1) % 201;
-	test1 = (test1 + test) % 201;
-
-	compX = mX - winX - w/2 + (test1 / 10) - 10;
-	compY = mY - winY - h/2 + (test / 10) - 10;
-
-
-	setBaseComponentAttr winID 110 10 compX;
-	setBaseComponentAttr winID 110 11 compY;
-
-
-	int stat = 0;
+	stat = 0;
 	getSpecificComponentAttr winID 110 50 &stat;
 	if (stat == 2)
 	{
-		print "YESS :)\n";
-		sleep 1000;
 		doExit = true;
 	}
 }
-*/
+
+
+
+setBaseComponentAttr winID 110 42 true; // hide button
+setBaseComponentAttr winID text2ID 42 true; // hide text
+
+long paddle1ID = 300l;
+long paddle2ID = 301l;
+long ballID = 302l;
+
+
+createComponentWithId winID paddle1ID 2;
+createComponentWithId winID paddle2ID 2;
+createComponentWithId winID ballID 2;
+
+setBaseComponentAttr winID paddle1ID 20 10; // width
+setBaseComponentAttr winID paddle2ID 20 10; // width
+setBaseComponentAttr winID ballID 20 10; // width
+
+setBaseComponentAttr winID paddle1ID 21 80; // height
+setBaseComponentAttr winID paddle2ID 21 80; // height
+setBaseComponentAttr winID ballID 21 10; // height
+
+setBaseComponentAttr winID paddle1ID 10 20; // x 
+setBaseComponentAttr winID paddle2ID 10 370; // x 
+
+setSpecificComponentAttr winID paddle1ID 10 0xFFFFFFFF; // col
+setSpecificComponentAttr winID paddle2ID 10 0xFFFFFFFF; // col
+setSpecificComponentAttr winID ballID 10 0xFFFFFF00; // col
+
+bool pressed;
+
+
+int paddle1Y = 0;
+int paddle2Y = 50;
+
+int ballX = (400 - 10) / 2;
+int ballY = (200 - 10) / 2;
+
+int ballMoveX = 0;
+int ballMoveY = 0;
+bool start = false;
+
+sub UpdateRects;
+
+
+doExit = false;
+while (!doExit)
+{
+	sub UpdateRects;
+	stat = 0;
+	
+	pressed = false;
+	getKeyboardState 0x11 &pressed;
+	if (pressed)
+	{
+		paddle1Y -= 5;
+		if (paddle1Y < 0)
+		{
+			paddle1Y = 0;
+		}
+	}
+	pressed = false;
+	getKeyboardState 0x1F &pressed;
+	if (pressed)
+	{
+		paddle1Y += 5;
+		if (paddle1Y > 120)
+		{
+			paddle1Y = 120;
+		}
+	}
+	
+	
+	pressed = false;
+	getKeyboardState 0x48 &pressed;
+	if (!pressed)
+	{
+		getKeyboardState 0x16 &pressed;
+	}
+	if (pressed)
+	{
+		paddle2Y -= 5;
+		if (paddle2Y < 0)
+		{
+			paddle2Y = 0;
+		}
+	}
+	pressed = false;
+	getKeyboardState 0x50 &pressed;
+	if (!pressed)
+	{
+		getKeyboardState 0x24 &pressed;
+	}
+	if (pressed)
+	{
+		paddle2Y += 5;
+		if (paddle2Y > 120)
+		{
+			paddle2Y = 120;
+		}
+	}
+	
+	ballX += ballMoveX;
+	ballY += ballMoveY;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	sleep 5;
+	
+	
+	pressed = false;
+	getKeyboardState 0x01 &pressed;
+	if (pressed)
+	{
+		doExit = true;
+	}
+	
+	if (!start)
+	{
+		pressed = false;
+		getKeyboardState 0x39 &pressed;
+		if (pressed)
+		{
+			start = true;
+			
+		}
+	}
+}
+
+print "\nEnd.\n";
+
+
+char* b;
+readline &b;
+
+
+
+
+
+
+
+exit;
+
+
+
+sub UpdateRects:
+	setBaseComponentAttr winID paddle1ID 11 paddle1Y; // y
+	setBaseComponentAttr winID paddle2ID 11 paddle2Y; // y
+	
+	setBaseComponentAttr winID ballID 10 ballX; // x
+	setBaseComponentAttr winID ballID 11 ballY; // y
+
+	ret;
+	
+	
+sub GetRandomBallDir:
+
+	ulong tUlong;
+	getRandomUlong &tUlong;
+	ballMoveX = (((int)tUlong) % 11) - 5;
+	getRandomUlong &tUlong;
+	ballMoveY = (((int)tUlong) % 11) - 5;
+
+	ret;
