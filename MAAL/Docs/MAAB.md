@@ -326,10 +326,19 @@ Sets the attribute of a window.
 You can check out the [Window Attribute Table here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
 ```
 [50]
-[0x03.03] // Sycall for Window and Set Window Attribute
+[0x03.05] // Sycall for Window and Set Window Screen
 [Window ID (8 Bytes)]
-[Attribute Number (4 Bytes)]
-[Value (8 Bytes)] // The value will have to be fit into those 8 bytes and the interpreter will extract the needed value
+[Screen ID (8 Bytes)] // The ID of the screen component
+```
+
+##### Get Window Active Screen
+Sets the attribute of a window.
+You can check out the [Window Attribute Table here](https://github.com/marceldobehere/MaslOS/wiki/Window-Attribute-Table).
+```
+[50]
+[0x03.06] // Sycall for Window and Get Window Screen
+[Window ID (8 Bytes)]
+[Result Address (8 Bytes)] // The screen ID will be written there
 ```
 
 
@@ -473,8 +482,8 @@ This is the table
 |0x03      |0x02     |770         |Delete Window     |
 |0x03      |0x03     |771         |Set Window Attr|
 |0x03      |0x04     |772         |Get Window Attr|
-|0x03      |0x05     |771         |Set Window Scr|
-|0x03      |0x06     |772         |Get Window Scr|
+|0x03      |0x05     |773         |Set Window Scr|
+|0x03      |0x06     |774         |Get Window Scr|
 |0x04      |0x01     |1025        |Create Comp     |
 |0x04      |0x02     |1026        |Delete Comp     |
 |0x04      |0x03     |1027        |Set Base Comp Attr|

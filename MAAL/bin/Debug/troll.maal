@@ -8,17 +8,19 @@ createWindow winID;
 
 setWindowAttr winID 60 "Test Troll!";
 
-setWindowAttr winID 20 200; // width  200px
+setWindowAttr winID 20 200; // width  400px
 setWindowAttr winID 21 200; // height 200px
 
-setWindowAttr winID 40 0xFF550000; // default border color dark red
+setWindowAttr winID 40 0xFF330000; // default border color dark red
 setWindowAttr winID 41 0xFFFF0000; // selected border color red
 
 setWindowAttr winID 54 false; // cant resize window
 
 
-// screen component has default id of 1234
-setSpecificComponentAttr winID 1234 11 0xFFBBBBBB; // set bg of screen component
+
+long scrID;
+windowGetActiveScreen winID &scrID;
+setSpecificComponentAttr winID scrID 11 0xFFBBBBBB; // set bg of screen component
 
 
 

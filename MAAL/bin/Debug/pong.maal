@@ -1,3 +1,6 @@
+char* b;
+
+
 long winID;
 
 ulong randomUlong;
@@ -6,10 +9,12 @@ winID = (long)randomUlong; // get random window id
 
 createWindow winID;
 
-setWindowAttr winID 60 "Test Troll!";
+
+
+setWindowAttr winID 60 "PONG";
 
 setWindowAttr winID 20 200; // width  200px
-setWindowAttr winID 21 200; // height 200px
+setWindowAttr winID 21 100; // height 100px
 
 setWindowAttr winID 40 0xFF550000; // default border color dark red
 setWindowAttr winID 41 0xFFFF0000; // selected border color red
@@ -17,11 +22,18 @@ setWindowAttr winID 41 0xFFFF0000; // selected border color red
 setWindowAttr winID 54 false; // cant resize window
 
 
-// screen component has default id of 1234
-setSpecificComponentAttr winID 1234 11 0xFFBBBBBB; // set bg of screen component
+
+long scrID;
+windowGetActiveScreen winID &scrID;
+
+print "BRO 3\n";
+readline &b;
+
+setSpecificComponentAttr winID scrID 11 0xFF000000; // set bg of screen component
 
 
-
+print "BRO 4\n";
+readline &b;
 
 
 long text1ID;
@@ -30,24 +42,31 @@ getSpecificComponentAttr winID 110 42 &text1ID; // get Id of text from button
 setBaseComponentAttr winID text1ID 40 200; // set Id of text to 200
 text1ID = 200l;
 
+print "BRO 5\n";
+readline &b;
 
 // Hi Button
 
-setBaseComponentAttr winID 110 10 25; // x 25
-setBaseComponentAttr winID 110 11 165; // y 165
+setBaseComponentAttr winID 110 10 75; // x 25
+setBaseComponentAttr winID 110 11 90; // y 165
 
 setBaseComponentAttr winID 110 24 true; // x fixed
 setBaseComponentAttr winID 110 25 true; // y fixed
 
 setBaseComponentAttr winID 110 20 50; // width  50px
-setBaseComponentAttr winID 110 21 30; // height 25px
+setBaseComponentAttr winID 110 21 20; // height 25px
 
 
-setSpecificComponentAttr winID text1ID 20 "Hi";
+setSpecificComponentAttr winID text1ID 20 "Play";
 
-setSpecificComponentAttr winID 110 21 0xFF005500; // hover color dark green
-setSpecificComponentAttr winID 110 22 0xFF00FF00; // hover color green
+//setSpecificComponentAttr winID 110 21 0xFF005500; // hover color dark green
+//setSpecificComponentAttr winID 110 22 0xFF00FF00; // hover color green
 
+
+print "BRO 6\n";
+readline &b;
+
+/*
 
 int winX;
 int winY;
@@ -96,3 +115,4 @@ while (!doExit)
 		doExit = true;
 	}
 }
+*/
