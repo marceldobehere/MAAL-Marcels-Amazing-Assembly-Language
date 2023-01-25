@@ -123,15 +123,22 @@ bool pressed;
 int paddle1Y = 0;
 int paddle2Y = 50;
 
-int ballX = (400 - 10) / 2;
-int ballY = (200 - 10) / 2;
+int ballX;
+int ballY;
+
+ballX = (400 - 10) / 2;
+ballY = (200 - 10) / 2;
 
 int ballMoveX = 0;
 int ballMoveY = 0;
 bool start = false;
+int score1 = 0;
+int score2 = 0;
+
 
 sub UpdateRects;
-
+sub ResetBall;
+sub PrintScores;
 
 doExit = false;
 while (!doExit)
@@ -194,12 +201,62 @@ while (!doExit)
 	ballY += ballMoveY;
 	
 	
+	if (ballY < 0)
+	{
+		ballY = 0;
+		if (ballMoveY < 0)
+		{
+			ballMoveY *= -1;
+		}
+	}
+	if (ballY > 190)
+	{
+		ballY = 190;
+		if (ballMoveY > 0)
+		{
+			ballMoveY *= -1;
+		}
+	}
+	
+
+	if (ballX < 0)
+	{
+		score2++;
+		sub ResetBall;
+		sub PrintScores;
+	}
+	if (ballX > 390)
+	{
+		score1++;
+		sub ResetBall;
+		sub PrintScores;
+	}
+	
+	if ((ballX <= 30) && (ballX >= 10) && ((ballY + 10) >= paddle1Y) && (ballY <= (paddle1Y + 80)))
+	{
+		if (ballMoveX < 0)
+		{
+			ballMoveX *= -1;
+		}
+		ballMoveX++;
+		ballMoveY = (((ballY + 10) - paddle1Y) - 45)/10; // 0 - 90
+	}
+	
+	if ((ballX >= 360) && (ballX <= 380) && ((ballY + 10) >= paddle2Y) && (ballY <= (paddle2Y + 80)))
+	{
+		if (ballMoveX > 0)
+		{
+			ballMoveX *= -1;
+		}
+		ballMoveX--;
+		ballMoveY = (((ballY + 10) - paddle2Y) - 45)/10; // 0 - 90
+	}
 	
 	
-	
-	
-	
-	
+	if ((score1 >= 10) || (score2 >= 10))
+	{
+		doExit = true;
+	}
 	
 	
 	sleep 5;
@@ -218,8 +275,8 @@ while (!doExit)
 		getKeyboardState 0x39 &pressed;
 		if (pressed)
 		{
+			sub GetRandomBallDir;
 			start = true;
-			
 		}
 	}
 }
@@ -227,13 +284,14 @@ while (!doExit)
 print "\nEnd.\n";
 
 
+
+
+
 char* b;
 readline &b;
 
 
-
-
-
+sub PrintScores;
 
 
 exit;
@@ -251,11 +309,36 @@ sub UpdateRects:
 	
 	
 sub GetRandomBallDir:
-
 	ulong tUlong;
-	getRandomUlong &tUlong;
-	ballMoveX = (((int)tUlong) % 11) - 5;
-	getRandomUlong &tUlong;
-	ballMoveY = (((int)tUlong) % 11) - 5;
+	ballMoveX = 0;
+	ballMoveY = 0;
+	
+	while (ballMoveX == 0)
+	{
+		getRandomUlong &tUlong;
+		ballMoveX = (((int)tUlong) % 7) - 3;
+	}
+	while (ballMoveY == 0)
+	{
+		getRandomUlong &tUlong;
+		ballMoveY = (((int)tUlong) % 7) - 3;
+	}
+
+	ret;
+	
+sub ResetBall:
+	ballMoveX = 0;
+	ballMoveY = 0;
+	start = false;
+	ballX = (400 - 10) / 2;
+	ballY = (200 - 10) / 2;
+	ret;
+	
+sub PrintScores:
+	print "Score: ";
+	print score1;
+	print " : ";
+	print score2;
+	print "\n\n";
 
 	ret;
