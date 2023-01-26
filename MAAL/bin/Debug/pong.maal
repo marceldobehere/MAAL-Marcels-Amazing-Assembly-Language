@@ -73,25 +73,13 @@ setBaseComponentAttr winID text2ID 21 20; // height
 
 
 
-bool doExit;
-int stat;
-
-
-doExit = false;
-while (!doExit)
-{
-	stat = 0;
-	getSpecificComponentAttr winID 110 50 &stat;
-	if (stat == 2)
-	{
-		doExit = true;
-	}
-}
 
 
 
-setBaseComponentAttr winID 110 42 true; // hide button
-setBaseComponentAttr winID text2ID 42 true; // hide text
+
+
+
+
 
 long paddle1ID = 300l;
 long paddle2ID = 301l;
@@ -117,6 +105,88 @@ setSpecificComponentAttr winID paddle1ID 10 0xFFFFFFFF; // col
 setSpecificComponentAttr winID paddle2ID 10 0xFFFFFFFF; // col
 setSpecificComponentAttr winID ballID 10 0xFFFFFF00; // col
 
+
+
+long scoreID = 401l;
+createComponentWithId winID scoreID 4; // Text
+
+char* scoreText = "? : ?";
+
+setSpecificComponentAttr winID scoreID 20 scoreText;
+setSpecificComponentAttr winID scoreID 30 true; // center
+setSpecificComponentAttr winID scoreID 31 true; // use fixed size
+setSpecificComponentAttr winID scoreID 10 0xFF00AAFF; // text col
+setSpecificComponentAttr winID scoreID 11 0x00000000; // bg col
+
+setBaseComponentAttr winID scoreID 10 175; // x 
+setBaseComponentAttr winID scoreID 11 10; // y
+
+setBaseComponentAttr winID scoreID 24 true; // x fixed
+setBaseComponentAttr winID scoreID 25 true; // y fixed
+
+setBaseComponentAttr winID scoreID 20 50; // width
+setBaseComponentAttr winID scoreID 21 20; // height
+
+
+
+
+
+
+
+
+
+
+
+
+loc RESET:
+
+
+setBaseComponentAttr winID paddle1ID 42 true; // hide paddle
+setBaseComponentAttr winID paddle2ID 42 true; /// hide paddle
+setBaseComponentAttr winID ballID 42 true; /// hide ball
+setBaseComponentAttr winID scoreID 42 true; // hide score
+
+setBaseComponentAttr winID 110 42 false; // show button
+setBaseComponentAttr winID text2ID 42 false; // show text
+
+
+sleep 500;
+
+long tID;
+
+
+bool doExit;
+int stat;
+
+
+doExit = false;
+while (!doExit)
+{
+	stat = 0;
+	getSpecificComponentAttr winID 110 50 &stat;
+	if (stat == 2)
+	{
+		doExit = true;
+	}
+	getWindowAttr winID 30 &tID;
+	if (tID != winID)
+	{
+		jump FULL_END;
+	}
+	
+	sleep 1;
+}
+
+
+
+setBaseComponentAttr winID 110 42 true; // hide button
+setBaseComponentAttr winID text2ID 42 true; // hide text
+
+setBaseComponentAttr winID paddle1ID 42 false; // show paddle
+setBaseComponentAttr winID paddle2ID 42 false; /// show paddle
+setBaseComponentAttr winID ballID 42 false; /// show ball
+setBaseComponentAttr winID scoreID 42 false; // show score
+
 bool pressed;
 
 
@@ -138,7 +208,12 @@ int score2 = 0;
 
 sub UpdateRects;
 sub ResetBall;
-sub PrintScores;
+sub UpdateScores;
+//sub PrintScores;
+
+//print "\nStart!\n";
+
+bool winSelected = false;
 
 doExit = false;
 while (!doExit)
@@ -146,152 +221,159 @@ while (!doExit)
 	sub UpdateRects;
 	stat = 0;
 	
-	pressed = false;
-	getKeyboardState 0x11 &pressed;
-	if (pressed)
+	getWindowAttr winID 55 &winSelected;
+	if (winSelected)
 	{
-		paddle1Y -= 5;
-		if (paddle1Y < 0)
-		{
-			paddle1Y = 0;
-		}
-	}
-	pressed = false;
-	getKeyboardState 0x1F &pressed;
-	if (pressed)
-	{
-		paddle1Y += 5;
-		if (paddle1Y > 120)
-		{
-			paddle1Y = 120;
-		}
-	}
-	
-	
-	pressed = false;
-	getKeyboardState 0x48 &pressed;
-	if (!pressed)
-	{
-		getKeyboardState 0x16 &pressed;
-	}
-	if (pressed)
-	{
-		paddle2Y -= 5;
-		if (paddle2Y < 0)
-		{
-			paddle2Y = 0;
-		}
-	}
-	pressed = false;
-	getKeyboardState 0x50 &pressed;
-	if (!pressed)
-	{
-		getKeyboardState 0x24 &pressed;
-	}
-	if (pressed)
-	{
-		paddle2Y += 5;
-		if (paddle2Y > 120)
-		{
-			paddle2Y = 120;
-		}
-	}
-	
-	ballX += ballMoveX;
-	ballY += ballMoveY;
-	
-	
-	if (ballY < 0)
-	{
-		ballY = 0;
-		if (ballMoveY < 0)
-		{
-			ballMoveY *= -1;
-		}
-	}
-	if (ballY > 190)
-	{
-		ballY = 190;
-		if (ballMoveY > 0)
-		{
-			ballMoveY *= -1;
-		}
-	}
-	
-
-	if (ballX < 0)
-	{
-		score2++;
-		sub ResetBall;
-		sub PrintScores;
-	}
-	if (ballX > 390)
-	{
-		score1++;
-		sub ResetBall;
-		sub PrintScores;
-	}
-	
-	if ((ballX <= 30) && (ballX >= 10) && ((ballY + 10) >= paddle1Y) && (ballY <= (paddle1Y + 80)))
-	{
-		if (ballMoveX < 0)
-		{
-			ballMoveX *= -1;
-		}
-		ballMoveX++;
-		ballMoveY = (((ballY + 10) - paddle1Y) - 45)/10; // 0 - 90
-	}
-	
-	if ((ballX >= 360) && (ballX <= 380) && ((ballY + 10) >= paddle2Y) && (ballY <= (paddle2Y + 80)))
-	{
-		if (ballMoveX > 0)
-		{
-			ballMoveX *= -1;
-		}
-		ballMoveX--;
-		ballMoveY = (((ballY + 10) - paddle2Y) - 45)/10; // 0 - 90
-	}
-	
-	
-	if ((score1 >= 10) || (score2 >= 10))
-	{
-		doExit = true;
-	}
-	
-	
-	sleep 5;
-	
-	
-	pressed = false;
-	getKeyboardState 0x01 &pressed;
-	if (pressed)
-	{
-		doExit = true;
-	}
-	
-	if (!start)
-	{
-		pressed = false;
-		getKeyboardState 0x39 &pressed;
+		getKeyboardState 0x11 &pressed;
 		if (pressed)
 		{
-			sub GetRandomBallDir;
-			start = true;
+			paddle1Y -= 5;
+			if (paddle1Y < 0)
+			{
+				paddle1Y = 0;
+			}
+		}
+		getKeyboardState 0x1F &pressed;
+		if (pressed)
+		{
+			paddle1Y += 5;
+			if (paddle1Y > 120)
+			{
+				paddle1Y = 120;
+			}
+		}
+		
+		
+		getKeyboardState 0x48 &pressed;
+		if (!pressed)
+		{
+			getKeyboardState 0x16 &pressed;
+		}
+		if (pressed)
+		{
+			paddle2Y -= 5;
+			if (paddle2Y < 0)
+			{
+				paddle2Y = 0;
+			}
+		}
+		getKeyboardState 0x50 &pressed;
+		if (!pressed)
+		{
+			getKeyboardState 0x24 &pressed;
+		}
+		if (pressed)
+		{
+			paddle2Y += 5;
+			if (paddle2Y > 120)
+			{
+				paddle2Y = 120;
+			}
+		}
+		
+		ballX += ballMoveX;
+		ballY += ballMoveY;
+		
+		
+		if (ballY < 0)
+		{
+			ballY = 0;
+			if (ballMoveY < 0)
+			{
+				ballMoveY *= -1;
+			}
+		}
+		if (ballY > 190)
+		{
+			ballY = 190;
+			if (ballMoveY > 0)
+			{
+				ballMoveY *= -1;
+			}
+		}
+		
+
+		if (ballX < 0)
+		{
+			score2++;
+			sub ResetBall;
+			sub UpdateScores;
+			//sub PrintScores;
+		}
+		if (ballX > 390)
+		{
+			score1++;
+			sub ResetBall;
+			sub UpdateScores;
+			//sub PrintScores;
+		}
+		
+		if ((ballX <= 30) && (ballX >= 10) && ((ballY + 10) >= paddle1Y) && (ballY <= (paddle1Y + 80)))
+		{
+			if (ballMoveX < 0)
+			{
+				ballMoveX *= -1;
+			}
+			ballMoveX++;
+			ballMoveY = (((ballY + 10) - paddle1Y) - 45)/10; // 0 - 90
+		}
+		
+		if ((ballX >= 360) && (ballX <= 380) && ((ballY + 10) >= paddle2Y) && (ballY <= (paddle2Y + 80)))
+		{
+			if (ballMoveX > 0)
+			{
+				ballMoveX *= -1;
+			}
+			ballMoveX--;
+			ballMoveY = (((ballY + 10) - paddle2Y) - 45)/10; // 0 - 90
+		}
+		
+		
+		if ((score1 >= 9) || (score2 >= 9))
+		{
+			//print "\nGame End!\n";
+			doExit = true;
+		}
+		
+		getKeyboardState 0x01 &pressed;
+		if (pressed)
+		{
+			doExit = true;
+		}
+		
+		if (!start)
+		{
+			getKeyboardState 0x39 &pressed;
+			if (pressed)
+			{
+				sub GetRandomBallDir;
+				start = true;
+			}
 		}
 	}
+	
+	getWindowAttr winID 30 &tID;
+	if (tID != winID)
+	{
+		jump FULL_END;
+	}
+	
+	sleep 15;
 }
 
-print "\nEnd.\n";
-
-
-
-
-
-char* b;
-readline &b;
-
-
+sub UpdateScores;
 sub PrintScores;
+
+sleep 2000;
+
+jump RESET;
+
+loc FULL_END:
+
+
+print "\nEnd.\n";
+//sub PrintScores;
+
 
 
 exit;
@@ -304,6 +386,9 @@ sub UpdateRects:
 	
 	setBaseComponentAttr winID ballID 10 ballX; // x
 	setBaseComponentAttr winID ballID 11 ballY; // y
+
+	
+	
 
 	ret;
 	
@@ -334,11 +419,24 @@ sub ResetBall:
 	ballY = (200 - 10) / 2;
 	ret;
 	
+sub UpdateScores:
+
+	// 01234
+	//"? : ?"
+	
+	((char*)(scoreText + 0)) = '0' + (char)score1;
+	((char*)(scoreText + 4)) = '0' + (char)score2;
+	
+	setSpecificComponentAttr winID scoreID 20 scoreText;
+
+	ret;
+	
 sub PrintScores:
 	print "Score: ";
 	print score1;
 	print " : ";
 	print score2;
 	print "\n\n";
+	sub UpdateScores;
 
 	ret;
